@@ -35,7 +35,7 @@ begin
 
 	# AstroImages example
 	using StatsBase: fit, Histogram
-	using AstroImages: imview
+	using AstroImages: Percent, imview
 
 	# Makie example
 	using CairoMakie: Colorbar, IntervalsBetween, heatmap
@@ -72,7 +72,7 @@ Companion to: [Working with FITS tables]()
 !!! warning ""
 	## Summary
 	
-	Following up from [Working with FITS tables](), this tutorial first demonstrates how to use AstroImages.jl to preview images formed from FITS data, before using Makie.jl + AlgebraOfGraphics.jl to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking and save it back to file.
+	Following up from [Working with FITS tables](), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables, before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
 """
 
 # ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
@@ -83,6 +83,8 @@ md"""
 # ╔═╡ 3b974213-d2a5-4528-b27b-d4c608319213
 md"""
 ## Load data
+
+We start by loading in the data from the previous tutorial. For brevity, we combine the downloading, FITS file loading, and subsetting, into a single cell:
 """
 
 # ╔═╡ b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
@@ -94,24 +96,68 @@ df_evt_main = let
 	@rsubset! df_evt :ccd_id ∈ 0:3
 end
 
+# ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
+md"""
+We next look at a few different ways that we can visualize the 2D histogram that we roughly previewed in the previous tutorial; from explicit (less convenient) to implicit (more convenient).
+"""
+
 # ╔═╡ c26d8744-0026-4f43-b056-1c94ee958f8b
 md"""
 ## View with AstroImages.jl
+
+[AstroImages.jl](https://juliaastro.org/AstroImages/) is the main starting point in the JuliaAstro ecosystem for easily loading and viewing FITS image files. AstroImages.jl can also handle FITS tables, but it is currently limited in what types of tables it can support [^1]. For this tutorial, just using its `imview` function will be enough to give us a good starting point.
+
+!!! note ""
+	[^1]: This package currently uses [FITSIO.jl](https://juliaastro.org/FITSIO/), a convenience wrapper around a second wrapper, [CFITSIO.jl](http://juliaastro.org/CFITSIO/), which wraps the [CFITSIO C library](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html) for FITS file I/O. Currently, FITSIO.jl cannot handle opening tables containing BitArray data.
+	
+		On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
+"""
+
+# ╔═╡ c04d7668-32ff-4131-8796-007d1637f56f
+md"""
+We start by using `StatsBase.fit` and `StatsBase.Histogram` to bin the ``x`` and ``y`` data ourselves before passing it to `imview` to view the image directly in the notebook. Later we will see how to do this binning step automatically for us:
 """
 
 # ╔═╡ 430611bb-6caf-4b38-837d-fc05173d4f00
 h = fit(Histogram, (df_evt_main.x, df_evt_main.y); nbins = 400)
 
+# ╔═╡ 515e570b-d140-4d66-845e-cae7b4cecd05
+md"""
+The weights are returned as an AbstractArray, which can be viewed directly with AstroImages.jl:
+"""
+
 # ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
-imview(h.weights)
+imview(h.weights;
+	clims = Percent(99.5),
+	stretch = log10,
+	cmap = :cividis,
+	# contrast = 1.0,
+	# bias = 0.5,
+)
+
+# ╔═╡ 7401caa5-c891-4306-bb3c-a4a9cab7012b
+md"""
+We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs for all available options.
+"""
+
+# ╔═╡ d68f1122-f54a-4c6f-a7d8-faeae18c2867
+md"""
+!!! tip
+	Try passing your own AbstractArray to `imview`
+"""
+
+# ╔═╡ d031ddf9-ee84-46b2-b387-1ec99a2ca79b
+# Your code here, e.g., imview(rand(3, 4))
+
+# ╔═╡ c4374601-9c65-4bd2-b2c0-3e83597395bf
+md"""
+Next we will see how to plot this image with labeled axes and a properly formatted colorbar.
+"""
 
 # ╔═╡ 5dd43020-71e9-47e7-9b57-295e57a98bce
 md"""
-## Viewing with Makie.jl
+## Plotting with Makie.jl
 """
-
-# ╔═╡ 1a26d020-a7f3-4cc0-9f2f-cd7a4d2e1307
-
 
 # ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
 let
@@ -132,7 +178,7 @@ end
 
 # ╔═╡ 414b0415-e784-4089-a683-a20ec15ee44f
 md"""
-## Viewing with Makie.jl + AoG.jl
+## Plotting with Makie.jl + AoG.jl
 
 No pre-computed hist required =]
 """
@@ -2095,11 +2141,17 @@ version = "4.1.0+0"
 # ╠═61c0bf34-302b-4732-a44d-4c2da611eb74
 # ╟─3b974213-d2a5-4528-b27b-d4c608319213
 # ╠═b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
+# ╟─ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
 # ╟─c26d8744-0026-4f43-b056-1c94ee958f8b
+# ╟─c04d7668-32ff-4131-8796-007d1637f56f
 # ╠═430611bb-6caf-4b38-837d-fc05173d4f00
+# ╟─515e570b-d140-4d66-845e-cae7b4cecd05
 # ╠═bb11ae83-b919-4511-86cf-51baf77d89a3
+# ╟─7401caa5-c891-4306-bb3c-a4a9cab7012b
+# ╟─d68f1122-f54a-4c6f-a7d8-faeae18c2867
+# ╠═d031ddf9-ee84-46b2-b387-1ec99a2ca79b
+# ╟─c4374601-9c65-4bd2-b2c0-3e83597395bf
 # ╟─5dd43020-71e9-47e7-9b57-295e57a98bce
-# ╠═1a26d020-a7f3-4cc0-9f2f-cd7a4d2e1307
 # ╠═02eaf214-7238-45b3-9674-c1b7f1b7d10e
 # ╟─414b0415-e784-4089-a683-a20ec15ee44f
 # ╠═235242b0-a8c6-4627-9b2c-fc14f705c686
