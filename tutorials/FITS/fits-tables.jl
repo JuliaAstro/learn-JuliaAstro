@@ -89,7 +89,7 @@ The file contains a list of events with ``x`` and ``y`` coordinates, energy, and
 md"""
 ## Visualize a FITS table file
 
-We next open this file and view its header information with the `FITSFiles.fits` and `FITSFiles.info` functions, respectively:
+We next open this file and view its header information (so-called [Header Data Units](https://www.stsci.edu/hst/wfpc2/Wfpc2_dhb/intro_ch23.html) -- HDUs) with the `FITSFiles.fits` and `FITSFiles.info` functions, respectively:
 """
 
 # ╔═╡ 11cb6428-3a8e-4916-84a5-1bd06bfd47a9
