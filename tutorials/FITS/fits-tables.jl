@@ -53,8 +53,6 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.
 	* Open a FITS table file and view table contents
 	
 	* Make a 2D histogram with the table data
-	
-	* Close the FITS file after use
 
 !!! note ""
 	## Keywords
