@@ -158,9 +158,9 @@ df_evt = DataFrame(hdu_list[2].data)
 # ╔═╡ 8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
 md"""
 !!! note
-	While it's possible to access FITS tables directly from the `.data` attribute, wrapping it in a `DataFrame` tends to make a variety of common tasks more convenient; for example, subsetting and directly plotting data, as we will show below.
+	For people coming from other languages, this [comparison page](https://dataframes.juliadata.org/stable/man/comparisons/#Comparisons) in the DataFrames.jl documentation may be helpful.
 
-Next we will visualize some of the data in this table.
+While it's possible to access FITS tables directly from the `.data` attribute, wrapping it in a `DataFrame` tends to make a variety of common tasks more convenient; for example, subsetting and directly plotting data, as we will show next.
 """
 
 # ╔═╡ 4ea25424-5267-420c-acef-45a503582a3a
@@ -201,6 +201,8 @@ df_evt_main = @rsubset df_evt :ccd_id ∈ 0:3
 md"""
 !!! note
 	We use the `@rsubset` convenience macro exported from DataFramesMeta.jl to select the desired rows from our table, in this case the rows where the `ccd_id` are equal to either 0, 1, 2, or 3. For more on working with `DataFrames` and using other convenience macros, see the [DataFrames.jl](https://dataframes.juliadata.org/) and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/) documentation.
+
+	In particular, people coming from other languages may find this [short comparison table](https://juliadata.org/DataFramesMeta.jl/stable/#Comparison-with-dplyr-and-LINQ) of convenience macros in the DataFramesMeta.jl documentation helpful.
 """
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
