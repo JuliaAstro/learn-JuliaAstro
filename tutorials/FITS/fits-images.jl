@@ -38,7 +38,7 @@ begin
 	using AstroImages: Percent, imview
 
 	# Makie example
-	using CairoMakie: Colorbar, IntervalsBetween, heatmap
+	using CairoMakie: Colorbar, IntervalsBetween, plot
 	
 	# Makie + AlgebraOfGraphics example
 	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
@@ -72,7 +72,7 @@ Companion to: [Working with FITS tables]()
 !!! warning ""
 	## Summary
 	
-	Following up from [Working with FITS tables](), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables, before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
+	Following up from [Working with FITS tables](), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
 """
 
 # ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
@@ -98,6 +98,9 @@ end
 
 # ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
 md"""
+!!! note
+	We use the mutating version of `@rsubset` (note the exclamation mark above) because we do not need to preserve the original `DataFrame`, `df_evt`, in this case. For more on mutating functions, see [this section](https://docs.julialang.org/en/v1/manual/variables/#man-assignment-expressions) of the Julia manual.
+
 We next look at a few different ways that we can visualize the 2D histogram that we roughly previewed in the previous tutorial; from explicit (less convenient) to implicit (more convenient).
 """
 
@@ -123,13 +126,13 @@ h = fit(Histogram, (df_evt_main.x, df_evt_main.y); nbins = 400)
 
 # ╔═╡ 515e570b-d140-4d66-845e-cae7b4cecd05
 md"""
-The weights are returned as an AbstractArray, which can be viewed directly with AstroImages.jl:
+The weights are returned as an `AbstractArray`, which can be viewed directly with AstroImages.jl:
 """
 
 # ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
 imview(h.weights;
-	clims = Percent(99.5),
-	stretch = log10,
+	# clims = Percent(99.5),
+	# stretch = identity,
 	cmap = :cividis,
 	# contrast = 1.0,
 	# bias = 0.5,
@@ -137,11 +140,8 @@ imview(h.weights;
 
 # ╔═╡ 7401caa5-c891-4306-bb3c-a4a9cab7012b
 md"""
-We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs for all available options.
-"""
+We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs of this notebook for all available options.
 
-# ╔═╡ d68f1122-f54a-4c6f-a7d8-faeae18c2867
-md"""
 !!! tip
 	Try passing your own AbstractArray to `imview`
 """
@@ -157,17 +157,21 @@ Next we will see how to plot this image with labeled axes and a properly formatt
 # ╔═╡ 5dd43020-71e9-47e7-9b57-295e57a98bce
 md"""
 ## Plotting with Makie.jl
+
+Makie.jl is a modern plotting ecosystem written in pure Julia. Its [set of backends](https://docs.makie.org/stable/explanations/backends/backends#What-is-a-backend) allows us to produce plots for a wide range of contexts. For this tutorial, we will use the CairoMakie.jl backend to produce publication-quality vector graphic plots.
+
+To start, we will pass the histogram object `h` directly to Makie, which its `plot` command knows how to handle:
 """
 
 # ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
 let
-	fig, ax, hm = heatmap(h;
+	fig, ax, p = plot(h;
 		colorrange = (1, 10_000),
 		colorscale = log10,
 		colormap = :cividis,
 	)
 	
-	Colorbar(fig[1, 2], hm;
+	Colorbar(fig[1, 2], p;
 		ticks = [1, 3, 6, 500, 10_000],
 		minorticksvisible = true,
 		minorticks = IntervalsBetween(9),
@@ -176,11 +180,21 @@ let
 	fig
 end
 
+# ╔═╡ 74f155a2-fe8a-404f-b0c6-7a4f2724c408
+md"""
+!!! tip
+	Try adjusting the plot options above, or try adding your own! See the [Getting started](https://docs.makie.org/stable/tutorials/getting-started) section of the Makie.jl documentation for a comprehensive tutorial.
+
+You may notice that there are still a few things missing from our plot that would be nice to have by defauly, e.g., labeled axes and a formatted colorbar. We will show an ergonomic way to do this next.
+"""
+
 # ╔═╡ 414b0415-e784-4089-a683-a20ec15ee44f
 md"""
 ## Plotting with Makie.jl + AoG.jl
 
-No pre-computed hist required =]
+Similarly to seaborn for Python, or ggplot2 in R, Julia provides AlgebraOfGraphics.jl, a plotting framework that extends existing plotting capabilities for a wide range of statistical and visualization applications of structured data.
+
+As with these other packages, its usecases are probably best shown by example:
 """
 
 # ╔═╡ 235242b0-a8c6-4627-9b2c-fc14f705c686
@@ -199,6 +213,19 @@ let
 		)
 	)
 end
+
+# ╔═╡ f7aca318-a535-4a86-8c29-92d90db96271
+md"""
+Here, we reproduce the previous plot above, but now with the desired axes labeling and colorbar formatting applied for us. The colorbar is also automatically labeled for us and the shape of its endpoints are adjusted to triangles to show that the data values extend beyond what is shown on the colorbar scale.
+
+Additionally, note that we are working directly with the DataFrame object `df_evt-main` now instead of needing to manually fit a histogram beforehand.
+
+!!! todo
+	Check if there is a way to not have to specifiy `log10` in two places.
+
+!!! tip
+	See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
+"""
 
 # ╔═╡ c65018aa-e30a-4727-ad4e-b853a1479a40
 md"""
@@ -2148,13 +2175,14 @@ version = "4.1.0+0"
 # ╟─515e570b-d140-4d66-845e-cae7b4cecd05
 # ╠═bb11ae83-b919-4511-86cf-51baf77d89a3
 # ╟─7401caa5-c891-4306-bb3c-a4a9cab7012b
-# ╟─d68f1122-f54a-4c6f-a7d8-faeae18c2867
 # ╠═d031ddf9-ee84-46b2-b387-1ec99a2ca79b
 # ╟─c4374601-9c65-4bd2-b2c0-3e83597395bf
 # ╟─5dd43020-71e9-47e7-9b57-295e57a98bce
 # ╠═02eaf214-7238-45b3-9674-c1b7f1b7d10e
+# ╟─74f155a2-fe8a-404f-b0c6-7a4f2724c408
 # ╟─414b0415-e784-4089-a683-a20ec15ee44f
 # ╠═235242b0-a8c6-4627-9b2c-fc14f705c686
+# ╠═f7aca318-a535-4a86-8c29-92d90db96271
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
 # ╠═cbc2c762-2e54-4cf7-b36a-e5f2af24e488
 # ╠═c28e551a-ad35-4ec5-a461-a173a53f673c
