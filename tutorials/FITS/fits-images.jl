@@ -32,13 +32,14 @@ begin
 	using DataFramesMeta: DataFrame, @rsubset!
 	using Downloads: download
 	using FITSFiles: fits, info
+	using Printf: @sprintf
 
 	# AstroImages example
 	using StatsBase: Histogram, fit, mean, median, std
 	using AstroImages: Percent, Near, X, Y, load, imview
 
 	# Makie example
-	using CairoMakie: Colorbar, IntervalsBetween, plot, hist
+	using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
 	
 	# Makie + AlgebraOfGraphics example
 	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
@@ -335,7 +336,7 @@ std(img)
 
 # ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
 let
-	fig, ax, p = hist(vec(img_data); bins = 50)
+	fig, ax, p = stephist(vec(img_data); bins = 50)
 	ax.xlabel = "Pixel value"
 	ax.ylabel = "Counts"
 	fig
@@ -390,6 +391,85 @@ We end by looking at a brief image stacking example.
 # ╔═╡ 5fb6d8fa-d890-45c5-afa3-944e96bc818e
 md"""
 ## Image stacking
+
+For this example, we'll stack several images of M13 taken with a ~10" telescope.
+"""
+
+# ╔═╡ 4e9d0b96-358d-4baa-8ea9-7eb5aeff36f8
+md"""
+### Load data
+
+Let's start by opening a series of FITS files and storing the data in a vector called `imgs`:
+"""
+
+# ╔═╡ e2defd90-7781-4c64-98ad-4aabdfa99d63
+# We use the @sprintf macro from the base Printf.jl Julia module
+# to format our strings
+fpaths = map(1:5) do i
+	@sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
+end
+
+# ╔═╡ 215e0183-adfa-4da0-80d7-108894f73f23
+md"""
+!!! tip
+	This is just an alternative syntax to array comprehensions. We could have just as easily done:
+
+	```julia
+	[
+		@sprintf(
+			"http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits",
+			i
+		)
+		for i in 1:5
+	]
+	```
+
+	See [this section of the Julia manual](https://docs.julialang.org/en/v1/manual/functions/#Do-Block-Syntax-for-Function-Arguments) for more on do-block syntax.
+"""
+
+# ╔═╡ 4dc4074e-b3d3-4deb-a657-8a7847a8c156
+imgs = [load(fpath) for fpath in fpaths];
+
+# ╔═╡ 51f3adcf-4e9a-49b5-a3a1-162a132e7f68
+md"""
+### Visualize
+"""
+
+# ╔═╡ 0338793e-c043-4001-a6c3-8c02159fb282
+md"""
+We can then directly sum up this vector of image data to produce a stacked image:
+"""
+
+# ╔═╡ 1cc2e29e-e9b3-4313-86b2-9eb7032c0ba4
+img_stacked = sum(imgs)
+
+# ╔═╡ 134e86e5-995e-432c-87a5-bf6a496fe7f6
+md"""
+As in the examples above, this does the usual image transformations defined in `imview` to produce a nice image by default. We can also directly control this in the same way:
+"""
+
+# ╔═╡ 9c5450c2-807f-438d-a907-d78090a631ab
+stephist(vec(img_stacked); bins = 50)
+
+# ╔═╡ 21bd0738-97cb-499d-ad8d-b6301c6a0bdc
+md"""
+The pixel values looks to be mostly around [2000, 3000] counts, so we set our colorbar limits there:
+"""
+
+# ╔═╡ edb0adae-ccf7-43cd-8985-626020a3adcb
+plot(img_stacked; colorrange = (2e3, 3e3), colormap = :magma)
+
+# ╔═╡ eccd1973-1082-4fb6-920c-0039ddf5482a
+md"""
+### Save
+
+Finally, we can save our underlying stacked image + header data using the `save` function exported from AstroImages.jl:
+
+```julia
+using AstroImages
+
+save("test.fits", img_stacked)
+```
 """
 
 # ╔═╡ c65018aa-e30a-4727-ad4e-b853a1479a40
@@ -410,6 +490,7 @@ DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
@@ -428,7 +509,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "c31e8f52de30efac1032ec4349913a1ecdae001a"
+project_hash = "5fb94385b27a43312ab20d6d316297f2cfb6de17"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2380,6 +2461,18 @@ version = "4.1.0+0"
 # ╠═0e690360-cdb1-47c9-b637-b0184508ac03
 # ╟─e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
 # ╟─5fb6d8fa-d890-45c5-afa3-944e96bc818e
+# ╟─4e9d0b96-358d-4baa-8ea9-7eb5aeff36f8
+# ╠═e2defd90-7781-4c64-98ad-4aabdfa99d63
+# ╟─215e0183-adfa-4da0-80d7-108894f73f23
+# ╠═4dc4074e-b3d3-4deb-a657-8a7847a8c156
+# ╟─51f3adcf-4e9a-49b5-a3a1-162a132e7f68
+# ╟─0338793e-c043-4001-a6c3-8c02159fb282
+# ╠═1cc2e29e-e9b3-4313-86b2-9eb7032c0ba4
+# ╟─134e86e5-995e-432c-87a5-bf6a496fe7f6
+# ╠═9c5450c2-807f-438d-a907-d78090a631ab
+# ╟─21bd0738-97cb-499d-ad8d-b6301c6a0bdc
+# ╠═edb0adae-ccf7-43cd-8985-626020a3adcb
+# ╟─eccd1973-1082-4fb6-920c-0039ddf5482a
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
 # ╠═cbc2c762-2e54-4cf7-b36a-e5f2af24e488
 # ╠═c28e551a-ad35-4ec5-a461-a173a53f673c
