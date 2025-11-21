@@ -6,7 +6,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-19"
 #> description = "View and manipulate data from FITS images."
-#> tags = ["FITS", "file I/O", "images", "image processing", "plots", "histograms", "colorbars"]
+#> tags = ["FITS files", "file I/O", "images", "image processing", "plots", "histograms", "colorbars"]
 #> order = 2
 #> 
 #>     [[frontmatter.author]]
@@ -70,7 +70,7 @@ Companion to: [Working with FITS tables](/tutorials/fits-tables/)
 !!! note ""
 	## Keywords
 
-	FITS, file I/O, images, image processing, plots, histograms, colorbars
+	FITS files, file I/O, images, image processing, plots, histograms, colorbars
 
 !!! warning ""
 	## Summary

@@ -6,7 +6,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
-#> tags = ["FITS", "file I/O", "tables", "plots", "histograms"]
+#> tags = ["FITS files", "file I/O", "tables", "plots", "histograms"]
 #> order = 1
 #> 
 #>     [[frontmatter.author]]
@@ -59,7 +59,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.
 !!! note ""
 	## Keywords
 
-	FITS, file I/O, tables, plots, histograms
+	FITS files, file I/O, tables, plots, histograms
 
 !!! warning ""
 	## Summary
