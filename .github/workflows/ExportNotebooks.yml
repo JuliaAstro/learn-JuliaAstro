@@ -45,15 +45,14 @@ jobs:
 
       - name: 🪴 Generate site
         run: |
-        julia --project -e '
-          import Pkg
-          Pkg.instantiate()
-          import PlutoPages
+          julia --project -e '
+            import Pkg
+            Pkg.instantiate()
+            import PlutoPages
 
-          PlutoPages.generate("."; html_report_path="generation_report.html")
+            PlutoPages.generate("."; html_report_path="generation_report.html")'
         env:
-        JULIA_PKG_SERVER: ""
-
+          JULIA_PKG_SERVER: ""
 
       - name: 📰 Upload site generation report
         uses: actions/upload-artifact@v4
