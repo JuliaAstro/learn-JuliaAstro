@@ -38,7 +38,7 @@ begin
 	using AstroImages: Percent, Near, X, Y, load, imview
 
 	# Makie example
-	using CairoMakie: Colorbar, IntervalsBetween, plot
+	using CairoMakie: Colorbar, IntervalsBetween, plot, hist
 	
 	# Makie + AlgebraOfGraphics example
 	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
@@ -238,7 +238,7 @@ We now turn to working directly with FITS image data.
 md"""
 ## Images from FITS arrays
 
-For the rest of this tutorual, we will work with an astronomical image of the Horsehead Nebula taken with a photographic plate. The image has been digitized, i.e., scanned by a computer and converted to a 2D array. Each position in the array corresponds with the projected position on the sky, and bright areas of the image have high values while dark areas have low values in the array.
+For the rest of this tutorial, we will work with an astronomical image of the Horsehead Nebula taken with a photographic plate. The image has been digitized, i.e., scanned by a computer and converted to a 2D array. Each position in the array corresponds with the projected position on the sky, and bright areas of the image have high values while dark areas have low values in the array.
 
 Images taken with astronomical instruments called CCDs or "[charge-coupled devices](https://en.wikipedia.org/wiki/Charge-coupled_device)" are organized similarly. When illuminated by light, CCDs accumulate electrons, converting brightness values to electron counts. A CCD image is essentially a 2D array, where each position on the array represents a single CCD pixel, and the values in that array represent the number of counts registered in that pixel.
 """
@@ -282,7 +282,9 @@ We see that our image is an $(size(img_data, 1)) × $(size(img_data, 2)) array o
 
 # ╔═╡ b3c6961a-b8a6-4597-aaf7-a97cae793670
 md"""
-### View with Makie.jl
+### Visualize
+
+Since this is just plain array data instead of tabular / `DataFrame` data, we will use Makie.jl without the AlgebraOfGraphics.jl framework:
 """
 
 # ╔═╡ 3b8c84de-56f5-4d1e-9a63-a7abbc33bd55
@@ -331,6 +333,14 @@ median(img)
 # ╔═╡ c3011e6e-6590-4b88-b3b3-a03c768a82c6
 std(img)
 
+# ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
+let
+	fig, ax, p = hist(vec(img_data); bins = 50)
+	ax.xlabel = "Pixel value"
+	ax.ylabel = "Counts"
+	fig
+end
+
 # ╔═╡ 997258a0-39ca-4e5f-a143-f3bdbefd265f
 md"""
 and access the raw underlying data anytime:
@@ -345,7 +355,27 @@ Lastly, `AstroImage` objects use the [DimensionalData.jl](https://rafaqz.github.
 """
 
 # ╔═╡ 7c3e5faf-6f80-4413-a72e-bfce5a59fe07
-plot(img; colormap = :magma) # Makie knows how to handle this automatically!
+plot(img; colormap = :greys) # Makie knows how to handle this automatically!
+
+# ╔═╡ 7a582e8c-03fb-406e-83ef-9b15920fb6ba
+md"""
+Here is another example where we add some additional customizations:
+"""
+
+# ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
+let
+	fig, ax, p = plot(img;
+		colorscale = log10, # log scale the colors
+		colormap = :greys,
+		colorbar = (
+			ticks = [4e3, 5e3, 6e4, 1e4, 2e4],
+			minorticksvisible = true,
+			minorticks = IntervalsBetween(9),
+		)
+	)
+
+	fig
+end
 
 # ╔═╡ 0e690360-cdb1-47c9-b637-b0184508ac03
 img[X = 500, Y = Near(500.1)] == img[500, 500]
@@ -353,6 +383,13 @@ img[X = 500, Y = Near(500.1)] == img[500, 500]
 # ╔═╡ e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
 md"""
 For more on working with AstroImage data, see the [Getting started](https://juliaastro.org/AstroImages/stable/manual/getting-started/) section of the AstroImages.jl manual.
+
+We end by looking at a brief image stacking example.
+"""
+
+# ╔═╡ 5fb6d8fa-d890-45c5-afa3-944e96bc818e
+md"""
+## Image stacking
 """
 
 # ╔═╡ c65018aa-e30a-4727-ad4e-b853a1479a40
@@ -2333,12 +2370,16 @@ version = "4.1.0+0"
 # ╠═2f151bab-e310-46a2-b277-3082e880360b
 # ╠═45b56d0c-71b7-4151-95b5-bcd67239f40d
 # ╠═c3011e6e-6590-4b88-b3b3-a03c768a82c6
+# ╠═0fa6d28a-4608-444b-ae2c-5845ec8a21b1
 # ╟─997258a0-39ca-4e5f-a143-f3bdbefd265f
 # ╠═227ea834-faa9-4540-9e0b-b9c87cd19b45
 # ╟─9b1ec23d-e773-4893-83ba-c465fd510778
 # ╠═7c3e5faf-6f80-4413-a72e-bfce5a59fe07
+# ╟─7a582e8c-03fb-406e-83ef-9b15920fb6ba
+# ╠═6500f709-d767-44dd-911f-20fb29740671
 # ╠═0e690360-cdb1-47c9-b637-b0184508ac03
 # ╟─e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
+# ╟─5fb6d8fa-d890-45c5-afa3-944e96bc818e
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
 # ╠═cbc2c762-2e54-4cf7-b36a-e5f2af24e488
 # ╠═c28e551a-ad35-4ec5-a461-a173a53f673c
