@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="en">
+<head>
+
+<title>Modeling 1: Linear model fitting</title>
+<meta name="description" content='Make simple fits to your data.'>
+<meta property="og:article:tag" content='models'>
+<meta property="og:article:tag" content='model fitting'>
+<meta property="og:article:tag" content='astrostatistics'>
+<meta property="og:article:tag" content='catalog'>
+<meta property="og:article:tag" content='query'>
+<meta property="og:article:tag" content='Makie'>
+<meta property="og:article:tag" content='plots'>
+<meta property="og:article:tag" content='errorbars'>
+<meta property="og:article:tag" content='scatter plots'>
+<meta property='og:image' content='/assets/linear-model-fitting.png'>
+<meta property='og:title' content='Modeling 1: Linear model fitting'>
+<meta property='og:type' content='article'>
+<meta property='og:description' content='Make simple fits to your data.'>
+
+
+<link rel="root" href="../.." />
+<link rel="icon" href="../../assets/favicon.ico" />
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+
+<link rel="stylesheet" href="../../assets/styles/layout.css" type="text/css" />
+<script src="../../assets/scripts/sidebar.js" type="module" defer></script>
+
+<link rel="pp-search-data" href="../../pp_search_data.json" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" integrity="sha256-DFDZACuFeAqEKv/7Vnu1Tt5ALa58bcWZegGGFNgET8g=" crossorigin="anonymous" defer></script>
+<script src="../../assets/scripts/search.js" type="module" defer></script>
+
+<script type="importmap">{"imports":{"aVc6E":"./firebase-firestore.7f842f36.js","bEDS4":"./firebase-app.b603aaa4.js"}}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.6d99411f.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.1a8c75c9.css"><script type="module" src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/frontend.44dc92ac.js"></script>
+    <meta name="viewport" content="width=device-width">
+    <meta charset="utf-8">
+
+    
+<meta name="pluto-insertion-spot-meta">
+
+
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="white">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#2a2928">
+    <meta name="color-scheme" content="light dark">
+
+    
+    
+    
+    <link rel="pluto-external-source" id="pluto-logo-big" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/logo.103597bc.svg">
+    <link rel="pluto-external-source" id="pluto-logo-small" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/favicon_unsaturated.9ed3a6f6.svg">
+
+    <script defer="">console.log("Pluto.jl, by Fons van der Plas (https://github.com/fonsp), Mikołaj Bochenski (https://github.com/malyvsen), Michiel Dral (https://github.com/dralletje), Παναγιώτης (Panagiotis) Γεωργακόπουλος (https://github.com/pankgeorg), Paul Berg (https://github.com/Pangoraw) and friends 🌈");</script>
+
+    <script src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.2f9fc277.js" defer=""></script>
+
+    <!-- This doesn't do anything unless activated, and it makes sure parcel bundles this -->
+    <script id="iframe-resizer-content-window-script" src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.7a04a462.js" crossorigin="anonymous" defer=""></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.34f4e0d4.css" type="text/css">
+
+    <meta rel="pluto-cdn-root" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/">
+    <script data-pluto-file="launch-parameters">
+window.pluto_notebook_id = undefined;
+window.pluto_isolated_cell_ids = undefined;
+window.pluto_notebookfile = undefined;
+window.pluto_disable_ui = true;
+window.pluto_slider_server_url = undefined;
+window.pluto_binder_url = "https://mybinder.org/v2/gh/fonsp/pluto-on-binder/v1.0.1";
+window.pluto_statefile = undefined;
+window.pluto_preamble_html = undefined;
+window.pluto_recording_url = undefined;
+window.pluto_recording_audio_url = undefined;
+</script>
+
+<meta name="pluto-insertion-spot-parameters">
+
+    <script src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/editor.9f609029.js" type="module" defer=""></script>
+    <script src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/frontend.ae6e0116.js"></script>
+
+    <link rel="pluto-external-source" id="vmsg-wasm" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/vmsg.56bb9389.wasm">
+    <!-- This script will be enabled by JS after the notebook has initialized to prevent taking up bandwidth during the initial load. -->
+    <link rel="pluto-external-source" id="MathJax-script" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.1/frontend-dist/tex-svg-full.b78c0ac1.js" type="text/javascript">
+    
+    
+<meta name="pluto-insertion-spot-preload">
+
+
+</head>
+<body>
+    <div id="pages-layout">
+        <button id="toggle-nav" title="Open navigation"></button>
+        <nav id="pages-sidebar" style="height: 100vh; overflow-y: auto; top: 0px;">
+        <div>
+        <ul>
+            <li class="pluto_home_link"><a class="pluto_home_link" href='../..'><img src="../../assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
+        </li>
+                <li>
+            <div class="search-bar">
+                <form action="../../search" method="GET">
+                    <input type="search" name="q" placeholder="Search..." style="width: 100%">
+                </form>
+            </div>
+        </li>
+        <li>
+<h3>FILE I/O</h3>
+<ul>
+<li class=''><a href='../../tutorials/fileio-fits_tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='../../tutorials/fileio-fits_images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class=''><a href='../../tutorials/fileio-asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
+</ul>
+</li>
+<li>
+<h3>UNITS</h3>
+<ul>
+<li class=''><a href='../../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='../../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+</ul>
+</li>
+<li>
+<h3>MODELS</h3>
+<ul>
+<li class='active'><a href='../../tutorials/models-1_linear_fitting/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='../../tutorials/models-2_user_defined_model/' title='TODO'>Modeling 2: Create a User Defined Model using astropy.modeling</a></li>
+</ul>
+</li>
+<li>
+<h3>COSMOLOGY</h3>
+<ul>
+<li class=''><a href='../../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+</ul>
+</li>
+<li>
+<h3>DUST</h3>
+<ul>
+<li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
+</ul>
+</li>
+<li>
+<h3>SPECTROSCOPY</h3>
+<ul>
+<li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+</ul>
+</li>
+
+        </ul>
+        </div>
+        </nav>
+        <div id="pages-content">
+        <pluto-editor statefile='../../generated_assets/models-1_linear_fitting_e5d0df85.plutostate' notebookfile='../../generated_assets/models-1_linear_fitting_e5d0df85.plutostate' disable-ui=''></pluto-editor>
+
+        </div>
+    </div>
+</body>
+</html>
