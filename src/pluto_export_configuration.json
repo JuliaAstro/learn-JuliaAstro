@@ -3,9 +3,14 @@
     "description": "Notebooks for the learn.JuliaAstro site.",
     "collections": [
         {
-            "title": "Tutorial notebooks",
-            "description": "Notebooks for the learn.JuliaAstro site.",
-            "tags": ["tutorials"]
+            "title": "FITS files",
+            "description": "Work with FITS files.",
+            "tags": ["FITS"]
+        },
+        {
+            "title": "Units",
+            "description": "Work with units.",
+            "tags": ["units"]
         }
     ]
 }
