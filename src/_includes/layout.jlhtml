@@ -27,7 +27,6 @@ end)
 <link rel="icon" href="$(root_url)/assets/favicon.ico" />
 <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="$(root_url)/assets/styles/index.css" type="text/css" />
 <link rel="stylesheet" href="$(root_url)/assets/styles/layout.css" type="text/css" />
 <script src="$(root_url)/assets/scripts/sidebar.js" type="module" defer></script>
 

@@ -1,4 +1,14 @@
-body {
+/* a minimalist set of CSS resets */
+
+/* @import url("https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.css"); */
+
+/* @import url('https://cdn.jsdelivr.net/gh/fonsp/Pluto.jl@0.18.0/frontend/vollkorn.css'); */
+/* @import url('https://fonts.googleapis.com/css2?family=Jaldi:wght@400;700&display=swap'); */
+/* @import url('https://fonts.googleapis.com/css2?family=Jaldi:wght@400;700&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Yantramanav:wght@400;500;700;900&display=swap'); */
+
+/* default to border-box */
+html {
+    box-sizing: border-box;
     font-size: 17px;
 }
 
@@ -8,15 +18,15 @@ body {
     /* --bg-color: set by pluto */
     --sidebar-bg: #fafafa;
     --sidebar-color: rgb(82, 82, 82);
-    --sidebar-li-active-bg: rgb(235, 235, 235);
-    --sidebar-li-hover-bg: rgb(214, 227, 244);
+    --sidebar-li-active-bg: rgb(236, 234, 213);
+    --sidebar-li-hover-bg: rgb(235, 235, 235);
 }
 @media (prefers-color-scheme: dark) {
     #pages-layout {
         --sidebar-bg: #303030;
         --sidebar-color: rgb(255, 255, 255);
-        --sidebar-li-active-bg: rgb(82, 82, 82);
-        --sidebar-li-hover-bg: rgb(108, 94, 70);
+        --sidebar-li-active-bg: rgb(149, 88, 178);
+        --sidebar-li-hover-bg: rgb(82, 82, 82);
     }
 }
 
@@ -187,4 +197,98 @@ body {
     margin-left: auto;
     margin-right: auto;
     margin-top: 5rem;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+:root {
+    --system-fonts: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Cantarell, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        system-ui, sans-serif;
+    --system-fonts-mono: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+/* adjust typography defaults */
+body {
+    /* background: url(bg.svg); */
+    /* background-color: hsl(231deg 14% 57%); */
+    /* background-size: cover; */
+    font-size: 17px;
+    font-family: var(--system-fonts);
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    overflow-x: hidden;
+    background: white;
+    color: var(--pluto-output-color);
+    word-break: break-word;
+}
+
+p,
+ol {
+    line-height: 1.5;
+}
+
+h1,
+h2 {
+    font-weight: 800;
+}
+
+pre {
+    tab-size: 4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+pre,
+code {
+    font-family: var(--system-fonts-mono);
+}
+
+/* images and videos max out at full width */
+img,
+video {
+    height: auto;
+    max-width: 100%;
+}
+
+a {
+    font-weight: 500;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+h1 a,
+h2 a,
+h3 a {
+    font-weight: inherit;
+}
+
+a.arrow {
+    font-weight: 700;
+}
+a.arrow::after {
+    content: " →";
+}
+card-text > a.arrow {
+    margin-top: auto;
+}
+
+/* SIDEBAR LOGO */
+
+a.pluto_home_link img {
+    width: 2.5em;
+}
+a.pluto_home_link {
+    font-size: 1.2em;
+    font-weight: 800;
+    color: inherit;
+    padding: 0.3em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8ch;
 }
