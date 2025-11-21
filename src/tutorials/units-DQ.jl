@@ -3,9 +3,10 @@
 
 #> [frontmatter]
 #> title = "Using units in astrophysical calculations"
+#> layout = "layout.jlhtml"
 #> date = "2025-11-19"
-#> tags = ["units", "plots"]
 #> description = "Work with units in astrophysical calculations."
+#> tags = ["units", "plots"]
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"

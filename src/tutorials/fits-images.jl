@@ -3,9 +3,11 @@
 
 #> [frontmatter]
 #> title = "Working with FITS images"
+#> layout = "layout.jlhtml"
 #> date = "2025-11-19"
-#> tags = ["FITS", "file I/O", "images", "image processing", "plots", "histograms", "colorbars"]
 #> description = "View and manipulate data from FITS images."
+#> tags = ["FITS", "file I/O", "images", "image processing", "plots", "histograms", "colorbars"]
+#> order = 2
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"
@@ -56,7 +58,7 @@ md"""
 
 This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
 
-Companion to: [Working with FITS tables]()
+Companion to: [Working with FITS tables](/tutorials/fits-tables/)
 
 !!! tip ""
 	## Learning Goals
@@ -73,7 +75,7 @@ Companion to: [Working with FITS tables]()
 !!! warning ""
 	## Summary
 	
-	Following up from [Working with FITS tables](), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
+	Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
 """
 
 # ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e

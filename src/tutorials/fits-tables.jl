@@ -3,9 +3,11 @@
 
 #> [frontmatter]
 #> title = "Working with FITS tables"
+#> layout = "layout.jlhtml"
 #> date = "2025-11-18"
-#> tags = ["FITS", "file I/O", "tables", "plots", "histograms"]
 #> description = "View and manipulate data from FITS tables."
+#> tags = ["FITS", "file I/O", "tables", "plots", "histograms"]
+#> order = 1
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"
@@ -170,6 +172,9 @@ md"""
 We can extract data from the table by referencing the column name. Let's try making a histogram for the energy of each photon, which will give us a sense for the spectrum (folded with the detector's efficiency):
 """
 
+# ╔═╡ 48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
+plot(df_evt; x = :energy, kind = :histogram, nbinsx)
+
 # ╔═╡ dcb7e376-33ad-4279-96d5-004c3e6bc176
 md"""
 Move the slider below to update the number of bins used for the histogram:
@@ -178,13 +183,10 @@ Move the slider below to update the number of bins used for the histogram:
 # ╔═╡ bd838bbc-d3a9-4d29-9073-db9ac947e585
 @bindname nbinsx Slider(15:100; default = 80, show_value = true)
 
-# ╔═╡ 48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
-plot(df_evt; x = :energy, kind = :histogram, nbinsx)
-
 # ╔═╡ b07413d3-7c29-4f9d-8be6-7bc5118e186d
 md"""
 !!! tip
-	We are using the small [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) package for easy interactivity in this notebook format. For publication quality plots with a wide range of analysis and customizations, see the modern [Makie.jl](https://makie.org) plotting package, which powers the [AlgebraOfGraphics.jl](https://aog.makie.org/stable/) framework for visualizing structured data. We will show examples of its use in our [Working with FITS images]() tutorial.
+	We are using the small [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) package for easy interactivity in this notebook format. For publication quality plots with a wide range of analysis and customizations, see the modern [Makie.jl](https://makie.org) plotting package, which powers the [AlgebraOfGraphics.jl](https://aog.makie.org/stable/) framework for visualizing structured data. We will show examples of its use in our [Working with FITS images](/tutorials/fits-images/) tutorial.
 """
 
 # ╔═╡ 66629892-ce42-44a9-9a36-6582545bda8e
@@ -210,7 +212,7 @@ plot(df_evt; x = :x, y = :y, kind = :histogram2d, nbinsx = 100, nbinsy = 100)
 
 # ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
 md"""
-For more control over producing high quality plots, see our [Working with FITS images]() tutorial.
+For more control over producing high quality plots, see our [Working with FITS images](/tutorials/fits-images) tutorial.
 """
 
 # ╔═╡ 1f60ce5a-e909-44f2-867a-02be8a1ba37c

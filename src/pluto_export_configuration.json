@@ -1,0 +1,11 @@
+{
+    "title": "learn.JuliaAstro tutorials",
+    "description": "Notebooks for the learn.JuliaAstro site.",
+    "collections": [
+        {
+            "title": "Tutorial notebooks",
+            "description": "Notebooks for the learn.JuliaAstro site.",
+            "tags": ["tutorials"]
+        }
+    ]
+}

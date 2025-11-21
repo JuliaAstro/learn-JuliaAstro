@@ -1,0 +1,12 @@
+---
+layout: "layout.jlhtml"
+---
+
+<!-- You need the raw HTML block here! Otherwise the HTML output from the page will be parsed a second time as CommonMark, which can lead to weird issues. -->
+```{=html}
+<div class="pages-markdown">
+<main>
+$(content)
+</main>
+</div>
+```
