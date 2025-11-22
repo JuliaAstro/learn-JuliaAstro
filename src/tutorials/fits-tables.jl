@@ -2,12 +2,12 @@
 # v0.20.21
 
 #> [frontmatter]
+#> order = 1
 #> title = "Working with FITS tables"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
 #> tags = ["FITS files", "file I/O", "tables", "plots", "histograms"]
-#> order = 1
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"
@@ -16,28 +16,16 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
 # ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
 begin
 	using Downloads: download
 	using FITSFiles: fits, info
 	using DataFramesMeta: DataFrame, @rsubset
-	using PlutoPlotly: plot
+	using PlutoPlotly: Layout, plot, attr
 end
 
 # ╔═╡ 6785bdad-a606-4039-8378-4ba0257b477b
-using PlutoUI: TableOfContents, Slider, @bindname
+using PlutoUI: TableOfContents
 
 # ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
 md"""
@@ -173,15 +161,7 @@ We can extract data from the table by referencing the column name. Let's try mak
 """
 
 # ╔═╡ 48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
-plot(df_evt; x = :energy, kind = :histogram, nbinsx)
-
-# ╔═╡ dcb7e376-33ad-4279-96d5-004c3e6bc176
-md"""
-Move the slider below to update the number of bins used for the histogram:
-"""
-
-# ╔═╡ bd838bbc-d3a9-4d29-9073-db9ac947e585
-@bindname nbinsx Slider(15:100; default = 80, show_value = true)
+plot(df_evt; x = :energy, kind = :histogram, nbinsx = 80)
 
 # ╔═╡ b07413d3-7c29-4f9d-8be6-7bc5118e186d
 md"""
@@ -208,11 +188,19 @@ md"""
 """
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
-plot(df_evt; x = :x, y = :y, kind = :histogram2d, nbinsx = 100, nbinsy = 100)
+plot(df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
+	 x = :x,
+	 y = :y,
+	 kind = :histogram2d,
+	 nbinsx = 200,
+	 nbinsy = 200,
+	 zmin = 0,
+	 zmax = 200,
+)
 
 # ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
 md"""
-For more control over producing high quality plots, see our [Working with FITS images](/tutorials/fits-images) tutorial.
+For more control to produce publication-ready plots, see our [Working with FITS images](/tutorials/fits-images) tutorial.
 """
 
 # ╔═╡ 1f60ce5a-e909-44f2-867a-02be8a1ba37c
@@ -861,8 +849,6 @@ version = "17.5.0+2"
 # ╟─8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
 # ╟─4ea25424-5267-420c-acef-45a503582a3a
 # ╠═48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
-# ╟─dcb7e376-33ad-4279-96d5-004c3e6bc176
-# ╟─bd838bbc-d3a9-4d29-9073-db9ac947e585
 # ╟─b07413d3-7c29-4f9d-8be6-7bc5118e186d
 # ╟─66629892-ce42-44a9-9a36-6582545bda8e
 # ╠═6b9da9ae-29d5-41b3-a1a0-ff8232ba9d6d

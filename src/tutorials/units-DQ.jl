@@ -15,35 +15,23 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
 # ╔═╡ 4d03db22-f125-4f40-a7d1-149e44d36aea
-using DynamicQuantities
+using DynamicQuantities: @u_str, @us_str, dimension, ustrip
 
 # ╔═╡ 33aa1ce6-b0f2-4dcc-b30a-9410a365c0af
 using DynamicQuantities.Constants: pc, G
 
+# ╔═╡ 702a51d1-d040-4ee9-ae72-fc4f093133c9
+using StatsBase: mean
+
 # ╔═╡ 5f91f3fb-d959-46d4-af7c-6e5626f7295a
-using Distributions
+using Distributions: Normal
 
 # ╔═╡ f1607fa8-67a6-408b-82c0-b63e9e2531db
-using CairoMakie
-
-# ╔═╡ 27794941-295b-4b1b-b5fb-0fcb5b1c8c9d
-using Unitful: Unitful as U
+using CairoMakie: hist
 
 # ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
-using PlutoUI: TableOfContents, Slider, @bindname
+using PlutoUI: TableOfContents
 
 # ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b
 md"""
@@ -86,7 +74,10 @@ Reff = 29 * u"Constants.pc"
 29 * pc
 
 # ╔═╡ e215179a-6a7c-4764-a01a-1ab17aac01d0
-values(Reff)
+ustrip(Reff)
+
+# ╔═╡ 9b6e871f-0a49-4a24-a9b0-51e3008d6db4
+ustrip(pc, Reff)
 
 # ╔═╡ cecd879b-2d95-4150-8caf-c327165ddec6
 dimension(Reff)
@@ -147,14 +138,14 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 CairoMakie = "~0.15.6"
 Distributions = "~0.25.122"
 DynamicQuantities = "~1.10.0"
 PlutoUI = "~0.7.75"
-Unitful = "~1.25.1"
+StatsBase = "~0.34.8"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -163,7 +154,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "ed5fedf3b0fc621f96277ed07f64f7e4ea441074"
+project_hash = "5638ceb33c533f708cf33724059eba0b2f4bcafc"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1777,16 +1768,17 @@ version = "4.1.0+0"
 # ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
 # ╠═4d03db22-f125-4f40-a7d1-149e44d36aea
 # ╠═33aa1ce6-b0f2-4dcc-b30a-9410a365c0af
+# ╠═702a51d1-d040-4ee9-ae72-fc4f093133c9
 # ╟─60c89d86-942e-4c97-bd7a-ad2f792b1155
 # ╠═1d2293bd-a236-4b41-a9d7-9c27463b5062
 # ╠═97ab9725-a873-49f5-bda2-8da3983d95d7
 # ╠═e215179a-6a7c-4764-a01a-1ab17aac01d0
+# ╠═9b6e871f-0a49-4a24-a9b0-51e3008d6db4
 # ╠═cecd879b-2d95-4150-8caf-c327165ddec6
 # ╠═2c7a71f6-e618-40db-80b7-1ad5f09e59d5
 # ╟─c5b4f340-c774-4f09-af4c-f326afce5de3
 # ╠═5f91f3fb-d959-46d4-af7c-6e5626f7295a
 # ╠═f1607fa8-67a6-408b-82c0-b63e9e2531db
-# ╠═27794941-295b-4b1b-b5fb-0fcb5b1c8c9d
 # ╠═892f19a6-af21-4353-9987-9de795ba7ad7
 # ╠═808f338d-7faa-4d97-ad7b-a7b4066c83f8
 # ╠═b9264571-6acf-4bc9-bdd7-8a9a2528410e

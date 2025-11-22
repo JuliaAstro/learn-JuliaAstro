@@ -2,12 +2,12 @@
 # v0.20.21
 
 #> [frontmatter]
+#> order = 2
 #> title = "Working with FITS images"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-19"
 #> description = "View and manipulate data from FITS images."
 #> tags = ["FITS files", "file I/O", "images", "image processing", "plots", "histograms", "colorbars"]
-#> order = 2
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"
@@ -15,18 +15,6 @@
 
 using Markdown
 using InteractiveUtils
-
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
 
 # ╔═╡ 61c0bf34-302b-4732-a44d-4c2da611eb74
 begin
@@ -48,7 +36,7 @@ begin
 end
 
 # ╔═╡ cbc2c762-2e54-4cf7-b36a-e5f2af24e488
-using PlutoUI: TableOfContents, Slider, @bindname
+using PlutoUI: TableOfContents
 
 # ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
 md"""
