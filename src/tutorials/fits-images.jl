@@ -219,6 +219,8 @@ Additionally, note that we are working directly with the DataFrame object `df_ev
 !!! todo
 	Check if there is a way to not have to specifiy `log10` in two places.
 
+	Update: PR here <https://github.com/MakieOrg/AlgebraOfGraphics.jl/pull/700>
+
 !!! tip
 	See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
 
