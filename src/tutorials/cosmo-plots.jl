@@ -22,6 +22,7 @@ begin
 	
 	# Plotting
 	using CairoMakie:
+		Makie,
 		Axis,
 		Cycled,
 		lines,
@@ -30,9 +31,10 @@ begin
 		linkxaxes!,
 		axislegend
 	using LaTeXStrings: @L_str
+	using MathTeXEngine: set_texfont_family!, FontFamily
 	
 	# Units
-	using DynamicQuantities: @u_str
+	using DynamicQuantities: @u_str, @us_str
 end
 
 # ╔═╡ f74f122b-2320-45c2-a3e7-ae049f6a897d
@@ -96,12 +98,6 @@ h &= 0.7 \\
 # ╔═╡ 8d53ad6d-9a30-4593-b284-3d86e6137bed
 cosmo = cosmology(h = 0.7, OmegaM = 0.3, OmegaR = 0)
 
-# ╔═╡ 20d549be-006c-48df-8e80-1bec80d62b55
-md"""
-!!! todo
-	Add DQ unit support
-"""
-
 # ╔═╡ 9be9ec4c-8a13-46a5-aeec-e68c80e9eba1
 md"""
 ## Plot 
@@ -118,7 +114,13 @@ zvals = 0 : 0.1 : 6
 dist(c, zs) = [angular_diameter_dist(c, z) for z in  zs]
 
 # ╔═╡ 18433573-0bf7-469c-91f4-2f44c1e297a7
-d = dist(cosmo, zvals)
+d = [d.val for d in dist(cosmo, zvals)]u"Constants.Mpc"
+
+# ╔═╡ 20d549be-006c-48df-8e80-1bec80d62b55
+md"""
+!!! todo
+	Add DQ unit support. Currently unwrapping the default Unitful objects returned by Cosmology.jl and re-wrapping with DQ
+"""
 
 # ╔═╡ 3dbda400-cdb9-4037-b789-007bea80345b
 md"""
@@ -133,12 +135,16 @@ Plotting against `zvals`, we produce the following curve:
 
 # ╔═╡ 0ba60166-cbd1-4f10-9b2b-259b7837a796
 let
-	fig, ax, p = lines(zvals, d; color = Cycled(2))
-	
-	ax.xminorticksvisible = true
-	ax.xlabel = "Redshift"
-	ax.ylabel = "Angular diameter distance"
-	
+	fig, ax, p = lines(zvals, d;
+		color = Cycled(2),
+		axis = (
+			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+			xminorticksvisible = true,
+			xlabel = "Redshift",
+			ylabel = "Angular diameter distance",
+		),
+	)
+
 	fig
 end
 
@@ -156,11 +162,22 @@ It would be useful to see the corresponding universe ages at each redshift. Let'
 """
 
 # ╔═╡ b59c4990-31a4-4910-803d-67adf9a20836
-ages = [age(cosmo, z).val for z in zvals]
+ages = [age(cosmo, z).val for z in zvals] # Gyr
+
+# ╔═╡ f6d00cb6-8a7f-41d7-9f3c-a329e2c35d35
+md"""
+!!! todo
+	Same as above re: DQ support
+"""
 
 # ╔═╡ 5ff49cc2-35b1-463a-ad95-5934069f8420
 let
-	f, ax1, p = lines(zvals, d; color = Cycled(2))
+	f, ax1, p = lines(zvals, d;
+		color = Cycled(2),
+		axis = (
+			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+		),
+	)
 	
 	# Just show a few of the ages for clarity
 	n = 15
@@ -203,13 +220,16 @@ Finally, let's add a second cosmology for comparison. For this example, we will 
 cosmo_planck = cosmology(h = 0.6777, OmegaM = 0.30712)
 
 # ╔═╡ 9f01bb56-455c-45c2-98b2-20a38f141ebd
-d_planck = dist(cosmo_planck, zvals);
+d_planck = [d.val for d in dist(cosmo_planck, zvals)]u"Constants.Mpc";
 
 # ╔═╡ 5879e1c3-b6b0-4216-b00c-af0bf819ab47
 md"""
 !!! todo
 	See if we can upstream Chris's work <https://github.com/JuliaAstro/Cosmology.jl/issues/43#issuecomment-2790915234>
 """
+
+# ╔═╡ 1d595d4e-c3f0-4bb7-b454-aafc2cf7d048
+set_texfont_family!(FontFamily("TeXGyreHeros"))
 
 # ╔═╡ dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 fig = let
@@ -271,13 +291,15 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Cosmology = "76746363-e552-5dba-9a5a-cef6fa9cc5ab"
 DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-CairoMakie = "~0.15.6"
+CairoMakie = "~0.15.7"
 Cosmology = "~1.0.4"
 DynamicQuantities = "~1.10.0"
 LaTeXStrings = "~1.4.0"
+MathTeXEngine = "~0.6.7"
 PlutoUI = "~0.7.75"
 """
 
@@ -285,9 +307,9 @@ PlutoUI = "~0.7.75"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.1"
+julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "0c4679ae628719353d4abe1fa883818f1b95f7d1"
+project_hash = "48832eb87dc5aefa8e4452ae1a3a9fe0011b73ce"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -409,9 +431,9 @@ version = "1.1.1"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "f8caabc5a1c1fb88bcbf9bc4078e5656a477afd0"
+git-tree-sha1 = "1778fd03576b0b6f88d0eafe89c54a3fb8df96a3"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.15.6"
+version = "0.15.7"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -484,9 +506,9 @@ version = "1.3.0+1"
 
 [[deps.ComputePipeline]]
 deps = ["Observables", "Preferences"]
-git-tree-sha1 = "cb1299fee09da21e65ec88c1ff3a259f8d0b5802"
+git-tree-sha1 = "21f3ae106d1dcc20a66e96366012f7289ebba498"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
-version = "0.1.4"
+version = "0.1.5"
 
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
@@ -580,7 +602,7 @@ version = "0.9.5"
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-version = "1.6.0"
+version = "1.7.0"
 
 [[deps.DynamicQuantities]]
 deps = ["DispatchDoctor", "PrecompileTools", "TestItems", "Tricks"]
@@ -630,9 +652,9 @@ version = "0.1.6"
 
 [[deps.FFMPEG_jll]]
 deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
-git-tree-sha1 = "eaa040768ea663ca695d442be1bc97edfe6824f2"
+git-tree-sha1 = "3a948313e7a41eb1db7a1e733e6335f17b4ab3c4"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
-version = "6.1.3+0"
+version = "7.1.1+0"
 
 [[deps.FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "Libdl", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
@@ -659,10 +681,20 @@ version = "1.17.1"
     HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
-deps = ["FilePathsBase", "MacroTools", "Reexport", "Requires"]
-git-tree-sha1 = "919d9412dbf53a2e6fe74af62a73ceed0bce0629"
+deps = ["FilePathsBase", "MacroTools", "Reexport"]
+git-tree-sha1 = "a1b2fbfe98503f15b665ed45b3d149e5d8895e4c"
 uuid = "8fc22ac5-c921-52a6-82fd-178b2807b824"
-version = "0.8.3"
+version = "0.9.0"
+
+    [deps.FilePaths.extensions]
+    FilePathsGlobExt = "Glob"
+    FilePathsURIParserExt = "URIParser"
+    FilePathsURIsExt = "URIs"
+
+    [deps.FilePaths.weakdeps]
+    Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
+    URIParser = "30578b45-9adc-5946-b283-645ec420af67"
+    URIs = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
 
 [[deps.FilePathsBase]]
 deps = ["Compat", "Dates"]
@@ -1044,7 +1076,7 @@ version = "0.6.4"
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "8.11.1+1"
+version = "8.15.0+0"
 
 [[deps.LibGit2]]
 deps = ["LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
@@ -1144,9 +1176,13 @@ version = "0.5.16"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "ComputePipeline", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "PNGFiles", "Packing", "Pkg", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "368542cde25d381e44d84c3c4209764f05f4ef19"
+git-tree-sha1 = "7e6151c8432b91e76d9f9bc3adc6bbaecd00ec0a"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.24.6"
+version = "0.24.7"
+weakdeps = ["DynamicQuantities"]
+
+    [deps.Makie.extensions]
+    MakieDynamicQuantitiesExt = "DynamicQuantities"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1251,7 +1287,7 @@ version = "0.8.7+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.1+0"
+version = "3.5.4+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
@@ -1861,9 +1897,9 @@ version = "2.0.4+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "07b6a107d926093898e82b3b1db657ebe33134ec"
+git-tree-sha1 = "5cb3c5d039f880c0b3075803c8bf45cb95ae1e91"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.50+0"
+version = "1.6.51+0"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "libpng_jll"]
@@ -1895,9 +1931,9 @@ uuid = "1317d2d5-d96f-522e-a858-c73665f53c3e"
 version = "2022.0.0+1"
 
 [[deps.p7zip_jll]]
-deps = ["Artifacts", "Libdl"]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.5.0+2"
+version = "17.7.0+0"
 
 [[deps.x264_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1920,24 +1956,26 @@ version = "4.1.0+0"
 # ╟─6734b49a-5a4b-4654-9fd7-e94df8872e88
 # ╟─644f473e-3ca2-4727-b629-66ee83a4d9bf
 # ╠═8d53ad6d-9a30-4593-b284-3d86e6137bed
-# ╟─20d549be-006c-48df-8e80-1bec80d62b55
 # ╟─9be9ec4c-8a13-46a5-aeec-e68c80e9eba1
 # ╠═620d15bc-f613-431b-8e6e-d1dbe100d933
 # ╠═f476c3b2-0a30-46b4-a0f5-6a56c4512b72
 # ╠═18433573-0bf7-469c-91f4-2f44c1e297a7
+# ╟─20d549be-006c-48df-8e80-1bec80d62b55
 # ╟─3dbda400-cdb9-4037-b789-007bea80345b
 # ╟─c6c7ee1f-ea7c-47d3-bda4-77e87c83ad75
 # ╠═0ba60166-cbd1-4f10-9b2b-259b7837a796
 # ╟─b8a0440f-3da8-488e-a52f-b9cf98f977b2
 # ╟─0b7a66e1-75d1-4197-90ac-723420f276e0
 # ╠═b59c4990-31a4-4910-803d-67adf9a20836
-# ╟─5ff49cc2-35b1-463a-ad95-5934069f8420
+# ╟─f6d00cb6-8a7f-41d7-9f3c-a329e2c35d35
+# ╠═5ff49cc2-35b1-463a-ad95-5934069f8420
 # ╟─dd63c9c9-50e9-4d7b-86e3-8874134d502b
 # ╟─4d29f960-6f15-4d18-aa17-e80be8a2770a
 # ╠═8a54c1e4-abca-4da6-a738-0b2d0d2ac3da
 # ╠═9f01bb56-455c-45c2-98b2-20a38f141ebd
 # ╟─5879e1c3-b6b0-4216-b00c-af0bf819ab47
-# ╟─dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
+# ╠═1d595d4e-c3f0-4bb7-b454-aafc2cf7d048
+# ╠═dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 # ╟─d7d4e075-0445-46c2-b88e-56a3f1df0bba
 # ╟─6afad2fa-0555-400a-9de7-e341e5956955
 # ╠═f74f122b-2320-45c2-a3e7-ae049f6a897d
