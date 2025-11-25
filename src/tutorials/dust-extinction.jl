@@ -1,6 +1,17 @@
 ### A Pluto.jl notebook ###
 # v0.20.21
 
+#> [frontmatter]
+#> title = "Dust Extinction"
+#> layout = "layout.jlhtml"
+#> date = "2025-11-25"
+#> description = "Analyzing dust extinction."
+#> tags = ["dust", "dust extinction", "units", "photometry", "extinction", "physics", "observational astronomy"]
+#> 
+#>     [[frontmatter.author]]
+#>     name = "Ian Weaver"
+#>     url = "https://github.com/icweaver"
+
 using Markdown
 using InteractiveUtils
 
@@ -24,6 +35,44 @@ begin
 	using DynamicQuantities: @u_str, @us_str, @register_unit
 	using DynamicQuantities.Constants: c as c0
 end
+
+# ╔═╡ f18df5a0-1dda-4371-aea6-8ecbce67908c
+md"""
+# Dust Extinction
+
+*Authors: Ian Weaver*
+
+This notebook is modified from <https://learn.astropy.org/tutorials/color-excess.html>
+
+!!! tip ""
+	## Learning Goals
+	
+	* Investigate extinction curve shapes
+
+	* Deredden spectral energy distributions and spectra
+
+	* Calculate photometric extinction and reddening
+
+	* Calculate synthetic photometry for a dust-reddened star
+
+	* Convert from frequency to wavelength
+
+
+!!! note ""
+	## Keywords
+
+	dust, dust extinction, units, photometry, extinction, physics, observational astronomy
+
+!!! warning ""
+	## Summary
+
+	
+"""
+
+# ╔═╡ 2c3cabef-29fd-41cf-b3df-94f58748c22b
+md"""
+### Imports
+"""
 
 # ╔═╡ 4186c057-a8e2-4e01-9878-4da86d49da14
 set_texfont_family!(FontFamily("TeXGyreHeros"))
@@ -1885,6 +1934,8 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─f18df5a0-1dda-4371-aea6-8ecbce67908c
+# ╠═2c3cabef-29fd-41cf-b3df-94f58748c22b
 # ╠═b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 # ╠═3ca87df9-44c8-4358-8843-f0ee740bc81a
 # ╠═6ff62c82-faa1-4e91-984f-7193509fb9fc
