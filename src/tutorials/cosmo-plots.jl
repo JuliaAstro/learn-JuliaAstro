@@ -37,6 +37,9 @@ begin
 	using DynamicQuantities: @u_str, @us_str
 end
 
+# ╔═╡ c55bed4a-131e-4e59-9e15-4233fef762f6
+using Unitful: Unitful as U
+
 # ╔═╡ f74f122b-2320-45c2-a3e7-ae049f6a897d
 using PlutoUI: TableOfContents
 
@@ -112,6 +115,9 @@ zvals = 0 : 0.1 : 6
 
 # ╔═╡ f476c3b2-0a30-46b4-a0f5-6a56c4512b72
 dist(c, zs) = [angular_diameter_dist(c, z) for z in  zs]
+
+# ╔═╡ 211941e5-74e6-4c8d-8f1d-3cd7564edcb7
+angular_diameter_dist(U.u"km", cosmo, .3)
 
 # ╔═╡ 18433573-0bf7-469c-91f4-2f44c1e297a7
 d = [d.val for d in dist(cosmo, zvals)]u"Constants.Mpc"
@@ -220,7 +226,7 @@ Finally, let's add a second cosmology for comparison. For this example, we will 
 cosmo_planck = cosmology(h = 0.6777, OmegaM = 0.30712)
 
 # ╔═╡ 9f01bb56-455c-45c2-98b2-20a38f141ebd
-d_planck = [d.val for d in dist(cosmo_planck, zvals)]u"Constants.Mpc";
+d_planck = [d.val for d in dist(cosmo_planck, zvals)]u"Constants.Mpc"
 
 # ╔═╡ 5879e1c3-b6b0-4216-b00c-af0bf819ab47
 md"""
@@ -229,23 +235,29 @@ md"""
 """
 
 # ╔═╡ 1d595d4e-c3f0-4bb7-b454-aafc2cf7d048
+# Set LaTeX font used
 set_texfont_family!(FontFamily("TeXGyreHeros"))
 
 # ╔═╡ dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 fig = let
-	f, ax1, p = lines(zvals, d_planck; label = "Planck 2013")
-	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
+	# Plank 2013
+	f, ax1, p = lines(zvals, d_planck;
+		label = "Planck 2013",
+		axis = (;
+			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+			xlabel = "Redshift",
+			ylabel = "Angular diameter distance",
+		)
+	)
 
+	# Default model
+	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
 	n = 15
 	ax2 = Axis(f[1, 1];
 		xaxisposition = :top,
 		xticks = zvals[begin:n:end],
 		xtickformat = x -> string.(round.((ages[begin:n:end]); digits = 2))
 	)
-
-	# Labels
-	ax1.xlabel = "Redshift"
-	ax1.ylabel = "Angular diameter distance"
 	ax2.xlabel = "Time since Big Bang (Gyr)"
 
 	# Grid lines + ticks
@@ -253,11 +265,12 @@ fig = let
 	ax1.xgridvisible = false
 	ax2.xgridvisible = false
 	hideydecorations!(ax2)
-
 	linkxaxes!(ax1, ax2)
 
+	# Legend
 	axislegend(ax1; position = :rb)
 
+	# Display
 	f
 end
 
@@ -293,6 +306,7 @@ DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 CairoMakie = "~0.15.7"
@@ -301,6 +315,7 @@ DynamicQuantities = "~1.10.0"
 LaTeXStrings = "~1.4.0"
 MathTeXEngine = "~0.6.7"
 PlutoUI = "~0.7.75"
+Unitful = "~1.25.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -309,7 +324,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "48832eb87dc5aefa8e4452ae1a3a9fe0011b73ce"
+project_hash = "7997543fd015c6417572541f2012bb23f079f831"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1959,6 +1974,8 @@ version = "4.1.0+0"
 # ╟─9be9ec4c-8a13-46a5-aeec-e68c80e9eba1
 # ╠═620d15bc-f613-431b-8e6e-d1dbe100d933
 # ╠═f476c3b2-0a30-46b4-a0f5-6a56c4512b72
+# ╠═c55bed4a-131e-4e59-9e15-4233fef762f6
+# ╠═211941e5-74e6-4c8d-8f1d-3cd7564edcb7
 # ╠═18433573-0bf7-469c-91f4-2f44c1e297a7
 # ╟─20d549be-006c-48df-8e80-1bec80d62b55
 # ╟─3dbda400-cdb9-4037-b789-007bea80345b
