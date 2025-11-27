@@ -16,43 +16,33 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ b6b27fe2-c7f7-11f0-8b42-052bc2026e99
-using DustExtinction, CairoMakie
-
-# ╔═╡ 3ca87df9-44c8-4358-8843-f0ee740bc81a
-using CairoMakie: Figure, Axis, axislegend, lines, lines!
-
-# ╔═╡ 6ff62c82-faa1-4e91-984f-7193509fb9fc
-using Unitful: Unitful as U
-
-# ╔═╡ 672a3685-7e2b-451d-8157-0b41d3f7d441
-using LaTeXStrings: @L_str
-
-# ╔═╡ 7821b1da-1a9b-41a3-982e-ebc53493af4e
-using MathTeXEngine: set_texfont_family!, FontFamily
-
-# ╔═╡ 0cfa75e0-b28b-4cfe-93ef-9baa2c651479
-using DataFramesMeta: DataFrame
-
-# ╔═╡ 14d91ab5-72a5-4358-9172-f55bb5f29539
-using VirtualObservatory
-
-# ╔═╡ 52e3971c-5087-4c56-90a4-7dbb75212fe8
-using DataFramesMeta: @rsubset
-
-# ╔═╡ e4008116-914e-40e8-8ae9-d5ea8e6ddf9c
-using Downloads: download
-
-# ╔═╡ 323bc4f5-a804-4546-833f-4ecf568d6da8
-using CodecZlib
-
-# ╔═╡ 668e073a-651e-4de7-8628-5d76618f0791
-using FITSFiles: fits
-
-# ╔═╡ 8eb4f219-1947-4fc2-971c-ffa4c1d6d924
 begin
-	using DynamicQuantities: @u_str, @us_str, @register_unit
+	# Analysis
+	using DustExtinction
+	
+	# Data handling
+	using DataFramesMeta: DataFrame, @rsubset
+	using VirtualObservatory: execute, TAPService
+	using FITSFiles: fits, info
+	using Downloads: download
+	using CodecZlib: GzipDecompressor
+	
+	# Units
+	using Unitful: Unitful as U
+	using DynamicQuantities: DynamicQuantities, @u_str, @us_str
 	using DynamicQuantities.Constants: c as c0
-end
+
+	# Plots
+	using Makie: DQConversion
+	using CairoMakie: Figure, Axis, axislegend, lines, lines!, scatter!, ylims!
+	using LaTeXStrings: @L_str
+	using MathTeXEngine: set_texfont_family!, FontFamily
+	set_texfont_family!(FontFamily("TeXGyreHeros"))
+end;
+
+# ╔═╡ 89366506-4854-4859-b109-2d6cd9456bb5
+# Upstreaming to DynamicQuantities.jl
+using DynamicQuantities: @register_unit
 
 # ╔═╡ 95d05163-b6d2-4a01-a782-6da05479ee0a
 using PlutoUI: TableOfContents
@@ -95,16 +85,17 @@ md"""
 ### Imports
 """
 
-# ╔═╡ 4186c057-a8e2-4e01-9878-4da86d49da14
-set_texfont_family!(FontFamily("TeXGyreHeros"))
+# ╔═╡ 555cf1bd-5b52-4d26-aaa2-033a9f4d831a
+begin
+	@register_unit erg exp10(-7) * u"J"
+	@register_unit Å exp10(-10) * u"m"
+	@register_unit Jy exp10(-26) * u"W/m^2/Hz"
+end
 
 # ╔═╡ f3bf7784-b2da-4ed6-9cb5-0799d81d65ae
 md"""
 ## Example 1: Investigate Extinction Models
 """
-
-# ╔═╡ 23ce0173-b939-4157-8d67-63e8f1383ddc
-CCM89(Rv=2)(2_000)
 
 # ╔═╡ 0250218a-6670-483f-8122-045ca65d28e4
 wav = (0.1 : 0.001 : 3.0) * U.u"μm"
@@ -139,14 +130,9 @@ md"""
 ## Example 2: Deredden a spectrum
 """
 
-# ╔═╡ 83d744c0-56cf-4c43-b67e-672f820067fd
-md"""
-### Query
-"""
-
 # ╔═╡ 01195fc5-9ab9-4b9d-a4f9-a23f41bc6f2a
 md"""
-#### MAST IUE Spectrum
+### MAST IUE Spectrum
 
 !!! note
 	For more on querying MAST's TAP service, see: <https://mast.stsci.edu/vo-tap/>
@@ -167,11 +153,22 @@ df_spectra = execute(
 	 """
 ) |> DataFrame
 
+# ╔═╡ 70cefdd5-4afb-4e09-b2df-75983bb40e85
+md"""
+Let's look at a spectrum from `lwr05639`:
+"""
+
 # ╔═╡ 285b4bc6-9689-4995-8e8e-dc6acfbd7f81
-@rsubset df_spectra :obs_id == "lwr05639"
+@rsubset df_spectra :obs_id == "lwr05639" && :access_format == "image/fits"
+
+# ╔═╡ 207bfd62-2332-413d-8034-15d9927ea57e
+md"""
+Which we can download, uncompress, and load the fits file from the `access_url` provided in the table above. Let's do this for one of the spectra entries:
+"""
 
 # ╔═╡ dfb6b2d7-efcb-4505-9f69-d51eafb7db9f
-url = "https://mast.stsci.edu/portal/Download/file?uri=http://archive.stsci.edu/pub/iue/data/lwr/05000/lwr05639.mxlo.gz"
+# Download
+fpath = download("http://archive.stsci.edu/pub/iue/data/lwr/05000/lwr05639.mxlo.gz")
 
 # ╔═╡ 85b04476-2ce0-49dd-9bef-8f62c819e021
 function decompress_gz_to_iobuffer(filepath::String)
@@ -186,86 +183,117 @@ function decompress_gz_to_iobuffer(filepath::String)
     return io
 end
 
-# ╔═╡ cb141f6a-c9f6-42c9-a0e0-ff4eda4b52d7
-function download_mast(url)
-	s = (download ∘ string ∘ last ∘ split)(url, "uri=")
-end
-
 # ╔═╡ c4bc9abf-d0c8-4e5c-9c76-96b36c1f68f5
-io = decompress_gz_to_iobuffer(download_mast(url))
+# Uncompress
+io = decompress_gz_to_iobuffer(fpath)
+
+# ╔═╡ 216027cd-7737-4056-9abc-d71c899f7568
+md"""
+!!! todo
+	Should something like this be moved to FITSFiles.jl?
+"""
 
 # ╔═╡ 03d97df3-1498-4c32-b33f-d7e8e7f26751
-hdu = fits(io)
+# Load
+hdus = fits(io)
+
+# ╔═╡ 904a9095-e2a2-4c3e-8070-719033a5c6b3
+md"""
+Taking a look, we see that we have the following HDUs:
+"""
+
+# ╔═╡ 466af93a-14ac-4461-ab1e-855209ce0b43
+info(hdus)
+
+# ╔═╡ 207dca91-36b1-48fa-b917-918e6a1edebd
+md"""
+Let's load in the table from the second HDU:
+"""
 
 # ╔═╡ 5759aefa-2e5f-4f96-afa7-897f5171082f
-t = hdu[2]
+t = hdus[2]
 
 # ╔═╡ 3e55d0af-a930-40da-b5ea-b822ce01140d
 t.data
 
+# ╔═╡ f97b20a0-235b-4efe-aad0-75733290dc0a
+md"""
+and store the wavelength and flux information into `wave_spectrum` and `flux_spectrum`, respectively:
+"""
+
 # ╔═╡ ccb3ce4f-731e-433b-9479-773aa97ac0ce
-UVflux = vec(t.data.FLUX)u"erg/s/Å/cm^2"
+flux_spectrum = vec(t.data.FLUX)u"erg/s/Å/cm^2"
 
 # ╔═╡ a4f58423-a263-4308-9074-85a46738c497
-wav_UV = range(;
+wav_spectrum = range(;
 	start = first(t.data.WAVELENGTH),
 	step = first(t.data.DELTAW),
-	length = length(UVflux),
+	length = length(flux_spectrum),
 )u"Å"
+
+# ╔═╡ e92c118e-7547-4fbe-8a6b-9487beb99ff9
+md"""
+We turn next to loading in some corresponding photometry.
+"""
 
 # ╔═╡ 37f294a1-448d-478b-a593-bfeabb1c84f6
 md"""
-#### SIMBAD Photometry
+### SIMBAD Photometry
+
+See here for more <https://simbad.cds.unistra.fr/simbad/sim-tap/>
 """
 
 # ╔═╡ a439386d-2b9b-44e8-9c41-cb2ec787024e
 phot_simbad = execute(
 	 TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
-	 """
-	SELECT U, B, V from allfluxes
-	JOIN ident USING(oidref)
-	WHERE id = 'HD 147933'
-	 """
+	"""
+	select U, B, V from allfluxes
+	join ident using(oidref)
+	where id = 'HD 147933'
+	"""
 )
 
 # ╔═╡ 39eb85ea-9eac-4c5b-91a8-9252418dfc33
 Umag, Bmag, Vmag = first(phot_simbad)
 
-# ╔═╡ f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
+# ╔═╡ 1fac575d-9ff7-4fda-bae9-7dba874396fc
 md"""
-##### Unit equivalencies
+We next turn to converting these magnitudes to flux so that they can be plotted on the same scale as our spectrum.
 """
 
 # ╔═╡ 844446f9-88e1-468f-bcf2-ad638aaeb844
-wav_simbad = wav_U, wav_B, wav_V = [0.3660, 0.4400, 0.5530] .* u"μm"
+# Central wavelengths
+wav_phot = wav_U, wav_B, wav_V = [0.3660, 0.4400, 0.5530] .* u"μm"
 
 # ╔═╡ 101318a4-4bd2-4253-9e88-a814cbb6578b
-zeroflux_U_nu, zeroflux_B_nu, zeroflux_V_nu = (1.81e-23, 4.26e-23, 3.64e-23) .* u"W/m^2/Hz"
+# Zero-points flux in frequency space
+flux_U0_nu, flux_B0_nu, flux_V0_nu = (1.81e-23, 4.26e-23, 3.64e-23) .* u"W/m^2/Hz"
 
 # ╔═╡ df87135d-59cb-4a2f-be9f-f76c4203c645
 md"""
 !!! note
-	Zero-points from <https://ned.ipac.caltech.edu/help/photoband.lst>
+	More photometric definitions here: <https://ned.ipac.caltech.edu/help/photoband.lst>
 """
 
 # ╔═╡ 36f69f11-10d8-4d42-b587-2b885f497973
 to_Flam(Fnu, wav_cen) = Fnu * (c0 / wav_cen^2)
 
 # ╔═╡ 4ee58446-1563-44c8-b31f-6f9c3722f707
-zeroflux_U, zeroflux_B, zeroflux_V = (
-	to_Flam(zeroflux_U_nu, wav_U),
-	to_Flam(zeroflux_B_nu, wav_B),
-	to_Flam(zeroflux_V_nu, wav_V),
+# Zero-point flux in wavelength space
+flux_U0, flux_B0, flux_V0 = (
+	to_Flam(flux_U0_nu, wav_U),
+	to_Flam(flux_B0_nu, wav_B),
+	to_Flam(flux_V0_nu, wav_V),
 );
 
 # ╔═╡ 855cfb7b-5e66-415c-9d48-f66b38e835ff
 to_flux(flux_0, mag) = flux_0 * exp10(-0.4 * mag)
 
 # ╔═╡ 1c4d9d17-ab51-4ecc-9caf-c068ffc65fd2
-flux_simbad = [
-	to_flux(zeroflux_U, Umag),
-	to_flux(zeroflux_B, Bmag),
-	to_flux(zeroflux_V, Vmag),
+flux_phot = [
+	to_flux(flux_U0, Umag),
+	to_flux(flux_B0, Bmag),
+	to_flux(flux_V0, Vmag),
 ]
 
 # ╔═╡ e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
@@ -274,12 +302,12 @@ md"""
 """
 
 # ╔═╡ 84386f76-3972-4985-9dc4-05501bbc5f41
-let
+begin
 	# Spectrum
-	fig, ax, p = lines(wav_UV, UVflux;
+	fig, ax, p = lines(wav_spectrum, flux_spectrum;
 		axis = (;
-			dim1_conversion = Makie.DQConversion(us"Å"),
-			dim2_conversion = Makie.DQConversion(us"erg/s/Å/cm^2"),
+			dim1_conversion = DQConversion(us"Å"),
+			dim2_conversion = DQConversion(us"erg/s/Å/cm^2"),
 			xlabel = "Wavelength",
 			ylabel = "Flux",
 			title = "ρ Oph",
@@ -289,9 +317,9 @@ let
 	)
 
 	# Photometry
-	scatter!(ax, wav_simbad, flux_simbad; label = "U, B, V")
+	scatter!(ax, wav_phot, flux_phot; label = "U, B, V")
 
-	# Visuals
+	# Legend and axis limits
 	axislegend()
 	ylims!(ax, (0u"erg/s/Å/cm^2", (3e-10)u"erg/s/Å/cm^2"))
 	fig
@@ -300,21 +328,6 @@ end
 # ╔═╡ 8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
 md"""
 # Notebook setup 🔧
-"""
-
-# ╔═╡ adf1ffc4-9a8c-4f05-83ec-a157e5549a83
-@register_unit erg exp10(-7) * u"J"
-
-# ╔═╡ b0bc7a9f-02a0-401b-bc1d-0260177afc82
-@register_unit Å exp10(-10) * u"m"
-
-# ╔═╡ f247d94f-43a1-45ab-ad22-11f3f81a657e
-@register_unit Jy exp10(-26) * u"W/m^2/Hz"
-
-# ╔═╡ e30cd82e-7248-45d1-bdf0-5483b2ca780d
-md"""
-!!! todo
-	Upstreaming <https://github.com/JuliaPhysics/DynamicQuantities.jl/pull/196>
 """
 
 # ╔═╡ 8e118239-43e0-427c-bdf1-80c9d5fe130c
@@ -331,6 +344,7 @@ DustExtinction = "fb44c06c-c62f-5397-83f5-69249e0a3c8e"
 DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
@@ -344,6 +358,7 @@ DustExtinction = "~0.11.5"
 DynamicQuantities = "~1.10.0"
 FITSFiles = "~0.2.0"
 LaTeXStrings = "~1.4.0"
+Makie = "~0.24.7"
 MathTeXEngine = "~0.6.7"
 PlutoUI = "~0.7.75"
 Unitful = "~1.25.1"
@@ -356,7 +371,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "d354e4066c1a25c2b962591e82c9a24459ee1131"
+project_hash = "30583adfd34f4e8ee51c61f88f0a8b461c7b2b6c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2529,39 +2544,35 @@ version = "4.1.0+0"
 # ╟─f18df5a0-1dda-4371-aea6-8ecbce67908c
 # ╟─2c3cabef-29fd-41cf-b3df-94f58748c22b
 # ╠═b6b27fe2-c7f7-11f0-8b42-052bc2026e99
-# ╠═3ca87df9-44c8-4358-8843-f0ee740bc81a
-# ╠═6ff62c82-faa1-4e91-984f-7193509fb9fc
-# ╠═672a3685-7e2b-451d-8157-0b41d3f7d441
-# ╠═7821b1da-1a9b-41a3-982e-ebc53493af4e
-# ╠═0cfa75e0-b28b-4cfe-93ef-9baa2c651479
-# ╠═4186c057-a8e2-4e01-9878-4da86d49da14
+# ╠═89366506-4854-4859-b109-2d6cd9456bb5
+# ╠═555cf1bd-5b52-4d26-aaa2-033a9f4d831a
 # ╟─f3bf7784-b2da-4ed6-9cb5-0799d81d65ae
-# ╠═23ce0173-b939-4157-8d67-63e8f1383ddc
 # ╠═0250218a-6670-483f-8122-045ca65d28e4
 # ╠═eb1c1b16-c391-45a5-81c2-5fd3dbb12c50
 # ╟─943661a3-3b40-4c01-a624-79726e56b385
-# ╟─83d744c0-56cf-4c43-b67e-672f820067fd
-# ╠═14d91ab5-72a5-4358-9172-f55bb5f29539
 # ╟─01195fc5-9ab9-4b9d-a4f9-a23f41bc6f2a
 # ╠═d57bbe7f-b21a-479a-8249-a96d6aac3e95
-# ╠═52e3971c-5087-4c56-90a4-7dbb75212fe8
+# ╟─70cefdd5-4afb-4e09-b2df-75983bb40e85
 # ╠═285b4bc6-9689-4995-8e8e-dc6acfbd7f81
-# ╠═e4008116-914e-40e8-8ae9-d5ea8e6ddf9c
+# ╟─207bfd62-2332-413d-8034-15d9927ea57e
 # ╠═dfb6b2d7-efcb-4505-9f69-d51eafb7db9f
-# ╠═323bc4f5-a804-4546-833f-4ecf568d6da8
 # ╠═c4bc9abf-d0c8-4e5c-9c76-96b36c1f68f5
-# ╠═85b04476-2ce0-49dd-9bef-8f62c819e021
-# ╠═668e073a-651e-4de7-8628-5d76618f0791
+# ╟─85b04476-2ce0-49dd-9bef-8f62c819e021
+# ╟─216027cd-7737-4056-9abc-d71c899f7568
 # ╠═03d97df3-1498-4c32-b33f-d7e8e7f26751
+# ╟─904a9095-e2a2-4c3e-8070-719033a5c6b3
+# ╠═466af93a-14ac-4461-ab1e-855209ce0b43
+# ╟─207dca91-36b1-48fa-b917-918e6a1edebd
 # ╠═5759aefa-2e5f-4f96-afa7-897f5171082f
 # ╠═3e55d0af-a930-40da-b5ea-b822ce01140d
+# ╠═f97b20a0-235b-4efe-aad0-75733290dc0a
 # ╠═ccb3ce4f-731e-433b-9479-773aa97ac0ce
 # ╠═a4f58423-a263-4308-9074-85a46738c497
-# ╠═cb141f6a-c9f6-42c9-a0e0-ff4eda4b52d7
+# ╟─e92c118e-7547-4fbe-8a6b-9487beb99ff9
 # ╟─37f294a1-448d-478b-a593-bfeabb1c84f6
 # ╠═a439386d-2b9b-44e8-9c41-cb2ec787024e
 # ╠═39eb85ea-9eac-4c5b-91a8-9252418dfc33
-# ╟─f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
+# ╟─1fac575d-9ff7-4fda-bae9-7dba874396fc
 # ╠═844446f9-88e1-468f-bcf2-ad638aaeb844
 # ╠═101318a4-4bd2-4253-9e88-a814cbb6578b
 # ╟─df87135d-59cb-4a2f-be9f-f76c4203c645
@@ -2571,12 +2582,7 @@ version = "4.1.0+0"
 # ╠═855cfb7b-5e66-415c-9d48-f66b38e835ff
 # ╟─e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
 # ╠═84386f76-3972-4985-9dc4-05501bbc5f41
-# ╠═8eb4f219-1947-4fc2-971c-ffa4c1d6d924
 # ╟─8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
-# ╠═adf1ffc4-9a8c-4f05-83ec-a157e5549a83
-# ╠═b0bc7a9f-02a0-401b-bc1d-0260177afc82
-# ╠═f247d94f-43a1-45ab-ad22-11f3f81a657e
-# ╟─e30cd82e-7248-45d1-bdf0-5483b2ca780d
 # ╠═95d05163-b6d2-4a01-a782-6da05479ee0a
 # ╠═8e118239-43e0-427c-bdf1-80c9d5fe130c
 # ╟─00000000-0000-0000-0000-000000000001
