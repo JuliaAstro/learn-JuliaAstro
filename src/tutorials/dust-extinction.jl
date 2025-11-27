@@ -142,8 +142,14 @@ md"""
 # ╔═╡ 83d744c0-56cf-4c43-b67e-672f820067fd
 md"""
 ### Query
+"""
 
-For more on querying MAST's TAP service, see: <https://mast.stsci.edu/vo-tap/>
+# ╔═╡ 01195fc5-9ab9-4b9d-a4f9-a23f41bc6f2a
+md"""
+#### MAST IUE Spectrum
+
+!!! note
+	For more on querying MAST's TAP service, see: <https://mast.stsci.edu/vo-tap/>
 """
 
 # ╔═╡ d57bbe7f-b21a-479a-8249-a96d6aac3e95
@@ -207,14 +213,93 @@ wav_UV = range(;
 	length = length(UVflux),
 )u"Å"
 
+# ╔═╡ 37f294a1-448d-478b-a593-bfeabb1c84f6
+md"""
+#### SIMBAD Photometry
+"""
+
+# ╔═╡ a439386d-2b9b-44e8-9c41-cb2ec787024e
+phot_simbad = execute(
+	 TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
+	 """
+	SELECT U, B, V from allfluxes
+	JOIN ident USING(oidref)
+	WHERE id = 'HD 147933'
+	 """
+)
+
+# ╔═╡ 39eb85ea-9eac-4c5b-91a8-9252418dfc33
+Umag, Bmag, Vmag = first(phot_simbad)
+
+# ╔═╡ f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
+md"""
+##### Unit equivalencies
+"""
+
+# ╔═╡ 844446f9-88e1-468f-bcf2-ad638aaeb844
+wav_simbad = wav_U, wav_B, wav_V = [0.3660, 0.4400, 0.5530] .* u"μm"
+
+# ╔═╡ 101318a4-4bd2-4253-9e88-a814cbb6578b
+zeroflux_U_nu, zeroflux_B_nu, zeroflux_V_nu = (1.81e-23, 4.26e-23, 3.64e-23) .* u"W/m^2/Hz"
+
+# ╔═╡ df87135d-59cb-4a2f-be9f-f76c4203c645
+md"""
+!!! note
+	Zero-points from <https://ned.ipac.caltech.edu/help/photoband.lst>
+"""
+
+# ╔═╡ 36f69f11-10d8-4d42-b587-2b885f497973
+to_Flam(Fnu, wav_cen) = Fnu * (c0 / wav_cen^2)
+
+# ╔═╡ 4ee58446-1563-44c8-b31f-6f9c3722f707
+zeroflux_U, zeroflux_B, zeroflux_V = (
+	to_Flam(zeroflux_U_nu, wav_U),
+	to_Flam(zeroflux_B_nu, wav_B),
+	to_Flam(zeroflux_V_nu, wav_V),
+);
+
+# ╔═╡ 855cfb7b-5e66-415c-9d48-f66b38e835ff
+to_flux(flux_0, mag) = flux_0 * exp10(-0.4 * mag)
+
+# ╔═╡ 1c4d9d17-ab51-4ecc-9caf-c068ffc65fd2
+flux_simbad = [
+	to_flux(zeroflux_U, Umag),
+	to_flux(zeroflux_B, Bmag),
+	to_flux(zeroflux_V, Vmag),
+]
+
 # ╔═╡ e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
 md"""
 ### Plot
 """
 
-# ╔═╡ f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
+# ╔═╡ 84386f76-3972-4985-9dc4-05501bbc5f41
+let
+	# Spectrum
+	fig, ax, p = lines(wav_UV, UVflux;
+		axis = (;
+			dim1_conversion = Makie.DQConversion(us"Å"),
+			dim2_conversion = Makie.DQConversion(us"erg/s/Å/cm^2"),
+			xlabel = "Wavelength",
+			ylabel = "Flux",
+			title = "ρ Oph",
+		),
+		color = :magenta,
+		label = "UV",
+	)
+
+	# Photometry
+	scatter!(ax, wav_simbad, flux_simbad; label = "U, B, V")
+
+	# Visuals
+	axislegend()
+	ylims!(ax, (0u"erg/s/Å/cm^2", (3e-10)u"erg/s/Å/cm^2"))
+	fig
+end
+
+# ╔═╡ 8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
 md"""
-#### Unit equivalencies
+# Notebook setup 🔧
 """
 
 # ╔═╡ adf1ffc4-9a8c-4f05-83ec-a157e5549a83
@@ -226,37 +311,14 @@ md"""
 # ╔═╡ f247d94f-43a1-45ab-ad22-11f3f81a657e
 @register_unit Jy exp10(-26) * u"W/m^2/Hz"
 
-# ╔═╡ 844446f9-88e1-468f-bcf2-ad638aaeb844
-wav_U = 0.3660u"μm"
-
-# ╔═╡ 101318a4-4bd2-4253-9e88-a814cbb6578b
-zeroflux_U_nu = 1.81e-23u"W/m^2/Hz"
-
-# ╔═╡ 4ee58446-1563-44c8-b31f-6f9c3722f707
-zeroflux_U = zeroflux_U_nu * (c0 / wav_U^2) |> us"erg/Å/s/cm^2"
-
-# ╔═╡ 84386f76-3972-4985-9dc4-05501bbc5f41
-let
-	fig, ax, p = lines(wav_UV, UVflux;
-		axis = (;
-			dim1_conversion = Makie.DQConversion(us"Å"),
-			dim2_conversion = Makie.DQConversion(us"erg/s/Å/cm^2"),
-			xlabel = "Wavelength",
-			ylabel = "Flux",
-			title = "ρ Oph",
-		),
-	)
-	ylims!(ax, (0u"erg/s/Å/cm^2", (3e-10)u"erg/s/Å/cm^2"))
-	fig
-end
-
-# ╔═╡ 8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
+# ╔═╡ e30cd82e-7248-45d1-bdf0-5483b2ca780d
 md"""
-# Notebook setup 🔧
+!!! todo
+	Upstreaming <https://github.com/JuliaPhysics/DynamicQuantities.jl/pull/196>
 """
 
 # ╔═╡ 8e118239-43e0-427c-bdf1-80c9d5fe130c
-TableOfContents()
+TableOfContents(; depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2465,7 +2527,7 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─f18df5a0-1dda-4371-aea6-8ecbce67908c
-# ╠═2c3cabef-29fd-41cf-b3df-94f58748c22b
+# ╟─2c3cabef-29fd-41cf-b3df-94f58748c22b
 # ╠═b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 # ╠═3ca87df9-44c8-4358-8843-f0ee740bc81a
 # ╠═6ff62c82-faa1-4e91-984f-7193509fb9fc
@@ -2480,6 +2542,7 @@ version = "4.1.0+0"
 # ╟─943661a3-3b40-4c01-a624-79726e56b385
 # ╟─83d744c0-56cf-4c43-b67e-672f820067fd
 # ╠═14d91ab5-72a5-4358-9172-f55bb5f29539
+# ╟─01195fc5-9ab9-4b9d-a4f9-a23f41bc6f2a
 # ╠═d57bbe7f-b21a-479a-8249-a96d6aac3e95
 # ╠═52e3971c-5087-4c56-90a4-7dbb75212fe8
 # ╠═285b4bc6-9689-4995-8e8e-dc6acfbd7f81
@@ -2495,17 +2558,25 @@ version = "4.1.0+0"
 # ╠═ccb3ce4f-731e-433b-9479-773aa97ac0ce
 # ╠═a4f58423-a263-4308-9074-85a46738c497
 # ╠═cb141f6a-c9f6-42c9-a0e0-ff4eda4b52d7
-# ╟─e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
-# ╠═f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
-# ╠═adf1ffc4-9a8c-4f05-83ec-a157e5549a83
-# ╠═b0bc7a9f-02a0-401b-bc1d-0260177afc82
-# ╠═f247d94f-43a1-45ab-ad22-11f3f81a657e
+# ╟─37f294a1-448d-478b-a593-bfeabb1c84f6
+# ╠═a439386d-2b9b-44e8-9c41-cb2ec787024e
+# ╠═39eb85ea-9eac-4c5b-91a8-9252418dfc33
+# ╟─f27ea6ef-3edc-4aa7-90c5-47141bd82c1e
 # ╠═844446f9-88e1-468f-bcf2-ad638aaeb844
 # ╠═101318a4-4bd2-4253-9e88-a814cbb6578b
+# ╟─df87135d-59cb-4a2f-be9f-f76c4203c645
 # ╠═4ee58446-1563-44c8-b31f-6f9c3722f707
+# ╠═1c4d9d17-ab51-4ecc-9caf-c068ffc65fd2
+# ╠═36f69f11-10d8-4d42-b587-2b885f497973
+# ╠═855cfb7b-5e66-415c-9d48-f66b38e835ff
+# ╟─e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
 # ╠═84386f76-3972-4985-9dc4-05501bbc5f41
 # ╠═8eb4f219-1947-4fc2-971c-ffa4c1d6d924
 # ╟─8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
+# ╠═adf1ffc4-9a8c-4f05-83ec-a157e5549a83
+# ╠═b0bc7a9f-02a0-401b-bc1d-0260177afc82
+# ╠═f247d94f-43a1-45ab-ad22-11f3f81a657e
+# ╟─e30cd82e-7248-45d1-bdf0-5483b2ca780d
 # ╠═95d05163-b6d2-4a01-a782-6da05479ee0a
 # ╠═8e118239-43e0-427c-bdf1-80c9d5fe130c
 # ╟─00000000-0000-0000-0000-000000000001
