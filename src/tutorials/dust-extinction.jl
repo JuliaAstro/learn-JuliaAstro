@@ -40,7 +40,6 @@ begin
 end;
 
 # ╔═╡ 89366506-4854-4859-b109-2d6cd9456bb5
-# Upstreaming to DynamicQuantities.jl
 using DynamicQuantities: @register_unit
 
 # ╔═╡ e7266de8-ba60-45b3-8988-6143e7098b72
@@ -93,6 +92,12 @@ begin
 	@register_unit Å exp10(-10) * u"m"
 	@register_unit Jy exp10(-26) * u"W/m^2/Hz"
 end
+
+# ╔═╡ 3680c62b-7ce8-4fbc-8cd0-249d499e990f
+md"""
+!!! todo
+	Upstreaming to DQ.jl <https://github.com/JuliaPhysics/DynamicQuantities.jl/pull/196>
+"""
 
 # ╔═╡ f3bf7784-b2da-4ed6-9cb5-0799d81d65ae
 md"""
@@ -384,22 +389,22 @@ let
 			ylabel = "Flux (erg/s/cm^2/Å)",
 			title = "ρ Oph",
 		),
-		color = :magenta,
+		color = :cyan,
 		label = "IUE spectrum dereddened",
 	)
 	lines!(wav_spectrum, flux_spectrum;
-		color = :cyan,
+		color = :magenta,
 		label = "IUE spectrum",
 	)
 
 	# Photometry
 	scatter!(ax, wav_phot, flux_phot_deredden;
-		color = :darkmagenta,
+		color = :darkcyan,
 		markersize = 15,
 		label = "U, B, V dereddened",
 	)
 	scatter!(ax, wav_phot, flux_phot;
-		color = :darkcyan,
+		color = :darkmagenta,
 		markersize = 15,
 		label = "U, B, V",
 	)
@@ -2629,6 +2634,7 @@ version = "4.1.0+0"
 # ╠═b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 # ╠═89366506-4854-4859-b109-2d6cd9456bb5
 # ╠═555cf1bd-5b52-4d26-aaa2-033a9f4d831a
+# ╟─3680c62b-7ce8-4fbc-8cd0-249d499e990f
 # ╟─f3bf7784-b2da-4ed6-9cb5-0799d81d65ae
 # ╠═e7266de8-ba60-45b3-8988-6143e7098b72
 # ╟─ed46db90-9802-4615-928f-bcad4bd19804
