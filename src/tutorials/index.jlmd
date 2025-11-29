@@ -9,3 +9,5 @@ layout: "layout.jlhtml"
 ⚠️ This site is still under construction. Expect to see many changes! ⚠️
 
 Select one of the tutorials in the sidebar to get started
+
+Related work from Abhro: <https://github.com/abhro/AstropyTutorials.jl/>
