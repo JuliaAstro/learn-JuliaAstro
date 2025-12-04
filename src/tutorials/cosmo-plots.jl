@@ -36,9 +36,10 @@ begin
 		axislegend
 	using LaTeXStrings: @L_str
 	using MathTeXEngine: set_texfont_family!, FontFamily
+	set_texfont_family!(FontFamily("TeXGyreHeros"))
 	
 	# Units
-	using DynamicQuantities: @u_str, @us_str
+	using DynamicQuantities: @u_str, @us_str, ustrip
 end
 
 # ╔═╡ f74f122b-2320-45c2-a3e7-ae049f6a897d
@@ -159,14 +160,19 @@ md"""
 It would be useful to see the corresponding universe ages at each redshift. Let's compute this with `Cosmology.age` and plot this along the top axis:
 """
 
-# ╔═╡ b59c4990-31a4-4910-803d-67adf9a20836
-ages = [age(us"Gyr", cosmo, z) for z in zvals]
-
-# ╔═╡ ed6f5492-9890-4930-a3cf-75f85cdab430
-string(ages[1])
+# ╔═╡ ba65782d-fa00-4e3d-9e49-fdafd3a7e47c
+# Just show a few of the ages for clarity
+age_ticks, age_vals = let
+	n = 15 # Sample every n point
+	z_sampled = zvals[begin:n:end]
+	age_sampled = [age(us"Gyr", cosmo, z) for z in z_sampled]
+	age_sampled_vals = ustrip.(u"Gyr", age_sampled)
+	z_sampled, age_sampled_vals
+end
 
 # ╔═╡ 5ff49cc2-35b1-463a-ad95-5934069f8420
 let
+	# Default model
 	f, ax1, p = lines(zvals, d;
 		color = Cycled(2),
 		axis = (
@@ -174,12 +180,11 @@ let
 		),
 	)
 	
-	# Just show a few of the ages for clarity
-	n = 15
+	# Age axis
 	ax2 = Axis(f[1, 1];
 		xaxisposition = :top,
-		xticks = zvals[begin:n:end],
-		# xtickformat = x -> string.(round.((ages[begin:n:end]); digits = 2))
+		xticks = age_ticks,
+		xtickformat = x -> string.(round.((age_vals); digits = 2)),
 	)
 
 	# Labels
@@ -192,7 +197,6 @@ let
 	ax1.xgridvisible = false
 	ax2.xgridvisible = false
 	hideydecorations!(ax2)
-
 	linkxaxes!(ax1, ax2)
 
 	f
@@ -202,9 +206,6 @@ end
 md"""
 !!! note
 	For clarity, we suppress the vertical grid lines coming from each axis.
-
-!!! todo
-	Update tick formatting for DQ units
 """
 
 # ╔═╡ 4d29f960-6f15-4d18-aa17-e80be8a2770a
@@ -226,13 +227,9 @@ md"""
 	See if we can upstream Chris's work <https://github.com/JuliaAstro/Cosmology.jl/issues/43#issuecomment-2790915234>
 """
 
-# ╔═╡ 1d595d4e-c3f0-4bb7-b454-aafc2cf7d048
-# Set LaTeX font used
-set_texfont_family!(FontFamily("TeXGyreHeros"))
-
 # ╔═╡ dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 fig = let
-	# Plank 2013
+	# Plank 2013 model
 	f, ax1, p = lines(zvals, d_planck;
 		label = "Planck 2013",
 		axis = (;
@@ -244,11 +241,12 @@ fig = let
 
 	# Default model
 	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
-	n = 15
+		
+	# Age axis
 	ax2 = Axis(f[1, 1];
 		xaxisposition = :top,
-		xticks = zvals[begin:n:end],
-		# xtickformat = x -> string.(round.((ages[begin:n:end]); digits = 2))
+		xticks = age_ticks,
+		xtickformat = x -> string.(round.((age_vals); digits = 2)),
 	)
 	ax2.xlabel = "Time since Big Bang (Gyr)"
 
@@ -305,15 +303,13 @@ TableOfContents()
 # ╠═0ba60166-cbd1-4f10-9b2b-259b7837a796
 # ╟─b8a0440f-3da8-488e-a52f-b9cf98f977b2
 # ╟─0b7a66e1-75d1-4197-90ac-723420f276e0
-# ╠═b59c4990-31a4-4910-803d-67adf9a20836
-# ╠═ed6f5492-9890-4930-a3cf-75f85cdab430
+# ╠═ba65782d-fa00-4e3d-9e49-fdafd3a7e47c
 # ╠═5ff49cc2-35b1-463a-ad95-5934069f8420
 # ╟─dd63c9c9-50e9-4d7b-86e3-8874134d502b
 # ╟─4d29f960-6f15-4d18-aa17-e80be8a2770a
 # ╠═8a54c1e4-abca-4da6-a738-0b2d0d2ac3da
 # ╠═9f01bb56-455c-45c2-98b2-20a38f141ebd
 # ╟─5879e1c3-b6b0-4216-b00c-af0bf819ab47
-# ╠═1d595d4e-c3f0-4bb7-b454-aafc2cf7d048
 # ╠═dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 # ╟─d7d4e075-0445-46c2-b88e-56a3f1df0bba
 # ╟─6afad2fa-0555-400a-9de7-e341e5956955
