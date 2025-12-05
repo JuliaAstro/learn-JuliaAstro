@@ -48,17 +48,26 @@ This notebook is modified from <https://learn.astropy.org/tutorials/quantities.h
 !!! tip ""
 	## Learning Goals
 	
-	* 
+	- Use `Quantity` objects to estimate a hypothetical galaxy's mass
+	- Take advantage of constants in the DynamicalQuantities.jl package
+	- Print formatted unit strings
+	- Plot `Quantity` objects with unit labels, using Makie.jl
+	- Do math with `Quantity` objects
+	- Convert quantities
+	- Convert between wavelength and energy
+	- Write functions that take `Quantity` objects instead of plain arrays
+	- Make synthetic radio observations
+	- Use `Quantity` objects such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
 
 !!! note ""
 	## Keywords
 
-	units, plots
+	units, plots, radio astronomy, data cubes
 
 !!! warning ""
 	## Summary
 	
-	
+	In this tutorial we present some examples showing how `Quantity` objects can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
 """
 
 # ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
@@ -69,6 +78,10 @@ md"""
 # ╔═╡ 60c89d86-942e-4c97-bd7a-ad2f792b1155
 md"""
 ## 1. Galaxy mass
+
+In this first example, we will use Quantity objects to estimate a hypothetical galaxy's mass, given its half-light radius and radial velocities of stars in the galaxy.
+
+Let's assume that we measured the half-light radius of the galaxy to be 29 pc projected on the sky at the distance of the galaxy. This radius is often called the "effective radius", so we'll store it as a `Quantity` object with the name `Reff`. The easiest way to create a `Quantity` object is by multiplying the value with its unit:
 """
 
 # ╔═╡ 1d2293bd-a236-4b41-a9d7-9c27463b5062
@@ -534,7 +547,7 @@ Suppose you are working on an instrument, and the person funding it asks for a f
 """
 
 # ╔═╡ 9922bdbe-cf9e-486a-8e8a-28a7ded12d04
-function response_func(xinarcsec, yinarcsec)
+function response_func_bad(xinarcsec, yinarcsec)
     xscale = 0.9
     yscale = 0.85
     xfactor = 1 / (1 + xinarcsec / xscale)
@@ -661,7 +674,7 @@ TableOfContents()
 # ╟─4ee79c7c-5c4e-457b-b713-103937e50355
 # ╠═f2b222ec-0783-487e-9c52-835976a555b6
 # ╟─e4232b15-3369-438e-994b-042aab477a7f
-# ╠═c749ce2d-17ae-45f4-b721-3f486b1cbc23
+# ╟─c749ce2d-17ae-45f4-b721-3f486b1cbc23
 # ╟─3a3328d5-31de-4deb-bff7-d25c1fcbc4ef
 # ╟─fb0f2941-2e56-45db-91fe-e8d6744a00e0
 # ╠═bf618161-ef96-4445-8fc8-25dc5f662242
@@ -704,9 +717,9 @@ TableOfContents()
 # ╠═ff7def67-eb96-45b3-959a-2b01c7804e07
 # ╟─965a8e44-e96e-434e-8454-cced531ae9d2
 # ╟─802f5cad-a0c0-4426-94f2-426f89dea7e1
-# ╠═2eed0bc8-2306-42bb-9803-33ae131021e6
+# ╟─2eed0bc8-2306-42bb-9803-33ae131021e6
 # ╠═9922bdbe-cf9e-486a-8e8a-28a7ded12d04
-# ╠═118aff27-dc6d-4686-b64a-ff840b731030
+# ╟─118aff27-dc6d-4686-b64a-ff840b731030
 # ╠═ffc4bdc3-16e3-4b3e-b448-cfdc16428378
 # ╟─71cca345-cffc-4aee-a671-08901a92babe
 # ╠═1c3faf9f-adcf-4232-acf4-655d828623e3
