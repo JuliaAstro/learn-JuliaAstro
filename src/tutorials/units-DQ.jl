@@ -30,6 +30,12 @@ begin
 	using DimensionalData: DimArray, val, dims
 end
 
+# ╔═╡ e48130c0-0cef-4b8a-9321-eaca67b89521
+using DynamicQuantities.Constants: c as c_0
+
+# ╔═╡ d7729d13-b5b7-4d29-af81-7cfd69a20f25
+using DynamicQuantities.Constants: h, k_B
+
 # ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
 using PlutoUI: TableOfContents, details
 
@@ -192,7 +198,7 @@ In this second example, we will demonstrate how using units can facilitate a ful
 md"""
 ### Setting up the data cube
 
-Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 1 - 0`` rotational transition of ``\text{C}^{18}\text{O}`` and are interested in measuring its total mass. The measurement produced a data cube with RA and Dec as spatial coordiates and velocity as the third axis. Each voxel in this data cube represents the brightness temperature of the emission at that position and velocity. Furthermore, we'll assume that we have an independent measurement of distance to the cloud ``d = 250\text{ pc}`` and that the excitation temperature is known and constant throughout the cloud: ``T_\text{ex} = 25\text{ K}``:
+Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 1 - 0`` rotational transition of ``\mathrm{C}^{18}\mathrm{O}`` and are interested in measuring its total mass. The measurement produced a data cube with RA and Dec as spatial coordiates and velocity as the third axis. Each voxel in this data cube represents the brightness temperature of the emission at that position and velocity. Furthermore, we'll assume that we have an independent measurement of distance to the cloud ``d = 250\, \mathrm{pc}`` and that the excitation temperature is known and constant throughout the cloud: ``T_\text{ex} = 25\, \mathrm{K}``:
 """
 
 # ╔═╡ 2c76c406-d15c-4271-baa4-ebebf5299429
@@ -203,7 +209,15 @@ T_ex = 25u"K"
 
 # ╔═╡ b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
 md"""
-We'll generate a synthetic dataset, assuming the cloud follows a Gaussian distribution in each of RA, Dec, and velocity. We start by creating a 100×100×300 array, such that the first coordinate is right ascension, the second is declination, and the third is velocity. We use the numpy.meshgrid function to create data cubes for each of the three coordinates, and then use them in the formula for a Gaussian to generate an array with the synthetic data cube. In this cube, the cloud is positioned at the center of the cube, with _σ_ and the center in each dimension shown below. Note in particular that the _σ_ for RA and Dec have different units from the center, but astropy automatically does the relevant conversions before computing the exponential.
+We'll generate a synthetic dataset, assuming the cloud follows a Gaussian distribution in each of RA, Dec, and velocity. We start by creating a 100×100×300 array, such that the first coordinate is right ascension, the second is declination, and the third is velocity. In this data cube, the cloud is positioned at the center, with ``\sigma`` and the center in each dimension shown below. Note in particular that the ``\sigma`` for RA and Dec have different units from the center, but DynamicQuantities.jl automatically does the relevant conversions before computing the exponential.
+"""
+
+# ╔═╡ 9a002059-650b-4dc1-9395-6f266ed35500
+md"""
+!!! todo
+	Explain. What does this part mean?
+
+	> Note in particular that the ``\sigma`` for RA and Dec have different units from the center, but DynamicQuantities.jl automatically does the relevant conversions before computing the exponential.
 """
 
 # ╔═╡ aab4113d-d7ad-4521-a208-e192ad218cf0
@@ -236,13 +250,12 @@ data = let
 	]
 
 	DimArray(A * u"K", (RA = ras, Dec = decs, Vel = vs))
-	# DimArray(A * u"K", (:RA, :Dec, :Vel))
 end
 
 # ╔═╡ e86d6cf7-2274-403a-b1db-017973f33fb7
 md"""
 !!! note
-	The units of the exponential are dimensionless, so we multiplied the data cube by K to get brightness temperature units. As an aside for experts, we're setting up our artificial cube on the main-beam temperature scale ``\left(T_\text{MB}\right)`` which is the closest we can normally get to the actual brightness temperature of our source.
+	The units of the exponential are dimensionless, so we multiplied the data cube by ``\mathrm{K}`` to get brightness temperature units. As an aside for experts, we're setting up our artificial cube on the main-beam temperature scale ``\left(T_\text{MB}\right)``, which is the closest we can normally get to the actual brightness temperature of our source.
 """
 
 # ╔═╡ 00b9d37f-ce7b-4491-b1df-f0963f2598a8
@@ -264,7 +277,7 @@ We will also need to know the width of each velocity bin and the size of each pi
 
 # ╔═╡ 3211ba19-0140-450d-95c6-698a4f0ccbff
 md"""
-Note that DynamicQuantities.jl uses the unitless radian by default. We can easily display this in our desired unit system:
+Note that DynamicQuantities.jl uses the unitless radian by default. We can still easily display this in our desired unit system:
 """
 
 # ╔═╡ 175854bb-4385-4199-ada9-358def53a822
@@ -287,7 +300,12 @@ md"""
 # ╔═╡ 1fa8010d-9a5d-4297-9665-9fa8795ef5f7
 md"""
 !!! note
-	Radio astronomers use a rather odd set of units [K km/s] for integrated intensity (that is, summing all the emission from a line over velocity).
+	Radio astronomers use a rather odd set of units ``[\mathrm{K\, km/s}]`` for integrated intensity (that is, summing all the emission from a line over velocity).
+"""
+
+# ╔═╡ 4ee79c7c-5c4e-457b-b713-103937e50355
+md"""
+We can plot the 2D quantity using Makie's `heatmap` function:
 """
 
 # ╔═╡ f2b222ec-0783-487e-9c52-835976a555b6
@@ -299,9 +317,11 @@ let
 	fig, ax, p =  heatmap(
 		val(x) .|> us"deg",
 		val(y) .|> us"deg",
-		ustrip.(u_A, parent(A))
+		ustrip.(u_A, parent(A));
+		colormap = :cividis,
 	)
 
+	ax.xreversed = true
 	ax.xlabel = "RA"
 	ax.ylabel = "Dec"
 	
@@ -320,8 +340,194 @@ md"""
 	```
 """
 
-# ╔═╡ 59b4d441-9a74-468f-ad8c-882516a09049
+# ╔═╡ c749ce2d-17ae-45f4-b721-3f486b1cbc23
 md"""
+### Measuring The Column Density of CO
+
+In order to calculate the mass of the molecular cloud, we need to measure its column density. A number of assumptions are required for the following calculation; the most important are that the emission is optically thin (typically true for ``\mathrm{C}^{18}\mathrm{O}``), and that conditions of local thermodynamic equilibrium hold along the line of sight. In the case where the temperature is large compared to the separation in energy levels for a molecule and the source fills the main beam of the telescope, the total column density for ``\mathrm{C}^{13}\mathrm{O}`` is:
+
+```math
+N = C \frac{\int T_\text{B}(V) \, dV}{1 - e^{-B}}\ ,
+```
+
+where ``T_\text{B}`` is the brightness temperature, and the constants ``C`` and ``B`` are given by:
+
+```math
+\begin{align*}
+C &= 3.0 \times {10}^{14}\ \mathrm{K^{-1}\, cm^{-2}\, km^{-1}\, s}
+	\left(\frac{\nu}{\nu_{13}}\right)^2 \frac{A_{13}}{A} \\
+B &= \frac{h\nu}{k_\text{B} T}
+\end{align*}
+```
+
+(Rohlfs & Wilson [Tools for Radio Astronomy](https://www.springer.com/gp/book/9783662053942)).
+"""
+
+# ╔═╡ 3a3328d5-31de-4deb-bff7-d25c1fcbc4ef
+md"""
+Here we have given an expression for ``C`` scaled to the values for ``\mathrm{C}^{13}\mathrm{O}`` (``\nu_{13}`` and ``A_{13}``). In order to use this relation for ``\mathrm{C}^{18}\mathrm{O}``, we need to rescale the frequencies ``\nu`` and the Einstein coefficients (``A``). Lastly, ``C`` is in funny mixed units, but that's okay. We'll be able to do our unit handling in the usual way.
+"""
+
+# ╔═╡ fb0f2941-2e56-45db-91fe-e8d6744a00e0
+md"""
+First, we look up the wavelength for these emission lines and store them as quantities:
+"""
+
+# ╔═╡ bf618161-ef96-4445-8fc8-25dc5f662242
+const λ_13 = 2.60076u"mm"
+
+# ╔═╡ 1a16d2e1-7898-415c-9a98-a1f2f87e08be
+const λ_18 = 2.73079u"mm"
+
+# ╔═╡ e0a2c745-41cf-4359-bb99-3117fbb507cc
+md"""
+And compute their corresponding frequencies:
+"""
+
+# ╔═╡ d45bad3e-4c82-436b-8e64-c61e5cf65c2f
+λ_to_ν(λ) = c_0 / λ
+
+# ╔═╡ ee46b865-dbd4-4939-b241-514941dd138d
+const ν_13 = λ_13 |> λ_to_ν
+
+# ╔═╡ b183c219-a39b-427a-b740-5675fcc175ca
+const ν_18 = λ_18 |> λ_to_ν
+
+# ╔═╡ 323d1169-c59f-456c-9b19-093e26f84214
+md"""
+!!! todo
+	See how helpful UnitfulEquivalencies.jl-like functionality for DQ would be.
+"""
+
+# ╔═╡ d0215082-52df-4eae-a409-7c3c7cfc69ed
+md"""
+Next, we look up Einstein coefficients (in units of s⁻¹), and calculate the ratios in constant ``C``. Note how the ratios of frequency and Einstein coefficient units are dimensionless, so the unit of _C_ is unchanged.
+"""
+
+# ╔═╡ 3a24f4aa-b074-4beb-b77d-6778e2fe580a
+const A_13 = 7.4e-8 / u"s"
+
+# ╔═╡ 1e203abc-4a02-4d01-bf9e-9df636e70ebd
+const A_18 =  8.8e-8 / u"s"
+
+# ╔═╡ 98869c25-2644-47d1-b8cc-05699292f2a8
+C = 3e14u"s/(K*cm^2*km)" * (ν_18/ν_13)^3 * (A_13/A_18)
+
+# ╔═╡ 18985bb2-6cce-4417-97a2-c2da7b9e0428
+C |> us"s / K / km / cm^2"
+
+# ╔═╡ d9e2b828-9c32-4638-bfcd-0c16b221aa43
+md"""
+Now we move on to calculate the constant ``B``. This is given by the ratio of ``\dfrac{hν}{k_\text{B}T}``, where ``h`` is Planck's constant, ``k_\text{B}`` is the Boltzmann's constant, ``ν`` is the emission frequency, and ``T`` is the excitation temperature. The constants were imported from `DynamicQuantities.Constants`, and the other two values are already calculated, so here we just take the ratio:
+"""
+
+# ╔═╡ 4092a893-818e-49f4-93d0-be7bd652dddc
+B = h * ν_18 / (k_B * T_ex)
+
+# ╔═╡ c5c907d0-a669-43f3-8030-0bd67452f0a1
+k_B
+
+# ╔═╡ a0b64ba9-cbec-404e-bf39-aee03ae407ae
+md"""
+Note how DynamicQuantities.jl intelligently cancelled the units for us, while still keeping this as a Quantity object:
+"""
+
+# ╔═╡ 82f11626-722b-46fa-9173-8b5d7a80a190
+typeof(B)
+
+# ╔═╡ 6aff587f-be6f-4fd8-96df-9c12f3769f32
+md"""
+At this point we have all the ingredients to calculate the number density of ``\mathrm{CO}`` molecules in this cloud. We already integrated (summed) over the velocity channels above to show the integrated intensity map, but we'll do it again here for clarity. This gives us the column density of ``\mathrm{CO}`` for each spatial pixel in our map. We can then print out the peak column column density:
+"""
+
+# ╔═╡ ef498536-8fb8-46e3-9d8d-f7eb3994a3f5
+NCO = C * reduce(+, eachslice(data * Δv; dims = :Vel)) / (1 - exp(-B))
+
+# ╔═╡ 25598fcd-761d-40b8-95ac-8b68a00026da
+md"""
+!!! note ""
+	**Peak CO Column density:** $(maximum(NCO) |> us"cm^-2")
+"""
+
+# ╔═╡ eba2f06f-ebe9-492d-81d2-1cc4fccd5b0a
+md"""
+### ``\mathrm{CO}`` to Total Mass
+
+We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}_2``, the quantity we are actually trying to infer. Since most of the mass is in ``\mathrm{H}_2``, we calculate its column density by multiplying the ``\mathrm{CO}`` column density with the (known/assumed) ``\mathrm{H}_2 / \mathrm{CO}`` ratio:
+"""
+
+# ╔═╡ de22c778-1529-4177-85e6-a0178f437a8c
+H₂_CO_ratio = 5.9e6;
+
+# ╔═╡ c262aa56-b9b6-4da4-8810-d6120f0724c6
+NH₂ = NCO * H₂_CO_ratio
+
+# ╔═╡ 1e8ec5c5-3d41-44a7-8dfa-81d981750d9e
+md"""
+!!! note ""
+	**Peak ``\mathrm{H}_2`` column density:** $(maximum(NH₂) |> us"cm^-2")
+"""
+
+# ╔═╡ c6b35992-973b-49d4-bfa7-855e8fe10924
+md"""
+That's a peak column density of roughly 50 magnitudes of visual extinction (assuming the conversion between ``N_{\mathrm{H}_2}`` and ``A_V`` from Bohlin et al. 1978), which seems reasonable for a molecular cloud.
+
+We obtain the mass column density by multiplying the number column density by the mass of an individual ``\mathrm{H_2}`` molecule:
+"""
+
+# ╔═╡ 85f84c90-46e6-4d3f-bba2-6fc190a05533
+mH₂ = 2*1.008u"Constants.u"
+
+# ╔═╡ 16cdd7e8-0ec2-4953-ad8b-f53669d05eda
+mH₂ |> us"Constants.u"
+
+# ╔═╡ 522d88d6-5f60-401b-8786-0236c0859eda
+ρ = NH₂ * mH₂
+
+# ╔═╡ fbd0d75b-b3af-4eb5-a249-423317d656e5
+md"""
+A final step in going from the column density to mass is summing up over the area. If we do this in the straightforward way of length × width of a pixel, this area is then in units of deg²:
+"""
+
+# ╔═╡ 0eefe540-1669-4510-bef7-8fb7f8be68f1
+Δap = Δra * Δdec
+
+# ╔═╡ 4f59f4e6-c735-4a40-b171-744b17eb37fd
+Δap |> us"deg^2"
+
+# ╔═╡ b057812d-1a8e-479c-8192-1c1acdb97d23
+Δa = Δap * d^2
+
+# ╔═╡ 586b1993-be11-4437-9d3b-789511ea26bf
+Δa |> us"cm^2"
+
+# ╔═╡ e81f3b44-bc04-4768-81c2-c2733958f5a9
+md"""
+Finally, multiplying the column density with the pixel area and summing over all the pixels gives us the cloud mass:
+"""
+
+# ╔═╡ 88966b7e-b261-45a6-9f12-6b74f24c03e4
+M_cloud = sum(ρ * Δa)
+
+# ╔═╡ ff7def67-eb96-45b3-959a-2b01c7804e07
+M_cloud |> us"Constants.M_sun"
+
+# ╔═╡ 965a8e44-e96e-434e-8454-cced531ae9d2
+md"""
+!!! note ""
+	**Total cloud mass:** $(M_cloud |> us"Constants.M_sun")
+"""
+
+# ╔═╡ 802f5cad-a0c0-4426-94f2-426f89dea7e1
+md"""
+!!! tip "Exercises"
+	The astro material was pretty heavy on that one, so let's focus on some associated statistics using DynamicQuantities.jl's array capabililities. Compute the median and mean of the data with the `mean` and `median` functions. Why are their values so different?
+
+	Similarly, compute the standard deviation and variance. Do they have the units you expect?
+"""
+
+# ╔═╡ 59b4d441-9a74-468f-ad8c-882516a09049
+ md"""
 # Notebook setup 🔧
 """
 
@@ -360,6 +566,7 @@ TableOfContents()
 # ╠═2c76c406-d15c-4271-baa4-ebebf5299429
 # ╠═cb5b1020-b1f8-4ea1-ad03-a91b5c3ab0c2
 # ╟─b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
+# ╟─9a002059-650b-4dc1-9395-6f266ed35500
 # ╠═aab4113d-d7ad-4521-a208-e192ad218cf0
 # ╠═539290af-787d-4deb-928c-50e4e9f28173
 # ╟─e86d6cf7-2274-403a-b1db-017973f33fb7
@@ -373,8 +580,52 @@ TableOfContents()
 # ╠═6ddeb42d-37a5-48a3-ac82-47e4ec2ca541
 # ╟─4d4794fb-804d-4b4a-8c32-a32d88e43e30
 # ╟─1fa8010d-9a5d-4297-9665-9fa8795ef5f7
+# ╟─4ee79c7c-5c4e-457b-b713-103937e50355
 # ╠═f2b222ec-0783-487e-9c52-835976a555b6
 # ╟─e4232b15-3369-438e-994b-042aab477a7f
+# ╠═c749ce2d-17ae-45f4-b721-3f486b1cbc23
+# ╟─3a3328d5-31de-4deb-bff7-d25c1fcbc4ef
+# ╟─fb0f2941-2e56-45db-91fe-e8d6744a00e0
+# ╠═bf618161-ef96-4445-8fc8-25dc5f662242
+# ╠═1a16d2e1-7898-415c-9a98-a1f2f87e08be
+# ╟─e0a2c745-41cf-4359-bb99-3117fbb507cc
+# ╠═e48130c0-0cef-4b8a-9321-eaca67b89521
+# ╠═d45bad3e-4c82-436b-8e64-c61e5cf65c2f
+# ╠═ee46b865-dbd4-4939-b241-514941dd138d
+# ╠═b183c219-a39b-427a-b740-5675fcc175ca
+# ╟─323d1169-c59f-456c-9b19-093e26f84214
+# ╟─d0215082-52df-4eae-a409-7c3c7cfc69ed
+# ╠═3a24f4aa-b074-4beb-b77d-6778e2fe580a
+# ╠═1e203abc-4a02-4d01-bf9e-9df636e70ebd
+# ╠═98869c25-2644-47d1-b8cc-05699292f2a8
+# ╠═18985bb2-6cce-4417-97a2-c2da7b9e0428
+# ╟─d9e2b828-9c32-4638-bfcd-0c16b221aa43
+# ╠═d7729d13-b5b7-4d29-af81-7cfd69a20f25
+# ╠═4092a893-818e-49f4-93d0-be7bd652dddc
+# ╠═c5c907d0-a669-43f3-8030-0bd67452f0a1
+# ╟─a0b64ba9-cbec-404e-bf39-aee03ae407ae
+# ╠═82f11626-722b-46fa-9173-8b5d7a80a190
+# ╟─6aff587f-be6f-4fd8-96df-9c12f3769f32
+# ╠═ef498536-8fb8-46e3-9d8d-f7eb3994a3f5
+# ╟─25598fcd-761d-40b8-95ac-8b68a00026da
+# ╟─eba2f06f-ebe9-492d-81d2-1cc4fccd5b0a
+# ╠═de22c778-1529-4177-85e6-a0178f437a8c
+# ╠═c262aa56-b9b6-4da4-8810-d6120f0724c6
+# ╟─1e8ec5c5-3d41-44a7-8dfa-81d981750d9e
+# ╟─c6b35992-973b-49d4-bfa7-855e8fe10924
+# ╠═85f84c90-46e6-4d3f-bba2-6fc190a05533
+# ╠═16cdd7e8-0ec2-4953-ad8b-f53669d05eda
+# ╠═522d88d6-5f60-401b-8786-0236c0859eda
+# ╟─fbd0d75b-b3af-4eb5-a249-423317d656e5
+# ╠═0eefe540-1669-4510-bef7-8fb7f8be68f1
+# ╠═4f59f4e6-c735-4a40-b171-744b17eb37fd
+# ╠═b057812d-1a8e-479c-8192-1c1acdb97d23
+# ╠═586b1993-be11-4437-9d3b-789511ea26bf
+# ╟─e81f3b44-bc04-4768-81c2-c2733958f5a9
+# ╠═88966b7e-b261-45a6-9f12-6b74f24c03e4
+# ╠═ff7def67-eb96-45b3-959a-2b01c7804e07
+# ╟─965a8e44-e96e-434e-8454-cced531ae9d2
+# ╟─802f5cad-a0c0-4426-94f2-426f89dea7e1
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═17c6b7df-a8b3-45d1-9491-526afce11318
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
