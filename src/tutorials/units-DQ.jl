@@ -146,7 +146,7 @@ log10(M)
 
 # ╔═╡ 2648b454-2762-4941-b13c-2303ffcd6521
 let
-	sol = details("Solution",
+	sol = details("Example solution",
 	md"""
 	```julia
 	using DynamicQuantities: Constants as C
@@ -526,6 +526,86 @@ md"""
 	Similarly, compute the standard deviation and variance. Do they have the units you expect?
 """
 
+# ╔═╡ 2eed0bc8-2306-42bb-9803-33ae131021e6
+md"""
+## 3. Using `Quantities` with functions
+
+`Quantity` is also a useful tool if you plan to share some of your code, either with collaborators or the wider community. By writing functions that take `Quantity` objects instead of raw numbers or arrays, you can write code that is agnostic to the input unit. In this way, you may even be able to prevent [the destruction of Mars orbiters](http://en.wikipedia.org/wiki/Mars_Climate_Orbiter#Cause_of_failure). Below, we provide a simple example.
+
+Suppose you are working on an instrument, and the person funding it asks for a function to give an analytic estimate of the response function. You determine from some tests it's basically a Lorentzian, but with a different scale along the two axes. Your first thought might be to do this:
+"""
+
+# ╔═╡ 9922bdbe-cf9e-486a-8e8a-28a7ded12d04
+function response_func(xinarcsec, yinarcsec)
+    xscale = 0.9
+    yscale = 0.85
+    xfactor = 1 / (1 + xinarcsec / xscale)
+    yfactor = 1 / (1 + yinarcsec / yscale)
+
+    return xfactor * yfactor
+end
+
+# ╔═╡ 118aff27-dc6d-4686-b64a-ff840b731030
+md"""
+You meant the inputs to be in arcsec, but alas, you send that to your collaborator and they don't look closely and think the inputs are instead supposed to be in arcmin. So they do:
+"""
+
+# ╔═╡ ffc4bdc3-16e3-4b3e-b448-cfdc16428378
+response_func_bad(1.0, 1.2)
+
+# ╔═╡ 71cca345-cffc-4aee-a671-08901a92babe
+md"""
+And now they tell all their friends how terrible the instrument is, because it's supposed to have arcsecond resolution, but your function clearly shows it can only resolve an arcmin at best. But you can solve this by requiring they pass in Quantity objects. The new function could simply be:
+"""
+
+# ╔═╡ 1c3faf9f-adcf-4232-acf4-655d828623e3
+function response_func_good(x, y)
+    xscale = 0.9us"arcsec" # We use symbolic dimensions here
+    yscale = 0.85us"arcsec" # to treat radians as unitful quantities
+    xfactor = 1 / (1 + x / xscale)
+    yfactor = 1 / (1 + y / yscale)
+
+    return xfactor * yfactor
+end
+
+# ╔═╡ 7cfb17fc-81a4-4522-a88b-2fd10001baaa
+md"""
+And your collaborator now has to pay attention. If they just blindly put in a number, they get an error:
+"""
+
+# ╔═╡ ce1804da-df61-4e4c-aa3b-d950e83b7c13
+response_func_good(1.0, 1.2)
+
+# ╔═╡ 5590c909-6103-4427-b1a2-4cf35265dc07
+md"""
+Which is their cue to provide the units explicitly:
+"""
+
+# ╔═╡ f7486c08-b74b-471f-bbc2-690439a487f8
+response_func_good(1.0u"arcmin", 1.2u"arcmin")
+
+# ╔═╡ c143ab62-b3f0-4b6a-83aa-76e5dc3548ac
+md"""
+The funding agency is impressed at the resolution you achieved, and your instrument is saved! You now go on to win the Nobel Prize due to discoveries the instrument makes. And it was all because you used `Quantity` as the input of code you shared.
+"""
+
+# ╔═╡ 7d4f9a02-81a7-4bdc-a22d-3435192f9f15
+let
+	sol = details("Example solution",
+	md"""
+	```julia
+	v_orb(M, r) = sqrt(u"Constants.G" * M / r)
+	```
+	""")
+	
+	md"""
+	!!! tip "Exercises"
+		Write a function that computes the Keplerian velocity you worked out in section 1 (using `Quantity` input and outputs, of course), but allowing for an arbitrary mass and orbital radius. Try it with some reasonable numbers for satellites orbiting the Earth, a moon of Jupiter, or an extrasolar planet. Feel free to use wikipedia or similar for the masses and distances.
+	
+		$(sol)
+	"""
+end
+
 # ╔═╡ 59b4d441-9a74-468f-ad8c-882516a09049
  md"""
 # Notebook setup 🔧
@@ -626,6 +706,18 @@ TableOfContents()
 # ╠═ff7def67-eb96-45b3-959a-2b01c7804e07
 # ╟─965a8e44-e96e-434e-8454-cced531ae9d2
 # ╟─802f5cad-a0c0-4426-94f2-426f89dea7e1
+# ╠═2eed0bc8-2306-42bb-9803-33ae131021e6
+# ╠═9922bdbe-cf9e-486a-8e8a-28a7ded12d04
+# ╠═118aff27-dc6d-4686-b64a-ff840b731030
+# ╠═ffc4bdc3-16e3-4b3e-b448-cfdc16428378
+# ╟─71cca345-cffc-4aee-a671-08901a92babe
+# ╠═1c3faf9f-adcf-4232-acf4-655d828623e3
+# ╟─7cfb17fc-81a4-4522-a88b-2fd10001baaa
+# ╠═ce1804da-df61-4e4c-aa3b-d950e83b7c13
+# ╟─5590c909-6103-4427-b1a2-4cf35265dc07
+# ╠═f7486c08-b74b-471f-bbc2-690439a487f8
+# ╟─c143ab62-b3f0-4b6a-83aa-76e5dc3548ac
+# ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═17c6b7df-a8b3-45d1-9491-526afce11318
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
