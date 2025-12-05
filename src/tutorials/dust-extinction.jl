@@ -52,8 +52,6 @@ using PlutoUI: TableOfContents
 md"""
 # Dust Extinction
 
-*Authors: Ian Weaver*
-
 This notebook is modified from <https://learn.astropy.org/tutorials/color-excess.html>
 
 !!! tip ""

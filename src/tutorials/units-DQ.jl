@@ -43,8 +43,6 @@ using PlutoUI: TableOfContents, details
 md"""
 # Using units in astrophysical calculations
 
-*Authors: Ian Weaver*
-
 This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>
 
 !!! tip ""

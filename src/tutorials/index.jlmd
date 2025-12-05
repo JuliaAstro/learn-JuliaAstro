@@ -8,6 +8,6 @@ layout: "layout.jlhtml"
 
 ⚠️ This site is still under construction. Expect to see many changes! ⚠️
 
-Select one of the tutorials in the sidebar to get started
+These tutorials are heavily inspired by [learn.astropy](https://learn.astropy.org/).
 
-Related work from Abhro: <https://github.com/abhro/AstropyTutorials.jl/>
+Please select one of the tutorials in the sidebar to get started

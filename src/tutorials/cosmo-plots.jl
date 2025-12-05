@@ -49,8 +49,6 @@ using PlutoUI: TableOfContents
 md"""
 # Plotting cosmological redshift and age
 
-*Authors: Ian Weaver*
-
 This notebook is modified from <https://learn.astropy.org/tutorials/redshift-plot.html>
 
 !!! tip ""
