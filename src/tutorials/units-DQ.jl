@@ -6,7 +6,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-19"
 #> description = "Work with units in astrophysical calculations."
-#> tags = ["units", "plots"]
+#> tags = ["units", "plots", "radio astronomy", "data cubes"]
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Ian Weaver"
