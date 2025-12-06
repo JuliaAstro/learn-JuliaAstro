@@ -8,7 +8,7 @@ using InteractiveUtils
 using VirtualObservatory: VizierCatalog, table
 
 # ╔═╡ 580558f8-5df8-455b-93a3-c3025d33acfe
-using CairoMakie: errorbars, lines!, scatter!
+using CairoMakie: Errorbars, errorbars, lines!, scatter!
 
 # ╔═╡ 0f56021f-24d3-4126-a22f-d49a154065bd
 using LaTeXStrings: @L_str
@@ -16,14 +16,14 @@ using LaTeXStrings: @L_str
 # ╔═╡ 8386003f-7d8a-4630-b81b-f3358ac3ce0b
 using MathTeXEngine: set_texfont_family!, FontFamily
 
-# ╔═╡ 2ff9dd28-4adf-428b-8ae4-bb1c5dc66c4b
-using LsqFit
-
 # ╔═╡ 29fa1259-74f8-4b48-978a-4ee2e08c20ac
 using InvertedIndices: Not
 
 # ╔═╡ eacbf73c-6691-4648-9c31-351c3286ec9b
 using DataFramesMeta
+
+# ╔═╡ 77815626-6fd2-4690-9953-9e99cb9755af
+using StatsBase: coef
 
 # ╔═╡ 0cdac569-12e1-4266-961f-2809117f2dd2
 using CairoMakie: Scatter, set_theme!, with_theme, Theme
@@ -31,11 +31,14 @@ using CairoMakie: Scatter, set_theme!, with_theme, Theme
 # ╔═╡ eed1b873-2b70-4108-8651-4c917b53efdf
 using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
 
+# ╔═╡ 2ff9dd28-4adf-428b-8ae4-bb1c5dc66c4b
+using LsqFit: curve_fit
+
 # ╔═╡ f748c126-11bf-4cd7-b0e4-19b2f484673c
 using LinearAlgebra: Diagonal
 
 # ╔═╡ 2f435639-e755-4124-8127-7b163032c041
-using GLM
+using GLM: lm, @formula
 
 # ╔═╡ dc26150c-171a-4acb-9dab-ada23627eda6
 using Optimization
@@ -78,27 +81,49 @@ md"""
 One-liner, unweighted (good for quick viz)
 """
 
-# ╔═╡ d929d55d-54b3-4350-81ea-6d5e3068e2df
+# ╔═╡ a8ae7056-68a4-4bfc-9adb-e52821a1ae49
 data(df) * mapping(:log_P, :Ks) * (visual(Scatter) + linear()) |> draw
+
+# ╔═╡ 4e69c1de-6cf0-448b-8b95-5b6c54795820
+md"""
+!!! note
+	* Confidence interval automatically added
+	* Fit is not weighted
+"""
 
 # ╔═╡ da58364b-78f3-4113-9fc1-1a020a9e15dc
 md"""
-Easy to customize
+Easy to customize and weight fit
 """
 
 # ╔═╡ 1d61727f-b373-4394-b486-79eb63a71f37
 with_theme(Theme(aog_theme())) do
-	data(df) * mapping(
+	# Common data
+	mp = data(df) * mapping(
 		:log_P => L"\log_{10}(\text{Period [days]})",
 		:Ks
-	) *
-	(
-		# Scatter plot
-		visual(Scatter; color = :cornflowerblue) +
-		
-		# Linear model	
-		linear() * visual(; color = :orange)
-	) |> draw
+	)
+	
+	# Scatter
+	layer_scatter = mp * visual()
+	
+	# Errorbar
+	mp_err = mp * mapping(:Ks_err)
+	layer_errorbars = mp_err * visual(Errorbars)
+
+	# Linear model
+	mp_model = mp * mapping(; weights = :Ks_err => x -> inv(x^2))
+	layer_model = mp_model * linear() * visual(; color = :orange)
+
+	# Combined layers
+	layers = visual(; color = :cornflowerblue) * (
+		layer_scatter +
+		layer_errorbars +
+		layer_model
+	)
+
+	# Display
+	draw(layers)
 end
 
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
@@ -112,7 +137,7 @@ md"""
 	set_theme!(<theme>)
 	```
 
-	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on themeing.
+	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on themeing, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
 """
 
 # ╔═╡ d95c2e18-0d41-4018-ae52-6ba39b85e8ee
@@ -139,24 +164,30 @@ md"""
 We now have the slope and y-intercept for our weighted linear model, all in base Julia!
 """
 
-# ╔═╡ c3d88d47-93f5-4f39-98ea-eb76f8a4974d
-let
-	fig, ax, p = errorbars(log_period, k_mag, k_mag_err)
-	
-	scatter!(ax, log_period, k_mag)
-
-	lines!(ax, log_period, m .* log_period .+ b; color = :orange)
-
-	ax.xlabel = L"\log_{10}(\text{Period [days]})"
-	ax.ylabel = "Ks"
-
-	fig
-end
-
 # ╔═╡ d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 md"""
 ## GLM.jl
+
+Used under-the-hood by AoG.jl
 """
+
+# ╔═╡ 2cf30811-3204-4498-9b73-8a3c3bba28e2
+df_glm = @transform df begin
+	:Ks = Float64.(:Ks)
+	:Ks_err = Float64.(:Ks_err)
+end;
+
+# ╔═╡ 19df3403-ef9d-4b07-8b14-3b10056475e8
+md"""
+!!! todo
+	Current workaround for <https://github.com/JuliaStats/GLM.jl/issues/260>
+"""
+
+# ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
+fit_glm = lm(@formula(Ks ~ log_P), df_glm; wts = inv.(df_glm.Ks_err .^ 2))
+
+# ╔═╡ 8c44bde9-c64a-41c2-8b47-e98d40b3cf42
+sol_glm = coef(fit_glm)
 
 # ╔═╡ 97714008-1e1b-4071-824a-d22801683bbd
 md"""
@@ -164,10 +195,10 @@ md"""
 """
 
 # ╔═╡ 58275364-b7bc-4889-b997-cf88f5bc0ee4
-model(x, p) = @. p[1] * x + p[2]
+model(x, p) = @. p[2] * x + p[1]
 
 # ╔═╡ 7c49a652-3369-4b51-9d99-0bf7fcb4c279
-fit = curve_fit(model, log_period, k_mag, 1 ./ (k_mag_err .^ 2), [1.0, 1.0])
+fit = curve_fit(model, df.log_P, df.Ks, inv.(df.Ks_err .^ 2), [1.0, 1.0])
 
 # ╔═╡ 1cb06341-7e0a-4384-a9d2-3cf8e8e3f018
 sol_lsq = coef(fit)
@@ -179,8 +210,8 @@ md"""
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
 function objective(u, data)
-    m, b = u
-    x, y, y_err = data
+    b, m = u
+    x, y, y_err = eachcol(data)
     
     # Compute weighted residuals
     residuals = @. (y - (m * x + b)) / y_err
@@ -192,21 +223,33 @@ end
 # ╔═╡ a3582cb7-c2a6-414c-bf7b-d764c2311c80
 u0 = zeros(2)
 
-# ╔═╡ 376ecd9c-2150-4403-b7cd-2bdf348d33e4
-# ╠═╡ disabled = true
-#=╠═╡
-data = (x=log_period, y=convert(Vector{Float32}, k_mag), y_err=collect(k_mag_err))
-  ╠═╡ =#
-
 # ╔═╡ 3bffbcde-b2b1-445d-b2f7-59a53f33f90a
-#=╠═╡
-prob = OptimizationProblem(objective, u0, data)
-  ╠═╡ =#
+prob = OptimizationProblem(objective, u0, df)
 
 # ╔═╡ 925eb5ac-a5fa-40d9-8ab1-f10db7dab202
-#=╠═╡
 sol_optim = solve(prob, NelderMead())
-  ╠═╡ =#
+
+# ╔═╡ 0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
+md"""
+## Plot
+"""
+
+# ╔═╡ edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
+sol_glm, sol_lsq, sol_optim
+
+# ╔═╡ c3d88d47-93f5-4f39-98ea-eb76f8a4974d
+# let
+# 	fig, ax, p = errorbars(log_period, k_mag, k_mag_err)
+	
+# 	scatter!(ax, log_period, k_mag)
+
+# 	lines!(ax, log_period, m .* log_period .+ b; color = :orange)
+
+# 	ax.xlabel = L"\log_{10}(\text{Period [days]})"
+# 	ax.ylabel = "Ks"
+
+# 	fig
+# end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -222,6 +265,7 @@ LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 VirtualObservatory = "d7ce213e-d3b9-4ed1-b00e-1146b7ac83e0"
 
 [compat]
@@ -235,6 +279,7 @@ LsqFit = "~0.15.1"
 MathTeXEngine = "~0.6.7"
 Optimization = "~5.2.0"
 OptimizationOptimJL = "~0.4.8"
+StatsBase = "~0.34.8"
 VirtualObservatory = "~0.1.14"
 """
 
@@ -244,7 +289,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "59b794d96ac3401e904ee168bcc419d8bcc73c91"
+project_hash = "b1d6293df7181c94f0e0fdab3ee9f85d8d9ec49c"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "8b2b045b22740e4be20654175cc38291d48539db"
@@ -2752,18 +2797,20 @@ version = "4.1.0+0"
 # ╠═580558f8-5df8-455b-93a3-c3025d33acfe
 # ╠═0f56021f-24d3-4126-a22f-d49a154065bd
 # ╠═8386003f-7d8a-4630-b81b-f3358ac3ce0b
-# ╠═2ff9dd28-4adf-428b-8ae4-bb1c5dc66c4b
 # ╠═29fa1259-74f8-4b48-978a-4ee2e08c20ac
 # ╠═eacbf73c-6691-4648-9c31-351c3286ec9b
+# ╠═77815626-6fd2-4690-9953-9e99cb9755af
+# ╠═0cdac569-12e1-4266-961f-2809117f2dd2
+# ╠═eed1b873-2b70-4108-8651-4c917b53efdf
+# ╠═2ff9dd28-4adf-428b-8ae4-bb1c5dc66c4b
 # ╟─6096dc80-a434-4f1a-9af5-40fbbf897d05
 # ╠═26c374b4-7556-446f-91d7-eaabaa1371e7
 # ╠═002fa353-906a-4e3c-bd8e-12d681417240
 # ╠═3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
 # ╟─3f0abe3e-08cb-4c3c-9997-e654341bce12
-# ╠═0cdac569-12e1-4266-961f-2809117f2dd2
-# ╠═eed1b873-2b70-4108-8651-4c917b53efdf
 # ╟─64da9892-c33b-4d00-ac8b-6564dea7b4e1
-# ╠═d929d55d-54b3-4350-81ea-6d5e3068e2df
+# ╠═a8ae7056-68a4-4bfc-9adb-e52821a1ae49
+# ╟─4e69c1de-6cf0-448b-8b95-5b6c54795820
 # ╟─da58364b-78f3-4113-9fc1-1a020a9e15dc
 # ╠═1d61727f-b373-4394-b486-79eb63a71f37
 # ╟─9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
@@ -2774,9 +2821,12 @@ version = "4.1.0+0"
 # ╠═e1ad0f97-2d61-43dc-825c-bf7503a708dd
 # ╠═616d9778-106e-46ae-bf87-92828e98339f
 # ╟─e6d108e2-6ea1-4875-a3db-239248100bc7
-# ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 # ╟─d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 # ╠═2f435639-e755-4124-8127-7b163032c041
+# ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
+# ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
+# ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
+# ╠═8c44bde9-c64a-41c2-8b47-e98d40b3cf42
 # ╟─97714008-1e1b-4071-824a-d22801683bbd
 # ╠═58275364-b7bc-4889-b997-cf88f5bc0ee4
 # ╠═7c49a652-3369-4b51-9d99-0bf7fcb4c279
@@ -2786,8 +2836,10 @@ version = "4.1.0+0"
 # ╠═22e7a710-7122-4ae4-aa74-fbc6c39b93d0
 # ╠═e0e8909d-893f-4f35-baf2-c27dafeb23fa
 # ╠═a3582cb7-c2a6-414c-bf7b-d764c2311c80
-# ╠═376ecd9c-2150-4403-b7cd-2bdf348d33e4
 # ╠═3bffbcde-b2b1-445d-b2f7-59a53f33f90a
 # ╠═925eb5ac-a5fa-40d9-8ab1-f10db7dab202
+# ╟─0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
+# ╠═edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
+# ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
