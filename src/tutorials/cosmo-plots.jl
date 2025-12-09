@@ -17,9 +17,8 @@ using InteractiveUtils
 
 # ╔═╡ 1d4c2ee6-c6eb-11f0-8669-cd67adc8e577
 begin
-	using Pkg
-	Pkg.add(["PlutoUI", "CairoMakie", "DynamicQuantities", "LaTeXStrings", "MathTeXEngine"])
-	Pkg.add(; url = "https://github.com/JuliaAstro/Cosmology.jl", rev = "units")
+	import Pkg
+	Pkg.activate(Base.current_project())
 	
 	# Cosmological analysis
 	using Cosmology: cosmology, angular_diameter_dist, age

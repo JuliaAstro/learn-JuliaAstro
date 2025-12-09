@@ -18,9 +18,8 @@ using InteractiveUtils
 # ╔═╡ fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 begin
 	import Pkg
-	Pkg.add(; url = "https://github.com/MakieOrg/Makie.jl", subdir = "Makie", rev = "ff/dim-converts")
-	Pkg.add(["PlutoUI", "DynamicQuantities", "StatsBase", "Distributions", "CairoMakie", "Makie", "DimensionalData"])
-
+	Pkg.activate(Base.current_project())
+	
 	using DynamicQuantities: @u_str, @us_str, dimension, uconvert, ustrip
 	using DynamicQuantities.Constants: pc, G
 	using StatsBase: mean
@@ -116,7 +115,7 @@ v = rand(Normal(206, 4.3), 500)u"km/s"
 first(v, 10) .|> us"km/s"
 
 # ╔═╡ 59af301c-0713-4c93-a824-7375f8c4f761
-stephist(v |> us"km/s")
+stephist(v)
 
 # ╔═╡ d8a2219e-1094-4eb7-be34-2ce58b6bd462
 md"""
@@ -327,7 +326,7 @@ let
 	
 	fig, ax, p =  heatmap(
 		val(x) .|> us"deg",
-		val(y) .|> us"deg",
+		val(y) .|> us"rad",
 		ustrip.(u_A, parent(A));
 		colormap = :cividis,
 	)
@@ -353,7 +352,7 @@ md"""
 
 # ╔═╡ c749ce2d-17ae-45f4-b721-3f486b1cbc23
 md"""
-### Measuring The Column Density of CO
+### Measuring The Column Density of ``\mathrm{CO}``
 
 In order to calculate the mass of the molecular cloud, we need to measure its column density. A number of assumptions are required for the following calculation; the most important are that the emission is optically thin (typically true for ``\mathrm{C}^{18}\mathrm{O}``), and that conditions of local thermodynamic equilibrium hold along the line of sight. In the case where the temperature is large compared to the separation in energy levels for a molecule and the source fills the main beam of the telescope, the total column density for ``\mathrm{C}^{13}\mathrm{O}`` is:
 
