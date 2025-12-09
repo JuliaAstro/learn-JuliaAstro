@@ -22,19 +22,13 @@ begin
     Pkg.instantiate()
 	
 	using DynamicQuantities: @u_str, @us_str, dimension, uconvert, ustrip
-	using DynamicQuantities.Constants: pc, G
+	using DynamicQuantities.Constants: G, pc, h, k_B, c as c_0
 	using StatsBase: mean
 	using Distributions: Normal
 	using CairoMakie: Colorbar, stephist, heatmap
 	using Makie: DQConversion
 	using DimensionalData: DimArray, val, dims
 end
-
-# ╔═╡ e48130c0-0cef-4b8a-9321-eaca67b89521
-using DynamicQuantities.Constants: c as c_0
-
-# ╔═╡ d7729d13-b5b7-4d29-af81-7cfd69a20f25
-using DynamicQuantities.Constants: h, k_B
 
 # ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
 using PlutoUI: TableOfContents, details
@@ -116,7 +110,7 @@ v = rand(Normal(206, 4.3), 500)u"km/s"
 first(v, 10) .|> us"km/s"
 
 # ╔═╡ 59af301c-0713-4c93-a824-7375f8c4f761
-stephist(v)
+stephist(v |> us"km/s")
 
 # ╔═╡ d8a2219e-1094-4eb7-be34-2ce58b6bd462
 md"""
@@ -468,7 +462,7 @@ We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}
 """
 
 # ╔═╡ de22c778-1529-4177-85e6-a0178f437a8c
-H₂_CO_ratio = 5.9e6;
+H₂_CO_ratio = 5.9e6
 
 # ╔═╡ c262aa56-b9b6-4da4-8810-d6120f0724c6
 NH₂ = NCO * H₂_CO_ratio
@@ -680,7 +674,6 @@ TableOfContents()
 # ╠═bf618161-ef96-4445-8fc8-25dc5f662242
 # ╠═1a16d2e1-7898-415c-9a98-a1f2f87e08be
 # ╟─e0a2c745-41cf-4359-bb99-3117fbb507cc
-# ╠═e48130c0-0cef-4b8a-9321-eaca67b89521
 # ╠═d45bad3e-4c82-436b-8e64-c61e5cf65c2f
 # ╠═ee46b865-dbd4-4939-b241-514941dd138d
 # ╠═b183c219-a39b-427a-b740-5675fcc175ca
@@ -691,7 +684,6 @@ TableOfContents()
 # ╠═98869c25-2644-47d1-b8cc-05699292f2a8
 # ╠═18985bb2-6cce-4417-97a2-c2da7b9e0428
 # ╟─d9e2b828-9c32-4638-bfcd-0c16b221aa43
-# ╠═d7729d13-b5b7-4d29-af81-7cfd69a20f25
 # ╠═4092a893-818e-49f4-93d0-be7bd652dddc
 # ╠═c5c907d0-a669-43f3-8030-0bd67452f0a1
 # ╟─a0b64ba9-cbec-404e-bf39-aee03ae407ae
