@@ -19,6 +19,7 @@ using InteractiveUtils
 begin
 	import Pkg
 	Pkg.activate(Base.current_project())
+    Pkg.instantiate()
 	
 	using DynamicQuantities: @u_str, @us_str, dimension, uconvert, ustrip
 	using DynamicQuantities.Constants: pc, G

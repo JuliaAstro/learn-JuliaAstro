@@ -19,6 +19,7 @@ using InteractiveUtils
 begin
 	import Pkg
 	Pkg.activate(Base.current_project())
+    Pkg.instantiate()
 	
 	# Cosmological analysis
 	using Cosmology: cosmology, angular_diameter_dist, age
