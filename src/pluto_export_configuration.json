@@ -1,6 +1,6 @@
 {
     "title": "learn.JuliaAstro",
-    "description": "Learn how to use Julia for research in astronomy. These tutorials are heavily inspured by learn.astropy.",
+    "description": "Learn how to use Julia for research in astronomy. These tutorials are heavily inspired by learn.astropy.",
     "collections": [
         {
             "title": "Data I/O",
