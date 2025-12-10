@@ -64,6 +64,11 @@ html {
     color: var(--sidebar-color);
 }
 
+nav { max-height: calc(100vh - 100px); overflow-y: auto; position: sticky; top: 20px; }
+nav::-webkit-scrollbar { width: 8px; } nav::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+nav::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+nav::-webkit-scrollbar-thumb:hover { background: #555; }
+
 #toggle-nav {
     display: none;
 }
