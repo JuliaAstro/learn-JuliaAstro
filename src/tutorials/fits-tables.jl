@@ -33,23 +33,16 @@ md"""
 
 This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
 
-!!! tip ""
-	## Learning Goals
-	
-	* Download a FITS table file from a URL
-	
-	* Open a FITS table file and view table contents
-	
-	* Make a 2D histogram with the table data
+!!! tip "Learning Goals"
+	- Download a FITS table file from a URL.
+	- Open a FITS table file and view table contents.
+	- Make a 2D histogram with the table data.
 
-!!! note ""
-	## Keywords
+!!! note "Keywords"
 
-	FITS files, file I/O, tables, plots, histograms
+	`FITS files` `file I/O` `tables` `plots` `histograms`
 
-!!! warning ""
-	## Summary
-	
+!!! warning "Summary"
 	This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLang/Downloads.jl) from base Julia to download a data file, then uses [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) to open the file and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to work with the tabular data. Lastly, we use [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) to visualize the data as 1D and 2D histograms.
 """
 

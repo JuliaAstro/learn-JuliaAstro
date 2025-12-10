@@ -15,12 +15,14 @@
 using Markdown
 using InteractiveUtils
 
+# ╔═╡ 8ae8adab-5af9-4962-8837-aff542acfea6
+using DataFramesMeta: DataFramesMeta as DFM
+
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
 	# Data handling
 	using VirtualObservatory: VizierCatalog, table
-	using InvertedIndices: Not
-	using DataFramesMeta: DataFrame, @select, disallowmissing, dropmissing
+	using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
 
 	# Statistics and model fitting
 	using StatsBase: coef, predict
@@ -48,19 +50,24 @@ md"""
 This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
 
 !!! tip "Learning goals"
-	- Use VirtualObservatory.jl to download data from Vizier
-	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl
-	- Learn common functions to fit
-	- Generate a quick fit to data
-	- Plot the model with the data
-	- Compare different models and fitters
+	- Use VirtualObservatory.jl to download data from Vizier.
+	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+	- Learn common functions to fit.
+	- Generate a quick fit to data.
+	- Plot the model with the data.
+	- Compare different models and fitters.
 
 !!! note "Keywords"
-	models, model fitting, astrostatistics, catalog, query, Makie, plots, errorbars, scatter plots
+	`models` `model fitting` `astrostatistics` `catalog` `query` `Makie` `plots` `errorbars` `scatter`
 
 
 !!! warning "Summary"
-	In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data. We use the following packages below:
+	In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
+"""
+
+# ╔═╡ a68daf19-dae6-4442-8234-d6636ef931c7
+md"""
+## Imports
 """
 
 # ╔═╡ 6096dc80-a434-4f1a-9af5-40fbbf897d05
@@ -105,11 +112,11 @@ data(df) * mapping(:log_P, :Ks) * (visual(Scatter) + linear()) |> draw
 
 # ╔═╡ f6ea7c5b-ad96-4f79-a4d4-5c6a1e79fbcb
 md"""
-A lot happened here. In the above line, AoG:
+A fair bit happened here. In the above line, AoG.jl:
 
-- Made a scatter plot of `log_P` vs. `Ks`
-- Fit a line to the data
-- Plot the fitted line along with its estimated 95% confidence interval
+- Made a scatter plot of `log_P` vs. `Ks`.
+- Fit a line to the data.
+- Plot the fitted line along with its estimated 95% confidence interval.
 - Labeled the axes with the appropriate colum names used.
 
 While this is convenient for quick visualization to see that there indeed appears to be a linear relationshiop between the log period of the pulsation period and luminosity (inverse relation to observed magnitude), we really would like to take special care with our statistical analysis.
@@ -186,6 +193,17 @@ md"""
 # ╔═╡ 35f8675d-d8f0-47b0-83b6-156bb75d373d
 md"""
 ## Manual methods
+
+At its core, we are essentially solving the following [linear algebra equation](https://en.wikipedia.org/wiki/Weighted_least_squares):
+
+```math
+\mathbf{
+	\left( X^\textsf{T} W X \right) \boldsymbol{\hat\beta} =
+	X^\textsf{T} W y\
+}\ ,
+```
+
+where ``\mathbf X`` is our design matrix, ``\mathbf W`` our weight matrix, and ``\boldsymbol{\hat\beta}`` our parameter vector (i.e., the y-intercept and slope of the line we would like to fit). Julia has a very powerful [matrix division operator (`\`)](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#Base.:\\-Tuple{AbstractMatrix,%20AbstractVecOrMat}) built right into the language, which we can use to solve this equation for ``\boldsymbol{\hat\beta}``:
 """
 
 # ╔═╡ bd068a95-2945-4eeb-b2e9-869c03f79e99
@@ -193,25 +211,25 @@ md"""
 ### `Base` Julia
 """
 
-# ╔═╡ af209cbf-1144-42cc-8c52-029988b0d5e4
-W = Diagonal(1 ./ df.Ks_err .^ 2)
-
 # ╔═╡ e1ad0f97-2d61-43dc-825c-bf7503a708dd
-X = [ones(length(df.log_P)) df.log_P]
+X = [ones(length(df.log_P)) df.log_P]  # Design matrix
+
+# ╔═╡ af209cbf-1144-42cc-8c52-029988b0d5e4
+W = Diagonal(1 ./ df.Ks_err .^ 2) # Weight matrix
 
 # ╔═╡ 616d9778-106e-46ae-bf87-92828e98339f
-sol_manual = m, b = (X' * W * X) \ (X' * W * df.Ks)
+β̂_base = (X' * W * X) \ (X' * W * df.Ks)
 
 # ╔═╡ e6d108e2-6ea1-4875-a3db-239248100bc7
 md"""
-We now have the y-intercept and slope for our weighted linear model, all in base Julia! Computing the confidence intervals is a bit more involved, but can be handled with GLM.jl, which we show next.
+We now have the y-intercept and slope for our weighted linear model, all in base Julia! We can next conveniently compute the confidence intervals with GLM.jl package, which we show next.
 """
 
 # ╔═╡ d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 md"""
 ### GLM.jl
 
-Used under-the-hood by AoG.jl
+[GLM.jl](https://juliastats.org/GLM.jl/dev/) is the linear and generalized linear models package used by AoG.jl to perform model fitting and uncertainty estimation. It is invoked via the `GLM.glm` function, which can be passed our linear formula via the `GLM.@formula` macro, a distribution that our uncertainties are sampled from, and the kind of weighs that we are using, e.g., probability, analytic, frequency, etc.
 """
 
 # ╔═╡ 2cf30811-3204-4498-9b73-8a3c3bba28e2
@@ -230,11 +248,14 @@ md"""
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
 fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(inv.(df_glm.Ks_err .^ 2)))
 
+# ╔═╡ 816426f9-0511-4dde-9ec4-7c9ccb212a45
+md"""
+!!! note
+	See the [GLM.jl documentation](https://juliastats.org/GLM.jl/stable/) for more.
+"""
+
 # ╔═╡ 480d8ef0-42d7-4089-9da2-1543baa2d02b
 md"""
-!!! tip
-	`@formula` is a convenience macro for <show matrix>
-
 !!! todo
 	Rename wts to weights once this is in: <https://github.com/JuliaStats/GLM.jl/pull/570>
 """
@@ -245,10 +266,10 @@ Note that the computed y-intercept and slope (which we can extract with `GLM.coe
 """
 
 # ╔═╡ 8c44bde9-c64a-41c2-8b47-e98d40b3cf42
-sol_glm = coef(fit_glm)
+β̂_glm = coef(fit_glm)
 
 # ╔═╡ 0c73d53c-8b6e-4b13-a253-27046c1bd741
-sol_glm - sol_manual
+β̂_glm - β̂_base
 
 # ╔═╡ 8641e496-b5f8-4c21-b456-77f14771d0b1
 md"""
@@ -258,6 +279,14 @@ and we now have associated uncertainty information from `fit_glm` that we can us
 # ╔═╡ 07193622-e18b-474d-ab54-95cc09cf3bfc
 Ks_pred, Ks_lower, Ks_upper = predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
 
+# ╔═╡ d03883f3-b488-4176-bb5f-d69dcb9fad77
+md"""
+Note that `Ks_pred` is the same as computing ``y = \hat β_1 + \hatβ_2x`` ourselves:
+"""
+
+# ╔═╡ 7d4b3251-1ce1-43a6-933f-928dd3bf281a
+Ks_pred == β̂_glm[1] .+ β̂_glm[2] * df.log_P
+
 # ╔═╡ 38bc6713-6e89-47c0-9e03-b3e90e3182be
 md"""
 ### Optimization.jl
@@ -265,7 +294,7 @@ md"""
 For completeness, we also show how we might accomplish this with Optimization.jl:
 
 !!! note
-	Best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For exampl, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
+	This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For exampl, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
 """
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
@@ -287,7 +316,7 @@ u0 = zeros(2)
 prob = OptimizationProblem(objective, u0, df)
 
 # ╔═╡ 925eb5ac-a5fa-40d9-8ab1-f10db7dab202
-sol_optim = solve(prob, NelderMead())
+β̂_optim = solve(prob, NelderMead())
 
 # ╔═╡ 4a74192c-c78e-4cea-ac77-7b8bdd486267
 md"""
@@ -295,10 +324,10 @@ Again, our estimated y-intercept and slope are quite close to our other manual e
 """
 
 # ╔═╡ edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
-sol_glm .- sol_optim
+β̂_glm .- β̂_optim
 
 # ╔═╡ 983cf394-29a5-4363-b07b-ccc91c5475e2
-sol_optim .- sol_manual
+β̂_optim .- β̂_base
 
 # ╔═╡ baeba190-dc5f-42ae-a6ec-516aa49bf612
 md"""
@@ -315,21 +344,26 @@ let
 # with_theme(Theme(aog_theme())) do
 	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
 	
+	# Data points
 	fig, ax, p = scatter(log_P, Ks;
 		color = :cornflowerblue,
 		label = "data",
 	)
 
+	# Data uncertainty
+	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
+
+	# Confidence interval
 	band!(ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
 		color = :orange,
 		alpha = 0.15,
 		label = "model",
 	)
 	
-	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
-	
+	# Model prediction
 	lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
 
+	# Display
 	ax.title = "Type II Cepheid observations"
 	ax.titlesize = 16
 	ax.titlealign = :left
@@ -364,7 +398,6 @@ AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
-InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
@@ -383,7 +416,6 @@ AlgebraOfGraphics = "~0.12.0"
 CairoMakie = "~0.15.8"
 DataFramesMeta = "~0.15.6"
 GLM = "~2.0.0"
-InvertedIndices = "~1.3.1"
 LaTeXStrings = "~1.4.0"
 MathTeXEngine = "~0.6.7"
 Optimization = "~5.2.0"
@@ -399,7 +431,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "e9d05106ad6f6f46300251bba60051a8842133a7"
+project_hash = "43fa75c619a9f9d7cb58f3a868b175a23c4405ee"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "8b2b045b22740e4be20654175cc38291d48539db"
@@ -2947,6 +2979,8 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─ec1a7344-e375-4847-b4f7-765a53c066d0
+# ╟─a68daf19-dae6-4442-8234-d6636ef931c7
+# ╠═8ae8adab-5af9-4962-8837-aff542acfea6
 # ╠═b944163c-02c4-4ace-a866-ae6e6f7115ef
 # ╟─6096dc80-a434-4f1a-9af5-40fbbf897d05
 # ╠═002fa353-906a-4e3c-bd8e-12d681417240
@@ -2963,20 +2997,23 @@ version = "4.1.0+0"
 # ╟─4e69c1de-6cf0-448b-8b95-5b6c54795820
 # ╟─35f8675d-d8f0-47b0-83b6-156bb75d373d
 # ╟─bd068a95-2945-4eeb-b2e9-869c03f79e99
-# ╠═af209cbf-1144-42cc-8c52-029988b0d5e4
 # ╠═e1ad0f97-2d61-43dc-825c-bf7503a708dd
+# ╠═af209cbf-1144-42cc-8c52-029988b0d5e4
 # ╠═616d9778-106e-46ae-bf87-92828e98339f
 # ╟─e6d108e2-6ea1-4875-a3db-239248100bc7
-# ╟─d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
+# ╠═d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 # ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
 # ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
 # ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
+# ╟─816426f9-0511-4dde-9ec4-7c9ccb212a45
 # ╟─480d8ef0-42d7-4089-9da2-1543baa2d02b
 # ╟─3b7eee06-f730-45d5-aae1-53b7731694d9
 # ╠═8c44bde9-c64a-41c2-8b47-e98d40b3cf42
 # ╠═0c73d53c-8b6e-4b13-a253-27046c1bd741
 # ╟─8641e496-b5f8-4c21-b456-77f14771d0b1
 # ╠═07193622-e18b-474d-ab54-95cc09cf3bfc
+# ╟─d03883f3-b488-4176-bb5f-d69dcb9fad77
+# ╠═7d4b3251-1ce1-43a6-933f-928dd3bf281a
 # ╟─38bc6713-6e89-47c0-9e03-b3e90e3182be
 # ╠═e0e8909d-893f-4f35-baf2-c27dafeb23fa
 # ╠═a3582cb7-c2a6-414c-bf7b-d764c2311c80

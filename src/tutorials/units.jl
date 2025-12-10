@@ -35,9 +35,7 @@ md"""
 
 This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>
 
-!!! tip ""
-	## Learning Goals
-	
+!!! tip "Learning Goals"
 	- Use `Quantity` objects to estimate a hypothetical galaxy's mass
 	- Take advantage of constants in the DynamicalQuantities.jl package
 	- Print formatted unit strings
@@ -49,14 +47,10 @@ This notebook is modified from <https://learn.astropy.org/tutorials/quantities.h
 	- Make synthetic radio observations
 	- Use `Quantity` objects such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
 
-!!! note ""
-	## Keywords
+!!! note "Keywords"
+	`units` `plots` `radio astronomy` `data cubes`
 
-	units, plots, radio astronomy, data cubes
-
-!!! warning ""
-	## Summary
-	
+!!! warning "Summary"
 	In this tutorial we present some examples showing how `Quantity` objects can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
 """
 

@@ -46,21 +46,16 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.
 
 Companion to: [Working with FITS tables](/tutorials/fits-tables/)
 
-!!! tip ""
-	## Learning Goals
-	
-	* Customize a 2D histogram with image data
-	* Stack several images into a single image (Todo)
-	* Write image data to a FITS file (Todo)
+!!! tip "Learning Goals"
+	- Customize a 2D histogram with image data.
+	- Stack several images into a single image (Todo).
+	- Write image data to a FITS file (Todo).
 
-!!! note ""
-	## Keywords
+!!! note "Keywords"
 
-	FITS files, file I/O, images, image processing, plots, histograms, colorbars
+	`FITS files` `file I/O` `images` `image processing` `plots` `histograms` `colorbars`
 
-!!! warning ""
-	## Summary
-	
+!!! warning "Summary"
 	Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
 """
 
@@ -104,10 +99,9 @@ md"""
 
 [AstroImages.jl](https://juliaastro.org/AstroImages/) is the main starting point in the JuliaAstro ecosystem for easily loading and viewing FITS image files. AstroImages.jl can also handle FITS tables, but it is currently limited in what types of tables it can support [^1]. For this tutorial, just using its `imview` function will be enough to give us a good starting point.
 
-!!! note ""
-	[^1]: This package currently uses [FITSIO.jl](https://juliaastro.org/FITSIO/), a convenience wrapper around a second wrapper, [CFITSIO.jl](http://juliaastro.org/CFITSIO/), which wraps the [CFITSIO C library](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html) for FITS file I/O. Currently, FITSIO.jl cannot handle opening tables containing BitArray data.
-	
-		On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
+[^1]: This package currently uses [FITSIO.jl](https://juliaastro.org/FITSIO/), a convenience wrapper around a second wrapper, [CFITSIO.jl](http://juliaastro.org/CFITSIO/), which wraps the [CFITSIO C library](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html) for FITS file I/O. Currently, FITSIO.jl cannot handle opening tables containing BitArray data.
+
+	On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
 """
 
 # ╔═╡ c04d7668-32ff-4131-8796-007d1637f56f

@@ -54,29 +54,18 @@ md"""
 
 This notebook is modified from <https://learn.astropy.org/tutorials/color-excess.html>
 
-!!! tip ""
-	## Learning Goals
-	
-	* Investigate extinction curve shapes
+!!! tip "Learning Goals"
+	- Investigate extinction curve shapes.
+	- Deredden spectral energy distributions and spectra.
+	- Calculate photometric extinction and reddening.
+	- Calculate synthetic photometry for a dust-reddened star. (todo)
+	- Convert from frequency to wavelength.
 
-	* Deredden spectral energy distributions and spectra
+!!! note "Keywords"
+	`dust` `dust extinction` `units` `photometry` `extinction` `physics` `observational astronomy`
 
-	* Calculate photometric extinction and reddening
-
-	* Calculate synthetic photometry for a dust-reddened star
-
-	* Convert from frequency to wavelength
-
-
-!!! note ""
-	## Keywords
-
-	dust, dust extinction, units, photometry, extinction, physics, observational astronomy
-
-!!! warning ""
-	## Summary
-
-	
+!!! warning "Summary"
+	In this tutorial, we will look at some extinction curves from the literature, use one of those curves to deredden an observed spectrum, and practice invoking a background source flux in order to calculate magnitudes from an extinction model.
 """
 
 # ╔═╡ 2c3cabef-29fd-41cf-b3df-94f58748c22b

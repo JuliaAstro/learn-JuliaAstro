@@ -47,24 +47,18 @@ md"""
 
 This notebook is modified from <https://learn.astropy.org/tutorials/redshift-plot.html>
 
-!!! tip ""
-	## Learning Goals
-	
-	* Plot relationships using Makie.jl
+!!! tip "Learning Goals"
+	* Plot relationships using Makie.jl.
 
-    * Add a second axis to the plot
+    * Add a second axis to the plot.
 
-    * Relate distance, redshift, and age for two different types of cosmologies
+    * Relate distance, redshift, and age for two different types of cosmologies.
 
 
-!!! note ""
-	## Keywords
+!!! note "Keywords"
+	`cosmology` `physics` `units` `plots`
 
-	cosmology, physics, units, plots
-
-!!! warning ""
-	## Summary
-
+!!! warning "Summary"
 	Each redshift corresponds to an age of the universe, so if we're plotting some quantity against redshift, it's often useful show the universe age too. Using [Cosmology.jl](https://juliaastro.org/Cosmology), we'll visualize how this relationship between the two changes depending on the type of cosmology we assume.
 """
 
