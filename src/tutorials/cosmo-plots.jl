@@ -204,7 +204,7 @@ md"""
 
 # ╔═╡ 4d29f960-6f15-4d18-aa17-e80be8a2770a
 md"""
-## Adding another cosmology
+### Adding another cosmology
 
 Finally, let's add a second cosmology for comparison. For this example, we will use the [Planck 2013](https://ui.adsabs.harvard.edu/abs/2014A%26A...571A..16P/abstract) model:
 """

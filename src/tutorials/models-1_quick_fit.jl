@@ -18,7 +18,7 @@ using InteractiveUtils
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
 	using VirtualObservatory: VizierCatalog, table
-	using CairoMakie: Errorbars, errorbars, lines!, scatter!
+	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
 	using InvertedIndices: Not
 	using DataFramesMeta
 	using StatsBase: coef, predict
@@ -29,12 +29,6 @@ begin
 	using Optimization: OptimizationProblem, solve
 	using OptimizationOptimJL: NelderMead
 end
-
-# ╔═╡ ef68e0ef-10b2-49c7-a311-9e260f538d5e
-using CairoMakie: Figure, Axis
-
-# ╔═╡ f3f0094e-107e-4ca6-a91b-0a4214cdb318
-using AlgebraOfGraphics: draw!
 
 # ╔═╡ ad6598b0-99ce-480f-b267-72ac8c9e6848
 using PlutoUI
@@ -59,9 +53,14 @@ df = @select catalog begin
 	:Ks_err = :"e_<Ksmag>"
 end
 
+# ╔═╡ 2132f3ca-cbc2-4b5c-9c45-850cdb14b3b8
+md"""
+## Automatic method
+"""
+
 # ╔═╡ 3f0abe3e-08cb-4c3c-9997-e654341bce12
 md"""
-## AoG.jl
+### AoG.jl
 
 Similar: See [this JuliaAstro tutorial](https://learn.juliaastro.org/tutorials/fits-images/#Plotting-with-Makie.jl-+-AoG.jl)
 """
@@ -137,7 +136,12 @@ md"""
 
 # ╔═╡ 35f8675d-d8f0-47b0-83b6-156bb75d373d
 md"""
-## Manual method
+## Manual methods
+"""
+
+# ╔═╡ bd068a95-2945-4eeb-b2e9-869c03f79e99
+md"""
+### `Base` Julia
 """
 
 # ╔═╡ af209cbf-1144-42cc-8c52-029988b0d5e4
@@ -151,12 +155,12 @@ sol_manual = m, b = (X' * W * X) \ (X' * W * df.Ks)
 
 # ╔═╡ e6d108e2-6ea1-4875-a3db-239248100bc7
 md"""
-We now have the slope and y-intercept for our weighted linear model, all in base Julia!
+We now have the y-intercept and slope for our weighted linear model, all in base Julia! Computing the confidence intervals is a bit more involved, but can be handled with GLM.jl, which we show next.
 """
 
 # ╔═╡ d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 md"""
-## GLM.jl
+### GLM.jl
 
 Used under-the-hood by AoG.jl
 """
@@ -177,30 +181,42 @@ md"""
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
 fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = GLM.aweights(inv.(df_glm.Ks_err .^ 2)))
 
-# ╔═╡ 1efa1d00-34da-48d1-90aa-c6b1d45a28ee
-fit_glm2 = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = inv.(df_glm.Ks_err .^ 2))
-
 # ╔═╡ 480d8ef0-42d7-4089-9da2-1543baa2d02b
 md"""
 !!! tip
-	`@formula` is a convenience macro
-"""
+	`@formula` is a convenience macro for <show matrix>
 
-# ╔═╡ 32609df9-b89a-491f-b420-7847e8c177d6
-md"""
 !!! todo
 	Rename wts to weights once this is in: <https://github.com/JuliaStats/GLM.jl/pull/570>
 """
 
-# ╔═╡ 07193622-e18b-474d-ab54-95cc09cf3bfc
-predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
+# ╔═╡ 3b7eee06-f730-45d5-aae1-53b7731694d9
+md"""
+Note that the computed y-intercept and slope (which we can extract with `GLM.coef` for convenience) are quite close to what we computed manually:
+"""
 
 # ╔═╡ 8c44bde9-c64a-41c2-8b47-e98d40b3cf42
 sol_glm = coef(fit_glm)
 
+# ╔═╡ 0c73d53c-8b6e-4b13-a253-27046c1bd741
+sol_glm - sol_manual
+
+# ╔═╡ 8641e496-b5f8-4c21-b456-77f14771d0b1
+md"""
+and we now have associated uncertainty information from `fit_glm` that we can use to estimate our confidence intervals using `GLM.predict`:
+"""
+
+# ╔═╡ 07193622-e18b-474d-ab54-95cc09cf3bfc
+y_pred, y_lower, y_upper = predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
+
 # ╔═╡ 38bc6713-6e89-47c0-9e03-b3e90e3182be
 md"""
-## Optimization.jl
+### Optimization.jl
+
+For completeness, we also show how we might accomplish this with Optimization.jl:
+
+!!! note
+	Best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For exampl, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
 """
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
@@ -224,39 +240,64 @@ prob = OptimizationProblem(objective, u0, df)
 # ╔═╡ 925eb5ac-a5fa-40d9-8ab1-f10db7dab202
 sol_optim = solve(prob, NelderMead())
 
-# ╔═╡ 2df6dced-3320-4d1a-a6c8-a46cb4c2bcf1
+# ╔═╡ 4a74192c-c78e-4cea-ac77-7b8bdd486267
 md"""
-!!! note
-	Best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For exampl, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
-"""
-
-# ╔═╡ 0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
-md"""
-## Plot
+Again, our estimated y-intercept and slope are quite close to our other manual estimates: 
 """
 
 # ╔═╡ edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
 sol_glm .- sol_optim
 
-# ╔═╡ 0c73d53c-8b6e-4b13-a253-27046c1bd741
-sol_glm .- sol_manual
-
 # ╔═╡ 983cf394-29a5-4363-b07b-ccc91c5475e2
 sol_optim .- sol_manual
 
+# ╔═╡ baeba190-dc5f-42ae-a6ec-516aa49bf612
+md"""
+We can now use either estimate to produce our linear fit plot in plain Makie.
+"""
+
+# ╔═╡ 0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
+md"""
+### Plot
+"""
+
 # ╔═╡ c3d88d47-93f5-4f39-98ea-eb76f8a4974d
-# let
-# 	fig, ax, p = errorbars(log_period, k_mag, k_mag_err)
+let
+# with_theme(Theme(aog_theme())) do
+	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
 	
-# 	scatter!(ax, log_period, k_mag)
+	fig, ax, p = scatter(log_P, Ks;
+		color = :cornflowerblue,
+		label = "data",
+	)
 
-# 	lines!(ax, log_period, m .* log_period .+ b; color = :orange)
+	band!(ax, log_P, disallowmissing(y_lower), disallowmissing(y_upper);
+		color = :orange,
+		alpha = 0.15,
+		label = "model",
+	)
+	
+	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
+	
+	lines!(ax, log_P, y_pred; color = :orange, label = "model")
 
-# 	ax.xlabel = L"\log_{10}(\text{Period [days]})"
-# 	ax.ylabel = "Ks"
+	ax.title = "Type II Cepheid observations"
+	ax.titlesize = 16
+	ax.titlealign = :left
+	ax.subtitle = "Bhardwaj et al. 2017"
+	ax.xlabel = "log₁₀(Period [days])"
+	ax.ylabel = "Ks [mag]"
 
-# 	fig
-# end
+	Legend(fig[1, 2], ax; merge = true)
+
+	fig
+end
+
+# ╔═╡ 3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
+md"""
+!!! note
+	Note the repeated labeling and other styling that AoG saves us from needing to do.
+"""
 
 # ╔═╡ 50435095-f83d-4746-bd53-eeeba6a96f4a
 TableOfContents()
@@ -2851,17 +2892,17 @@ version = "4.1.0+0"
 # ╟─6096dc80-a434-4f1a-9af5-40fbbf897d05
 # ╠═002fa353-906a-4e3c-bd8e-12d681417240
 # ╠═3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
+# ╟─2132f3ca-cbc2-4b5c-9c45-850cdb14b3b8
 # ╟─3f0abe3e-08cb-4c3c-9997-e654341bce12
 # ╟─64da9892-c33b-4d00-ac8b-6564dea7b4e1
 # ╠═a8ae7056-68a4-4bfc-9adb-e52821a1ae49
 # ╟─4e69c1de-6cf0-448b-8b95-5b6c54795820
 # ╟─da58364b-78f3-4113-9fc1-1a020a9e15dc
 # ╠═1d61727f-b373-4394-b486-79eb63a71f37
-# ╠═ef68e0ef-10b2-49c7-a311-9e260f538d5e
-# ╠═f3f0094e-107e-4ca6-a91b-0a4214cdb318
 # ╟─15516d38-b5b0-4dc4-8ce5-8d853dfc2c3d
 # ╟─9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 # ╟─35f8675d-d8f0-47b0-83b6-156bb75d373d
+# ╟─bd068a95-2945-4eeb-b2e9-869c03f79e99
 # ╠═af209cbf-1144-42cc-8c52-029988b0d5e4
 # ╠═e1ad0f97-2d61-43dc-825c-bf7503a708dd
 # ╠═616d9778-106e-46ae-bf87-92828e98339f
@@ -2870,22 +2911,24 @@ version = "4.1.0+0"
 # ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
 # ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
 # ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
-# ╠═1efa1d00-34da-48d1-90aa-c6b1d45a28ee
 # ╟─480d8ef0-42d7-4089-9da2-1543baa2d02b
-# ╟─32609df9-b89a-491f-b420-7847e8c177d6
-# ╠═07193622-e18b-474d-ab54-95cc09cf3bfc
+# ╟─3b7eee06-f730-45d5-aae1-53b7731694d9
 # ╠═8c44bde9-c64a-41c2-8b47-e98d40b3cf42
+# ╠═0c73d53c-8b6e-4b13-a253-27046c1bd741
+# ╟─8641e496-b5f8-4c21-b456-77f14771d0b1
+# ╠═07193622-e18b-474d-ab54-95cc09cf3bfc
 # ╟─38bc6713-6e89-47c0-9e03-b3e90e3182be
 # ╠═e0e8909d-893f-4f35-baf2-c27dafeb23fa
 # ╠═a3582cb7-c2a6-414c-bf7b-d764c2311c80
 # ╠═3bffbcde-b2b1-445d-b2f7-59a53f33f90a
 # ╠═925eb5ac-a5fa-40d9-8ab1-f10db7dab202
-# ╟─2df6dced-3320-4d1a-a6c8-a46cb4c2bcf1
-# ╟─0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
+# ╟─4a74192c-c78e-4cea-ac77-7b8bdd486267
 # ╠═edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
-# ╠═0c73d53c-8b6e-4b13-a253-27046c1bd741
 # ╠═983cf394-29a5-4363-b07b-ccc91c5475e2
+# ╟─baeba190-dc5f-42ae-a6ec-516aa49bf612
+# ╟─0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
 # ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
+# ╟─3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
 # ╠═50435095-f83d-4746-bd53-eeeba6a96f4a
 # ╠═ad6598b0-99ce-480f-b267-72ac8c9e6848
 # ╟─00000000-0000-0000-0000-000000000001
