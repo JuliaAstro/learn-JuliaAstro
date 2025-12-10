@@ -4,7 +4,7 @@
 #> [frontmatter]
 #> order = 1
 #> title = "Working with FITS tables"
-#> image = "https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/524849461-e8bce961-504c-41d7-a1ed-df2ed0ac19e9.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251210T135348Z&X-Amz-Expires=300&X-Amz-Signature=4848872057d6a42c836cfcc1e7b7f9343b0581627e5e92b9719afe7f5c9ffb28&X-Amz-SignedHeaders=host"
+#> image = "https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/524887851-af5c8284-1ec9-40d9-aef4-39991e0fa56b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251210T151041Z&X-Amz-Expires=300&X-Amz-Signature=5a83163077bcb0d87e549f2369944e68b4f407775bdaafae4acd177a340192bb&X-Amz-SignedHeaders=host"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
