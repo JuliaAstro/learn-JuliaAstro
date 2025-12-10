@@ -4,14 +4,11 @@
 #> [frontmatter]
 #> order = 1
 #> title = "Working with FITS tables"
+#> image = "https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/524849461-e8bce961-504c-41d7-a1ed-df2ed0ac19e9.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251210T135348Z&X-Amz-Expires=300&X-Amz-Signature=4848872057d6a42c836cfcc1e7b7f9343b0581627e5e92b9719afe7f5c9ffb28&X-Amz-SignedHeaders=host"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
-#> tags = ["FITS files", "file I/O", "tables", "plots", "histograms"]
-#> 
-#>     [[frontmatter.author]]
-#>     name = "Ian Weaver"
-#>     url = "https://github.com/icweaver"
+#> tags = ["file I/O", "FITS", "tables", "plots", "histograms"]
 
 using Markdown
 using InteractiveUtils
@@ -40,7 +37,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.
 
 !!! note "Keywords"
 
-	`FITS files` `file I/O` `tables` `plots` `histograms`
+	`file I/O` `FITS` `tables` `plots` `histograms`
 
 !!! warning "Summary"
 	This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLang/Downloads.jl) from base Julia to download a data file, then uses [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) to open the file and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to work with the tabular data. Lastly, we use [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) to visualize the data as 1D and 2D histograms.

@@ -48,7 +48,6 @@ $(pluto_head)
             <div class="search-bar">
                 <form action="$(root_url)/search" method="GET">
                     <input type="search" name="q" placeholder="Search...">
-                    <input type=submit value="🔎">
                 </form>
             </div>
         </li>
