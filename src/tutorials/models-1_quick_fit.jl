@@ -5,7 +5,7 @@
 #> title = "Modeling 1: Make a quick model fit"
 #> layout = "layout.jlhtml"
 #> date = "2025-12-09"
-#> description = "Work with units in astrophysical calculations."
+#> description = "Make simple fits to your data."
 #> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots"]
 #> 
 #>     [[frontmatter.author]]
@@ -17,34 +17,69 @@ using InteractiveUtils
 
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
+	# Data handling
 	using VirtualObservatory: VizierCatalog, table
-	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
 	using InvertedIndices: Not
-	using DataFramesMeta
+	using DataFramesMeta: DataFrame, @select, disallowmissing, dropmissing
+
+	# Statistics and model fitting
 	using StatsBase: coef, predict
-	using CairoMakie: Scatter, set_theme!, with_theme, Theme
-	using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
 	using LinearAlgebra: Diagonal
-	using GLM: GLM, Normal, @formula, glm, aweights
+	using GLM: Normal, @formula, glm, aweights
 	using Optimization: OptimizationProblem, solve
 	using OptimizationOptimJL: NelderMead
-end
+	
+	# Plotting
+	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
+	using CairoMakie: Scatter, set_theme!, with_theme, Theme
+	using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
+	using LaTeXStrings: @L_str
+	using MathTeXEngine: set_texfont_family!, FontFamily
+	set_texfont_family!(FontFamily("TeXGyreHeros"))
+end;
 
 # ╔═╡ ad6598b0-99ce-480f-b267-72ac8c9e6848
 using PlutoUI
 
-# ╔═╡ 434b1c97-4bae-49da-8eaf-207a23a6af7d
+# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
 md"""
 # Modeling 1: Make a quick model fit
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
+
+!!! tip "Learning goals"
+	- Use VirtualObservatory.jl to download data from Vizier
+	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl
+	- Learn common functions to fit
+	- Generate a quick fit to data
+	- Plot the model with the data
+	- Compare different models and fitters
+
+!!! note "Keywords"
+	models, model fitting, astrostatistics, catalog, query, Makie, plots, errorbars, scatter plots
+
+
+!!! warning "Summary"
+	In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data. We use the following packages below:
 """
 
 # ╔═╡ 6096dc80-a434-4f1a-9af5-40fbbf897d05
 md"""
 ## Data
+
+We are going to start with a linear fit to real data. The data comes from the paper [Bhardwaj et al. 2017](https://ui.adsabs.harvard.edu/abs/2017A%26A...605A.100B). This is a catalog of Type II Cepheids, which is a type of variable stars that pulsate with a period between 1 and 50 days. In this part of the tutorial, we are going to measure the Cepheids Period-Luminosity relation using astropy.modeling. This relation states that if a star has a longer period, the luminosity we measure is higher. We use [VirtualObservatory.jl](https://github.com/JuliaAPlavin/VirtualObservatory.jl/tree/master) to download this data from Vizier:
 """
 
 # ╔═╡ 002fa353-906a-4e3c-bd8e-12d681417240
 catalog = VizierCatalog("J/A+A/605/A100") |> table |> DataFrame |> dropmissing
+
+# ╔═╡ b406eba1-cac7-4d19-854d-f2b2c0eda33f
+names(catalog) # List all columns names
+
+# ╔═╡ 05047cc3-b7c7-40eb-86da-fcc6698e41ee
+md"""
+This catalog has a lot of information, but for this tutorial we are going to work only with periods and magnitudes. Let's grab them using the keywords `Period` and `<Ksmag>`. Note that `e_<Ksmag>` refers to the error bars in the magnitude measurements. We'd also like to rename these to some more convenient labels. We can do this selection and renaming simultaneously with the `DataFramesMeta.@select` macro and `=>` syntax from DataFrames.jl, respectively:
+"""
 
 # ╔═╡ 3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
 df = @select catalog begin
@@ -53,42 +88,42 @@ df = @select catalog begin
 	:Ks_err = :"e_<Ksmag>"
 end
 
+# ╔═╡ ddce8426-9da5-419e-b5f4-65aaf990c7ca
+md"""
+Let's take a look at the magnitude measurements as a function of period. We'll show a convenient way to do this with AlgebraOfGraphics.jl (AoG.jl), as well as with manual methods if more control is desired.
+"""
+
 # ╔═╡ 2132f3ca-cbc2-4b5c-9c45-850cdb14b3b8
 md"""
-## Automatic method
-"""
+## Automatic plotting with AoG.jl
 
-# ╔═╡ 3f0abe3e-08cb-4c3c-9997-e654341bce12
-md"""
-### AoG.jl
-
-Similar: See [this JuliaAstro tutorial](https://learn.juliaastro.org/tutorials/fits-images/#Plotting-with-Makie.jl-+-AoG.jl)
-"""
-
-# ╔═╡ 64da9892-c33b-4d00-ac8b-6564dea7b4e1
-md"""
-One-liner, unweighted (good for quick viz)
+Starting with AoG.jl, here is a simple one-liner we can start with:
 """
 
 # ╔═╡ a8ae7056-68a4-4bfc-9adb-e52821a1ae49
 data(df) * mapping(:log_P, :Ks) * (visual(Scatter) + linear()) |> draw
 
-# ╔═╡ 4e69c1de-6cf0-448b-8b95-5b6c54795820
+# ╔═╡ f6ea7c5b-ad96-4f79-a4d4-5c6a1e79fbcb
 md"""
-!!! note
-	Assumes frequency weights. Pass ``1 / \sigma_i^2`` to treat as analytic weights, match other libraries like astropy. For a discussion on some of the other weights used in the Julia ecosystem, see [this section](https://juliastats.org/StatsBase.jl/stable/weights/#AnalyticWeights) of the StatsBase.jl documentation.
-"""
+A lot happened here. In the above line, AoG:
 
-# ╔═╡ da58364b-78f3-4113-9fc1-1a020a9e15dc
-md"""
-Easy to customize and weight fit
+- Made a scatter plot of `log_P` vs. `Ks`
+- Fit a line to the data
+- Plot the fitted line along with its estimated 95% confidence interval
+- Labeled the axes with the appropriate colum names used.
+
+While this is convenient for quick visualization to see that there indeed appears to be a linear relationshiop between the log period of the pulsation period and luminosity (inverse relation to observed magnitude), we really would like to take special care with our statistical analysis.
+
+For example, we would like to weight our fit by the uncertainty in our magnitude measurements, `Ks_err`. It is also important to note that their is a difference between frequency weights, which this package uses by default, and analytic weights, which go like the inverse variance of our measurements ``\left(1 / \sigma_i^2\right)``, where ``\sigma_i \equiv `` `Ks_err` for our purposes. This will also impact how our confidence interval is calculated.
+
+Let's apply these requirements, and also update the styling of our plot a bit:
 """
 
 # ╔═╡ 1d61727f-b373-4394-b486-79eb63a71f37
 with_theme(Theme(aog_theme())) do
 	# Common data
 	layer_scatter = data(df) * mapping(
-		:log_P => "log₁₀(Period [days])",
+		:log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
 		:Ks => "Ks [mag]",
 	)
 	
@@ -114,12 +149,6 @@ with_theme(Theme(aog_theme())) do
 	)
 end
 
-# ╔═╡ 15516d38-b5b0-4dc4-8ce5-8d853dfc2c3d
-md"""
-!!! tip "To-do"
-	See if this can be upstreamed to AoG: <https://github.com/icweaver/AlgebraOfGraphics.jl/tree/glm>
-"""
-
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
 !!! tip
@@ -132,6 +161,26 @@ md"""
 	```
 
 	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on themeing, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
+"""
+
+# ╔═╡ 6ef287bb-7b3f-4fbc-aa24-2b317a22b6f9
+md"""
+Much better! Besides some minor styling instructions given from our end, the entirety of the statistical analysis was handled by this small, but powerful, bit of code:
+
+```julia
+# Linear model
+layer_model = layer_scatter *
+	mapping(weights = :Ks_err) *
+	linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+```
+
+We'll next take a look under the hood to see how these calculations were performed.
+"""
+
+# ╔═╡ 4e69c1de-6cf0-448b-8b95-5b6c54795820
+md"""
+!!! note
+	For more on different statistical weightings used in the Julia ecosystem, see [this section](https://juliastats.org/StatsBase.jl/stable/weights/#AnalyticWeights) of the StatsBase.jl documentation.
 """
 
 # ╔═╡ 35f8675d-d8f0-47b0-83b6-156bb75d373d
@@ -179,7 +228,7 @@ md"""
 """
 
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
-fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = GLM.aweights(inv.(df_glm.Ks_err .^ 2)))
+fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(inv.(df_glm.Ks_err .^ 2)))
 
 # ╔═╡ 480d8ef0-42d7-4089-9da2-1543baa2d02b
 md"""
@@ -207,7 +256,7 @@ and we now have associated uncertainty information from `fit_glm` that we can us
 """
 
 # ╔═╡ 07193622-e18b-474d-ab54-95cc09cf3bfc
-y_pred, y_lower, y_upper = predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
+Ks_pred, Ks_lower, Ks_upper = predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
 
 # ╔═╡ 38bc6713-6e89-47c0-9e03-b3e90e3182be
 md"""
@@ -271,7 +320,7 @@ let
 		label = "data",
 	)
 
-	band!(ax, log_P, disallowmissing(y_lower), disallowmissing(y_upper);
+	band!(ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
 		color = :orange,
 		alpha = 0.15,
 		label = "model",
@@ -279,14 +328,15 @@ let
 	
 	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
 	
-	lines!(ax, log_P, y_pred; color = :orange, label = "model")
+	lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
 
 	ax.title = "Type II Cepheid observations"
 	ax.titlesize = 16
 	ax.titlealign = :left
 	ax.subtitle = "Bhardwaj et al. 2017"
-	ax.xlabel = "log₁₀(Period [days])"
+	ax.xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}"
 	ax.ylabel = "Ks [mag]"
+	ax.ylabelfont = :bold
 
 	Legend(fig[1, 2], ax; merge = true)
 
@@ -296,7 +346,12 @@ end
 # ╔═╡ 3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
 md"""
 !!! note
-	Note the repeated labeling and other styling that AoG saves us from needing to do.
+	Note the repeated labeling, styling, and external statistical analysis that AoG saves us from needing to do by hand.
+"""
+
+# ╔═╡ b2805e96-5cce-4200-842b-931187007a31
+md"""
+# Notebook setup 🔧
 """
 
 # ╔═╡ 50435095-f83d-4746-bd53-eeeba6a96f4a
@@ -310,7 +365,9 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -327,6 +384,8 @@ CairoMakie = "~0.15.8"
 DataFramesMeta = "~0.15.6"
 GLM = "~2.0.0"
 InvertedIndices = "~1.3.1"
+LaTeXStrings = "~1.4.0"
+MathTeXEngine = "~0.6.7"
 Optimization = "~5.2.0"
 OptimizationOptimJL = "~0.4.8"
 PlutoUI = "~0.7.75"
@@ -340,7 +399,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "8eb7247f23f9846485744350396ccffeb51209c4"
+project_hash = "e9d05106ad6f6f46300251bba60051a8842133a7"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "8b2b045b22740e4be20654175cc38291d48539db"
@@ -2887,20 +2946,21 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─ec1a7344-e375-4847-b4f7-765a53c066d0
 # ╠═b944163c-02c4-4ace-a866-ae6e6f7115ef
-# ╟─434b1c97-4bae-49da-8eaf-207a23a6af7d
 # ╟─6096dc80-a434-4f1a-9af5-40fbbf897d05
 # ╠═002fa353-906a-4e3c-bd8e-12d681417240
+# ╠═b406eba1-cac7-4d19-854d-f2b2c0eda33f
+# ╟─05047cc3-b7c7-40eb-86da-fcc6698e41ee
 # ╠═3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
+# ╟─ddce8426-9da5-419e-b5f4-65aaf990c7ca
 # ╟─2132f3ca-cbc2-4b5c-9c45-850cdb14b3b8
-# ╟─3f0abe3e-08cb-4c3c-9997-e654341bce12
-# ╟─64da9892-c33b-4d00-ac8b-6564dea7b4e1
 # ╠═a8ae7056-68a4-4bfc-9adb-e52821a1ae49
-# ╟─4e69c1de-6cf0-448b-8b95-5b6c54795820
-# ╟─da58364b-78f3-4113-9fc1-1a020a9e15dc
+# ╟─f6ea7c5b-ad96-4f79-a4d4-5c6a1e79fbcb
 # ╠═1d61727f-b373-4394-b486-79eb63a71f37
-# ╟─15516d38-b5b0-4dc4-8ce5-8d853dfc2c3d
 # ╟─9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
+# ╟─6ef287bb-7b3f-4fbc-aa24-2b317a22b6f9
+# ╟─4e69c1de-6cf0-448b-8b95-5b6c54795820
 # ╟─35f8675d-d8f0-47b0-83b6-156bb75d373d
 # ╟─bd068a95-2945-4eeb-b2e9-869c03f79e99
 # ╠═af209cbf-1144-42cc-8c52-029988b0d5e4
@@ -2929,6 +2989,7 @@ version = "4.1.0+0"
 # ╟─0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
 # ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 # ╟─3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
+# ╟─b2805e96-5cce-4200-842b-931187007a31
 # ╠═50435095-f83d-4746-bd53-eeeba6a96f4a
 # ╠═ad6598b0-99ce-480f-b267-72ac8c9e6848
 # ╟─00000000-0000-0000-0000-000000000001
