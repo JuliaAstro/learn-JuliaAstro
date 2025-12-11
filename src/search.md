@@ -10,7 +10,7 @@ layout: "md.jlmd"
 <h1>Search</h1>
 <div class="search-bar big">
     <form action="$(root_url)/search" method="GET">
-        <input type="search" name="q" placeholder="Search...">
+        <input type="search" name="q" placeholder="Search..." style="width: 100%">
         <input type=submit>
     </form>
 </div>
