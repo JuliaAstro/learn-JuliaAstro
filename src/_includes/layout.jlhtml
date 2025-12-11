@@ -24,6 +24,7 @@ $(let d = get(page.output.frontmatter, "description", nothing)
     end
 end)
 
+<link rel="root" href="$(root_url)" />
 <link rel="icon" href="$(root_url)/assets/favicon.ico" />
 <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
 
