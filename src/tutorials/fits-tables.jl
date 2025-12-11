@@ -45,7 +45,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.
 
 # ╔═╡ bfe84763-0062-41a3-aa09-ae61a016766c
 md"""
-### Imports
+## Imports
 """
 
 # ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
@@ -197,7 +197,7 @@ md"""
 """
 
 # ╔═╡ 8af534db-2bda-49a3-b538-7a6290de2302
-TableOfContents()
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

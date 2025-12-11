@@ -62,7 +62,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/redshift-plo
 
 # ╔═╡ 3f0b8192-6c8d-4fc4-9503-4f5f4876b6f8
 md"""
-### Imports
+## Imports
 """
 
 # ╔═╡ 3124c523-bfa7-45d5-9cb9-14b26f838ec4
@@ -271,7 +271,7 @@ md"""
 """
 
 # ╔═╡ aea0ba58-a37f-4b55-8fe6-55cbb79e058a
-TableOfContents()
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

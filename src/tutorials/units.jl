@@ -54,7 +54,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/quantities.h
 
 # ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
 md"""
-### Imports
+## Imports
 """
 
 # ╔═╡ 60c89d86-942e-4c97-bd7a-ad2f792b1155
@@ -599,7 +599,7 @@ end
 """
 
 # ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-TableOfContents()
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

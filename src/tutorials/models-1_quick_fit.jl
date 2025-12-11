@@ -386,7 +386,7 @@ md"""
 """
 
 # ╔═╡ 50435095-f83d-4746-bd53-eeeba6a96f4a
-TableOfContents()
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

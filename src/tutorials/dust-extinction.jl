@@ -68,7 +68,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/color-excess
 
 # ╔═╡ 2c3cabef-29fd-41cf-b3df-94f58748c22b
 md"""
-### Imports
+## Imports
 """
 
 # ╔═╡ 555cf1bd-5b52-4d26-aaa2-033a9f4d831a
@@ -406,7 +406,7 @@ md"""
 """
 
 # ╔═╡ 8e118239-43e0-427c-bdf1-80c9d5fe130c
-TableOfContents(; depth = 4)
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

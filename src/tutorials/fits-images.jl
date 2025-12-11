@@ -58,7 +58,7 @@ Companion to: [Working with FITS tables](/tutorials/fits-tables/)
 
 # ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
 md"""
-### Imports
+## Imports
 """
 
 # ╔═╡ f87da6ab-c718-47c3-bedc-78cd025b40e6
@@ -459,7 +459,7 @@ md"""
 """
 
 # ╔═╡ c28e551a-ad35-4ec5-a461-a173a53f673c
-TableOfContents()
+TableOfContents(; title = "On this page", depth = 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
