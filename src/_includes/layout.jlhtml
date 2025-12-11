@@ -40,7 +40,7 @@ $(pluto_head)
 <body>
     <div id="pages-layout">
         <button id="toggle-nav" title="Open navigation"></button>
-        <nav id="pages-sidebar">
+        <nav id="pages-sidebar" style="height: 100vh; overflow-y: auto; position: sticky; top: 0px;">
         <div>
         <ul>
             <li class="pluto_home_link"><a class="pluto_home_link" href=$(root_url)><img src="$(root_url)/assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
