@@ -3,7 +3,7 @@
 
 #> [frontmatter]
 #> order = 1
-#> title = "Working with FITS tables"
+#> title = "FITS tables"
 #> image = "https://raw.githubusercontent.com/JuliaAstro/learn-JuliaAstro/refs/heads/main/src/assets/fits-table.png"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"

@@ -236,6 +236,11 @@ h2 {
     font-weight: 800;
 }
 
+.admonition > ul {
+    padding-left: 0;
+    margin-left: 1em;
+}
+
 pre {
     tab-size: 4;
     white-space: pre-wrap;
