@@ -5,6 +5,7 @@
 > - Makie.jl: units in axes labels (and more!) <https://github.com/MakieOrg/Makie.jl/pull/5323>
 > - DimensionalData.jl: Update [Makie.jl extension](https://github.com/rafaqz/DimensionalData.jl/blob/main/ext/DimensionalDataMakieExt.jl) for <https://github.com/MakieOrg/Makie.jl/pull/5323>
 > - GLM.jl: Weighted confidence intervals <https://github.com/JuliaStats/GLM.jl/pull/487>
+> - DD.jl + AoG.jl v0.12 (logarithmic colorbar support): compat <https://github.com/rafaqz/DimensionalData.jl/pull/1153>
 
 > [!WARNING]
 > **To be implemented:**
