@@ -40,6 +40,7 @@ html {
 }
 
 #pages-sidebar {
+    position: sticky;
     font-family: system-ui;
     flex: 0 0 auto;
     width: 16rem;
@@ -54,7 +55,6 @@ html {
 }
 
 #pages-sidebar > div {
-    position: sticky;
     top: 1rem;
     margin: 1rem;
     padding: 0.5rem;
