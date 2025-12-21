@@ -225,22 +225,11 @@ md"""
 We start by downloading our data of the Horsehead Nebula from the link below:
 """
 
-# ╔═╡ 22c1c673-928d-4889-bc7d-a400887fb450
-hdus = (fits ∘ download)("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits");
-
-# ╔═╡ 9d8387eb-cc5a-4b95-8eca-cb9094274927
-md"""
-!!! tip
-	We use the [`∘` operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping) (typed `\circ<TAB>`) to ergonomically compose functions together. This is equivalent to `fits(download(url))`, just with fewer nested parentheses.
-"""
-
-# ╔═╡ ac175741-47e6-4d37-afaa-3f4a51c29fac
-md"""
-Taking a look, we see that we have the following HDUs:
-"""
-
-# ╔═╡ 345d3657-d932-4fa7-b9eb-f67ce01db3b0
-info(hdus)
+# ╔═╡ 1e05c329-a82a-4ed8-ba02-11e155539059
+hdus = let
+	fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
+	fits(fpath; scale = false)
+end
 
 # ╔═╡ eaf39dba-e724-4eac-9a14-28fcd179efc7
 md"""
@@ -252,7 +241,10 @@ img_data = hdus[1].data
 
 # ╔═╡ a9ec676e-8d14-48af-b3ea-6482dce86832
 md"""
-We see that our image is an $(size(img_data, 1)) × $(size(img_data, 2)) array of 16-bit integers. This can be visualized in the same way as our heatmap examples above:
+We see that our image is an $(size(img_data, 1)) × $(size(img_data, 2)) array of $(eltype(img_data)) data. This can be visualized in the same way as our previous heatmap example, which we will show next.
+
+!!! tip "Todo"
+	We use the `scale = false` keyword in our `fits` call to preserve the original data type specified in the `BITPIX` header card. For more, see <documentation coming soon>.
 """
 
 # ╔═╡ b3c6961a-b8a6-4597-aaf7-a97cae793670
@@ -471,12 +463,12 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 AstroImages = {rev = "aog-v0.12", url = "https://github.com/icweaver/AstroImages.jl"}
 
 [compat]
-AlgebraOfGraphics = "~0.12.0"
+AlgebraOfGraphics = "~0.11.10"
 AstroImages = "~0.5.1"
 CairoMakie = "~0.15.8"
 DataFramesMeta = "~0.15.6"
-FITSFiles = "~0.2.0"
-PlutoUI = "~0.7.76"
+FITSFiles = "~0.3.1"
+PlutoUI = "~0.7.77"
 StatsBase = "~0.34.9"
 """
 
@@ -484,9 +476,9 @@ StatsBase = "~0.34.9"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.2"
+julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "27691e28acb68a8b385fe6e82b37bac612218fe3"
+project_hash = "dac5cf7e07b94b30a9244f668c2ea2c96e435e4f"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -552,9 +544,9 @@ version = "1.2.0"
 
 [[deps.AlgebraOfGraphics]]
 deps = ["Accessors", "Colors", "DataAPI", "Dates", "Dictionaries", "FileIO", "GLM", "GeoInterface", "GeometryBasics", "GridLayoutBase", "Isoband", "KernelDensity", "Loess", "Makie", "NaturalSort", "PlotUtils", "PolygonOps", "PooledArrays", "PrecompileTools", "RelocatableFolders", "StatsBase", "StructArrays", "Tables"]
-git-tree-sha1 = "9ac1199d4d2e4e021af66cc1b34327b1615cbce3"
+git-tree-sha1 = "41b570924747cf4b9b463d4ae1af9129948b06ca"
 uuid = "cbdf2221-f076-402e-a563-3d30da359d67"
-version = "0.12.0"
+version = "0.11.10"
 
     [deps.AlgebraOfGraphics.extensions]
     AlgebraOfGraphicsDynamicQuantitiesExt = "DynamicQuantities"
@@ -872,9 +864,7 @@ version = "0.4.6"
 
 [[deps.DimensionalData]]
 deps = ["Adapt", "ArrayInterface", "ConstructionBase", "DataAPI", "Dates", "Extents", "Interfaces", "IntervalSets", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "PrecompileTools", "Random", "RecipesBase", "Statistics", "TableTraits", "Tables"]
-git-tree-sha1 = "f8a086fcef38392393a2e439ca8b1ef5c02d6d25"
-repo-rev = "compat-aog-v1.12"
-repo-url = "https://github.com/icweaver/DimensionalData.jl"
+git-tree-sha1 = "147961441e5cb35da0af404aa4684d2e74ec68eb"
 uuid = "0703355e-b756-11e9-17c0-8b28908087d0"
 version = "0.29.25"
 
@@ -991,10 +981,10 @@ uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.11+0"
 
 [[deps.FITSFiles]]
-deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAstro"]
-git-tree-sha1 = "c5a041e47b26cc10ca71ff39ef66cfb816fc9edd"
+deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAngles", "UnitfulAstro", "UnitfulAtomic"]
+git-tree-sha1 = "b30dbae32cdaed2d2cc0ec502d4f7cf2044fe403"
 uuid = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
-version = "0.2.0"
+version = "0.3.1"
 
 [[deps.FITSIO]]
 deps = ["CFITSIO", "Printf", "Reexport", "Tables"]
@@ -1403,9 +1393,9 @@ version = "0.1.6"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
+git-tree-sha1 = "b6893345fd6658c8e475d40155789f4860ac3b21"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "3.1.3+0"
+version = "3.1.4+0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -1762,7 +1752,7 @@ version = "0.44.2+0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.12.0"
+version = "1.12.1"
 weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
@@ -1782,9 +1772,9 @@ version = "1.4.4"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "0d751d4ceb9dbd402646886332c2f99169dc1cfd"
+git-tree-sha1 = "6ed167db158c7c1031abf3bd67f8e689c8bdf2b7"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.76"
+version = "0.7.77"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -1805,9 +1795,9 @@ version = "1.3.3"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "0f27480397253da18fe2c12a4ba4eb9eb208bf3d"
+git-tree-sha1 = "522f093a29b31a93e34eaea17ba055d850edea28"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.0"
+version = "1.5.1"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
@@ -1932,9 +1922,9 @@ version = "1.3.0"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
-git-tree-sha1 = "712fb0231ee6f9120e005ccd56297abbc053e7e0"
+git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
 uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.8"
+version = "1.4.9"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -2241,6 +2231,12 @@ git-tree-sha1 = "fbe44a0ade62ae5ed0240ad314dfdd5482b90b40"
 uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 version = "1.2.2"
 
+[[deps.UnitfulAtomic]]
+deps = ["Unitful"]
+git-tree-sha1 = "903be579194534af1c4b4778d1ace676ca042238"
+uuid = "a7773ee8-282e-5fa2-be4e-bd808c38a91a"
+version = "1.0.0"
+
 [[deps.WCS]]
 deps = ["ConstructionBase", "WCS_jll"]
 git-tree-sha1 = "c12065744b66adfed32d24c2a13a3053cc235ea7"
@@ -2430,10 +2426,7 @@ version = "4.1.0+0"
 # ╟─f7aca318-a535-4a86-8c29-92d90db96271
 # ╟─0598bfc5-0900-4b04-ad84-9638b89869b9
 # ╟─ad35dd30-40f5-4bd7-b1d6-b81a226e85ab
-# ╠═22c1c673-928d-4889-bc7d-a400887fb450
-# ╟─9d8387eb-cc5a-4b95-8eca-cb9094274927
-# ╟─ac175741-47e6-4d37-afaa-3f4a51c29fac
-# ╠═345d3657-d932-4fa7-b9eb-f67ce01db3b0
+# ╠═1e05c329-a82a-4ed8-ba02-11e155539059
 # ╟─eaf39dba-e724-4eac-9a14-28fcd179efc7
 # ╠═798dbe98-c2d5-4dd2-b624-f5df795ef470
 # ╟─a9ec676e-8d14-48af-b3ea-6482dce86832

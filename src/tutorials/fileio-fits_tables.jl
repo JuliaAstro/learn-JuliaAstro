@@ -2,9 +2,9 @@
 # v0.20.21
 
 #> [frontmatter]
+#> image = "https://raw.githubusercontent.com/JuliaAstro/learn-JuliaAstro/refs/heads/main/src/assets/fits-table.png"
 #> order = 1
 #> title = "FITS tables"
-#> image = "https://raw.githubusercontent.com/JuliaAstro/learn-JuliaAstro/refs/heads/main/src/assets/fits-table.png"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
@@ -71,10 +71,7 @@ We next open this file and view its header information (so-called [Header Data U
 """
 
 # ╔═╡ 11cb6428-3a8e-4916-84a5-1bd06bfd47a9
-hdu_list = fits(event_filename)
-
-# ╔═╡ 92892039-a968-46c9-a016-80df289c474c
-info(hdu_list)
+hdus = fits(event_filename)
 
 # ╔═╡ a577f6a1-00e4-4fa1-9030-a14ca1ebefc6
 """
@@ -91,7 +88,7 @@ In this case, we're interested in reading `EVENTS`, which contains information a
 """
 
 # ╔═╡ c52dd72a-e504-40e2-9937-f78c9b3e1c7e
-hdu_list[2].data |> keys
+hdus[2].data |> keys
 
 # ╔═╡ fe27a708-66d3-4f91-abe1-ce0135d04879
 md"""
@@ -131,7 +128,7 @@ Now we'll take this data and convert it into a `DataFrame` table from the [DataF
 """
 
 # ╔═╡ 5b85edcd-6e79-44a0-85a0-eeee58437203
-df_evt = DataFrame(hdu_list[2].data)
+df_evt = DataFrame(hdus[2].data)
 
 # ╔═╡ 8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
 md"""
@@ -209,19 +206,19 @@ PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-DataFramesMeta = "~0.15.4"
-FITSFiles = "~0.2.0"
+DataFramesMeta = "~0.15.6"
+FITSFiles = "~0.3.1"
 PlutoPlotly = "~0.6.5"
-PlutoUI = "~0.7.75"
+PlutoUI = "~0.7.77"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.2"
+julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "85697cde56abf968c507bcce1e80682b599a0074"
+project_hash = "ef2f53965ce8db075c1f133135d2b87e5278b94a"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -242,9 +239,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
 
 [[deps.Chain]]
-git-tree-sha1 = "9ae9be75ad8ad9d26395bf625dea9beac6d519f1"
+git-tree-sha1 = "765487f32aeece2cf28aa7038e29c31060cb5a69"
 uuid = "8be319e6-bccf-4806-a6f7-6fae938471bc"
-version = "0.6.0"
+version = "1.0.0"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -318,10 +315,10 @@ uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 version = "1.8.1"
 
 [[deps.DataFramesMeta]]
-deps = ["Chain", "DataFrames", "MacroTools", "OrderedCollections", "Reexport", "TableMetadataTools"]
-git-tree-sha1 = "21a4335f249f8b5f311d00d5e62938b50ccace4e"
+deps = ["Chain", "DataFrames", "MacroTools", "OrderedCollections", "PrettyTables", "Reexport", "TableMetadataTools"]
+git-tree-sha1 = "b0652fb7f3c094cf453bf22e699712a0bed9fc83"
 uuid = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
-version = "0.15.4"
+version = "0.15.6"
 
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
@@ -356,10 +353,10 @@ uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.7.0"
 
 [[deps.FITSFiles]]
-deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAstro"]
-git-tree-sha1 = "c5a041e47b26cc10ca71ff39ef66cfb816fc9edd"
+deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAngles", "UnitfulAstro", "UnitfulAtomic"]
+git-tree-sha1 = "b30dbae32cdaed2d2cc0ec502d4f7cf2044fe403"
 uuid = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
-version = "0.2.0"
+version = "0.3.1"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -428,10 +425,16 @@ uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
 [[deps.JSON]]
-deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
+deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
+git-tree-sha1 = "5b6bb73f555bc753a6153deec3717b8904f5551c"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.4"
+version = "1.3.0"
+
+    [deps.JSON.extensions]
+    JSONArrowExt = ["ArrowTypes"]
+
+    [deps.JSON.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -544,7 +547,7 @@ version = "2.8.3"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.12.0"
+version = "1.12.1"
 weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
@@ -552,9 +555,9 @@ weakdeps = ["REPL"]
 
 [[deps.PlotlyBase]]
 deps = ["ColorSchemes", "Colors", "Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Parameters", "Pkg", "REPL", "Requires", "Statistics", "UUIDs"]
-git-tree-sha1 = "28278bb0053da0fd73537be94afd1682cc5a0a83"
+git-tree-sha1 = "49c457ee4c9c6f5bdf2f6f1a69e66976aaecfcdb"
 uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
-version = "0.8.21"
+version = "0.8.22"
 
     [deps.PlotlyBase.extensions]
     DataFramesExt = "DataFrames"
@@ -583,10 +586,10 @@ version = "0.6.5"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "db8a06ef983af758d285665a0398703eb5bc1d66"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "6ed167db158c7c1031abf3bd67f8e689c8bdf2b7"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.75"
+version = "0.7.77"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
@@ -602,15 +605,15 @@ version = "1.3.3"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "0f27480397253da18fe2c12a4ba4eb9eb208bf3d"
+git-tree-sha1 = "522f093a29b31a93e34eaea17ba055d850edea28"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.0"
+version = "1.5.1"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "2542fd0b9476562d80b65d00968c9c5286d5917b"
+git-tree-sha1 = "c5a07210bd060d6a8491b0ccdee2fa0235fc00bf"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.1.1"
+version = "3.1.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -656,9 +659,9 @@ version = "1.3.0"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
-git-tree-sha1 = "712fb0231ee6f9120e005ccd56297abbc053e7e0"
+git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
 uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.8"
+version = "1.4.9"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -688,9 +691,23 @@ version = "1.11.1"
 
 [[deps.StringManipulation]]
 deps = ["PrecompileTools"]
-git-tree-sha1 = "725421ae8e530ec29bcbdddbe91ff8053421d023"
+git-tree-sha1 = "a3c1536470bf8c5e02096ad4853606d7c8f62721"
 uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.4.1"
+version = "0.4.2"
+
+[[deps.StructUtils]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "79529b493a44927dd5b13dde1c7ce957c2d049e4"
+uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
+version = "2.6.0"
+
+    [deps.StructUtils.extensions]
+    StructUtilsMeasurementsExt = ["Measurements"]
+    StructUtilsTablesExt = ["Tables"]
+
+    [deps.StructUtils.weakdeps]
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -766,15 +783,16 @@ version = "1.11.0"
 
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "83360bda12f61c250835830cc40b64f487cc2230"
+git-tree-sha1 = "c25751629f5baaa27fef307f96536db62e1d754e"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.25.1"
+version = "1.27.0"
 
     [deps.Unitful.extensions]
     ConstructionBaseUnitfulExt = "ConstructionBase"
     ForwardDiffExt = "ForwardDiff"
     InverseFunctionsUnitfulExt = "InverseFunctions"
     LatexifyExt = ["Latexify", "LaTeXStrings"]
+    NaNMathExt = "NaNMath"
     PrintfExt = "Printf"
 
     [deps.Unitful.weakdeps]
@@ -783,6 +801,7 @@ version = "1.25.1"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
     LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
     Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.UnitfulAngles]]
@@ -796,6 +815,12 @@ deps = ["Unitful", "UnitfulAngles"]
 git-tree-sha1 = "fbe44a0ade62ae5ed0240ad314dfdd5482b90b40"
 uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 version = "1.2.2"
+
+[[deps.UnitfulAtomic]]
+deps = ["Unitful"]
+git-tree-sha1 = "903be579194534af1c4b4778d1ace676ca042238"
+uuid = "a7773ee8-282e-5fa2-be4e-bd808c38a91a"
+version = "1.0.0"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -827,7 +852,6 @@ version = "17.7.0+0"
 # ╟─6cbed09f-78f4-4253-8558-3de82494404b
 # ╟─100d097d-ed33-40ba-a541-04f93d71a11f
 # ╠═11cb6428-3a8e-4916-84a5-1bd06bfd47a9
-# ╠═92892039-a968-46c9-a016-80df289c474c
 # ╟─a577f6a1-00e4-4fa1-9030-a14ca1ebefc6
 # ╟─2a907d46-51d5-4232-a737-6d19aab073c4
 # ╠═c52dd72a-e504-40e2-9937-f78c9b3e1c7e
