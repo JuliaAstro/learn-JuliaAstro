@@ -27,7 +27,7 @@ begin
 	using GLM: Normal, @formula, glm, aweights
 	using Optimization: OptimizationProblem, solve
 	using OptimizationOptimJL: NelderMead
-	
+
 	# Plotting
 	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
 	using CairoMakie: Scatter, set_theme!, with_theme, Theme
@@ -130,7 +130,7 @@ with_theme(Theme(aog_theme())) do
 		:log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
 		:Ks => "Ks [mag]",
 	)
-	
+
 	# Errorbars
 	layer_errorbars = layer_scatter * mapping(:Ks_err) * visual(Errorbars)
 
@@ -138,7 +138,7 @@ with_theme(Theme(aog_theme())) do
 	layer_model = layer_scatter *
 		mapping(weights = :Ks_err) *
 		linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
-	
+
 	# Combined layers
 	layer_data = layer_scatter + layer_errorbars
 	layers = layer_data * visual(label="data", color=:cornflowerblue) +
@@ -160,7 +160,7 @@ md"""
 
 	```julia
 	using CairoMakie
-	
+
 	set_theme!(<theme>)
 	```
 
@@ -296,14 +296,14 @@ For completeness, we also show how we might accomplish this with Optimization.jl
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
 function objective(u, data)
-    b, m = u
-    x, y, y_err = eachcol(data)
-    
-    # Compute weighted residuals
-    residuals = @. (y - (m * x + b)) / y_err
-    
-    # Sum of squared weighted residuals (χ²)
-    return sum(residuals .^ 2)
+	b, m = u
+	x, y, y_err = eachcol(data)
+
+	# Compute weighted residuals
+	residuals = @. (y - (m * x + b)) / y_err
+
+	# Sum of squared weighted residuals (χ²)
+	return sum(residuals .^ 2)
 end
 
 # ╔═╡ a3582cb7-c2a6-414c-bf7b-d764c2311c80
@@ -317,7 +317,7 @@ prob = OptimizationProblem(objective, u0, df)
 
 # ╔═╡ 4a74192c-c78e-4cea-ac77-7b8bdd486267
 md"""
-Again, our estimated y-intercept and slope are quite close to our other manual estimates: 
+Again, our estimated y-intercept and slope are quite close to our other manual estimates:
 """
 
 # ╔═╡ edf0fc17-b5a9-4475-bdd7-aa6f2673a39d
@@ -340,7 +340,7 @@ md"""
 let
 # with_theme(Theme(aog_theme())) do
 	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
-	
+
 	# Data points
 	fig, ax, p = scatter(log_P, Ks;
 		color = :cornflowerblue,
@@ -356,7 +356,7 @@ let
 		alpha = 0.15,
 		label = "model",
 	)
-	
+
 	# Model prediction
 	lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
 

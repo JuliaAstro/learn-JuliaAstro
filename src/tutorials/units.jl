@@ -137,32 +137,32 @@ let
 	md"""
 	```julia
 	using DynamicQuantities: Constants as C
-	
+
 	# Speed from Kepler's law
 	v_kep = sqrt(C.G * C.M_sun / C.au)
-	
+
 	# View in units of km/s (≈ 29.7847 km/s)
 	v_kep |> us"km/s"
-	
+
 	# Speed from kinematics (≈ 29.7853 km/s)
 	v_kin = 2π * C.au / u"yr"
-	
+
 	# Percent difference (≈ 0.002%)
 	percent_diff = 100 * (v_kin - v_kep) / v_kep
 	```
 	""")
-	
+
 	md"""
 	!!! warn "Exercise"
-	
+
 		Use DynamicQuantities.jl and Kepler's law in the form given below to determine the (circular) orbital speed of the Earth around the Sun in km/s:
-		
+
 		```math
 		v = \sqrt{\frac{G M_⊙}{r}}
 		```
-	
+
 		No need to look up constants or conversion factors to do this calculation -- it's all in `DynamicQuantities.Units` and `DynamicQuantities.Constants`.
-	
+
 		There's a much easier way to figure out the velocity of the Earth using just two units or quantities. Do that and then compare to the Kepler's law answer (the easiest way is probably to compute the percentage difference, if any).
 
 		$(sol)
@@ -228,12 +228,12 @@ data = let
     sig_v = 3u"km/s"
 
 	A = [
-	    exp(
-	        -0.5 * ((ra - cen_ra) / sig_ra)^2
-	        -0.5 * ((dec - cen_dec) / sig_dec)^2
-	        -0.5 * ((v - cen_v) / sig_v)^2
-	    )
-	    for ra in ras, dec in decs, v in vs
+		exp(
+			-0.5 * ((ra - cen_ra) / sig_ra)^2
+			-0.5 * ((dec - cen_dec) / sig_dec)^2
+			-0.5 * ((v - cen_v) / sig_v)^2
+		)
+		for ra in ras, dec in decs, v in vs
 	]
 
 	DimArray(A * u"K", (RA = ras, Dec = decs, Vel = vs))
@@ -300,7 +300,7 @@ let
 	A = intcloud
 	x, y = dims(A)
 	u_A = us"K*km/s"
-	
+
 	fig, ax, p =  heatmap(
 		val(x) .|> us"deg",
 		val(y) .|> us"rad",
@@ -311,9 +311,9 @@ let
 	ax.xreversed = true
 	ax.xlabel = "RA"
 	ax.ylabel = "Dec"
-	
+
 	Colorbar(fig[1, 2], p; label = string("Intensity [", dimension(u_A), " ]"))
-	
+
 	fig
 end
 
@@ -584,11 +584,11 @@ let
 	v_orb(M, r) = sqrt(u"Constants.G" * M / r)
 	```
 	""")
-	
+
 	md"""
 	!!! tip "Exercises"
 		Write a function that computes the Keplerian velocity you worked out in section 1 (using `Quantity` input and outputs, of course), but allowing for an arbitrary mass and orbital radius. Try it with some reasonable numbers for satellites orbiting the Earth, a moon of Jupiter, or an extrasolar planet. Feel free to use wikipedia or similar for the masses and distances.
-	
+
 		$(sol)
 	"""
 end

@@ -17,7 +17,7 @@ using InteractiveUtils
 begin
 	# Cosmological analysis
 	using Cosmology: cosmology, angular_diameter_dist, age
-	
+
 	# Plotting
 	using CairoMakie:
 		Makie,
@@ -31,7 +31,7 @@ begin
 	using LaTeXStrings: @L_str
 	using MathTeXEngine: set_texfont_family!, FontFamily
 	set_texfont_family!(FontFamily("TeXGyreHeros"))
-	
+
 	# Units
 	using DynamicQuantities: @u_str, @us_str, ustrip
 end
@@ -48,9 +48,9 @@ This notebook is modified from <https://learn.astropy.org/tutorials/redshift-plo
 !!! tip "Learning Goals"
 	* Plot relationships using Makie.jl.
 
-    * Add a second axis to the plot.
+	* Add a second axis to the plot.
 
-    * Relate distance, redshift, and age for two different types of cosmologies.
+	* Relate distance, redshift, and age for two different types of cosmologies.
 
 
 !!! note "Keywords"
@@ -91,7 +91,7 @@ cosmo = cosmology(h = 0.7, OmegaM = 0.3, OmegaR = 0)
 
 # ╔═╡ 9be9ec4c-8a13-46a5-aeec-e68c80e9eba1
 md"""
-## Plot 
+## Plot
 
 Now we need an example quantity to plot versus redshift. Let's use the angular diameter distance, which is the ratio of the proper transverse size of an object at redshift ``z_2`` to its angular size in radians, as seen by an observer at ``z_1``. By default, we assume ``z_1 = 0``.
 
@@ -165,7 +165,7 @@ let
 			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
 		),
 	)
-	
+
 	# Age axis
 	ax2 = Axis(f[1, 1];
 		xaxisposition = :top,
@@ -227,7 +227,7 @@ fig = let
 
 	# Default model
 	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
-		
+
 	# Age axis
 	ax2 = Axis(f[1, 1];
 		xaxisposition = :top,
@@ -256,7 +256,7 @@ fig
 # ╔═╡ d7d4e075-0445-46c2-b88e-56a3f1df0bba
 md"""
 !!! tip
-	 This figure can be saved with:
+	This figure can be saved with:
 
 	```julia
 	using CairoMakie

@@ -27,7 +27,7 @@ begin
 
 	# Makie example
 	using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
-	
+
 	# Makie + AlgebraOfGraphics example
 	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
 end
@@ -155,13 +155,13 @@ let
 		colorscale = log10,
 		colormap = :cividis,
 	)
-	
+
 	Colorbar(fig[1, 2], p;
 		ticks = [1, 3, 6, 500, 10_000],
 		minorticksvisible = true,
 		minorticks = IntervalsBetween(9),
 	)
-	
+
 	fig
 end
 

@@ -17,14 +17,14 @@ using InteractiveUtils
 begin
 	# Analysis
 	using DustExtinction
-	
+
 	# Data handling
 	using DataFramesMeta: DataFrame, Not, @rsubset
 	using VirtualObservatory: execute, TAPService
 	using FITSFiles: fits, info
 	using Downloads: download
 	using CodecZlib: GzipDecompressor
-	
+
 	# Units
 	using DynamicQuantities: DynamicQuantities, @u_str, @us_str
 	using DynamicQuantities.Constants: c as c0
@@ -105,7 +105,7 @@ end
 # ╔═╡ eb1c1b16-c391-45a5-81c2-5fd3dbb12c50
 let
 	fig = Figure()
-	
+
 	ax = Axis(fig[1, 1];
 		dim1_conversion = DQConversion(us"1/μm"),
 		xlabel = "λ⁻¹",
@@ -124,7 +124,7 @@ let
 	end
 
 	axislegend(; position = :lt)
-	
+
 	fig
 end
 
@@ -143,8 +143,8 @@ md"""
 
 # ╔═╡ d57bbe7f-b21a-479a-8249-a96d6aac3e95
 df_spectra = execute(
-	 TAPService("https://mast.stsci.edu/vo-tap/api/v0.1/caom/"),
-	 """
+	TAPService("https://mast.stsci.edu/vo-tap/api/v0.1/caom/"),
+	"""
 	SELECT *
 	FROM ivoa.ObsCore
 	WHERE target_name = 'HD 147933'
@@ -153,7 +153,7 @@ df_spectra = execute(
 		CIRCLE('ICRS', 246.396, -23.447, .00028)
 	) = 1
 	AND dataproduct_type = 'spectrum'
-	 """
+	"""
 ) |> DataFrame
 
 # ╔═╡ 70cefdd5-4afb-4e09-b2df-75983bb40e85
@@ -177,12 +177,12 @@ fpath = download("http://archive.stsci.edu/pub/iue/data/lwr/05000/lwr05639.mxlo.
 function decompress_gz_to_iobuffer(filepath::String)
     # Read the compressed file
     compressed_data = read(filepath)
-    
+
     # Decompress directly to IOBuffer
     io = IOBuffer()
     write(io, transcode(GzipDecompressor, compressed_data))
     seekstart(io)  # Reset position to beginning
-    
+
     return io
 end
 
@@ -238,7 +238,7 @@ wav_spectrum, flux_spectrum = let
 	idxs_bad = findall(<(0), flux_spectrum_raw)
 
 	(
-		wav_spectrum_raw[Not(idxs_bad)]u"Å", 
+		wav_spectrum_raw[Not(idxs_bad)]u"Å",
 		flux_spectrum_raw[Not(idxs_bad)]u"erg/s/cm^2/Å",
 	)
 end
@@ -257,7 +257,7 @@ See here for more <https://simbad.cds.unistra.fr/simbad/sim-tap/>
 
 # ╔═╡ a439386d-2b9b-44e8-9c41-cb2ec787024e
 phot_simbad = execute(
-	 TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
+	TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
 	"""
 	select U, B, V from allfluxes
 	join ident using(oidref)

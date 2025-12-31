@@ -97,9 +97,9 @@ md"""
 
 	```julia
 	function FITSFiles.names(hdu::FITSFiles.HDU{FITSFiles.Bintable})
-		
+
 		<parse hdu.cards for TTYPEN, TFORMN, TUNITN, etc.>
-		
+
 		return (
 			(name = "", format = "", ...), # col1
 			(name = "", format = "", unit = "") # col2
@@ -110,14 +110,14 @@ md"""
 	```
 
 	Analogous to hdu.columns in astropy:
-	
+
 	```
 	ColDefs(
-	    name = 'time'; format = '1D'; unit = 's'
-	    name = 'ccd_id'; format = '1I'
-	    name = 'node_id'; format = '1I'
-	    name = 'expno'; format = '1J'
-	    ...
+		name = 'time'; format = '1D'; unit = 's'
+		name = 'ccd_id'; format = '1I'
+		name = 'node_id'; format = '1I'
+		name = 'expno'; format = '1J'
+		...
 	)
 	```
 """
@@ -174,13 +174,13 @@ md"""
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
 plot(df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
-	 x = :x,
-	 y = :y,
-	 kind = :histogram2d,
-	 nbinsx = 200,
-	 nbinsy = 200,
-	 zmin = 0,
-	 zmax = 200,
+	x = :x,
+	y = :y,
+	kind = :histogram2d,
+	nbinsx = 200,
+	nbinsy = 200,
+	zmin = 0,
+	zmax = 200,
 )
 
 # ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
