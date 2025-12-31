@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout learn.JuliaAstro source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🙌 Install Julia
         uses: julia-actions/setup-julia@v2
@@ -25,37 +25,36 @@ jobs:
           version: "1.12"
 
       - name: ⏱ Cache notebook states
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _cache
           key: ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
 
       - name: ⏱ Cache .julia
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.julia
           key: ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
 
       - name: 📅 Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
+
+      - name: 🙌 Install dependencies
+        shell: julia --project {0}
+        run: import Pkg; Pkg.instantiate()
 
       - name: 🪴 Generate site
+        shell: julia --project {0}
         run: |
-          julia --project -e '
-            import Pkg
-            Pkg.instantiate()
-            import PlutoPages
-
-            PlutoPages.generate("."; html_report_path="generation_report.html")'
+          import PlutoPages
+          PlutoPages.generate("."; html_report_path="generation_report.html")
         env:
           JULIA_PKG_SERVER: ""
 
       - name: 📰 Upload site generation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           path: generation_report.html
