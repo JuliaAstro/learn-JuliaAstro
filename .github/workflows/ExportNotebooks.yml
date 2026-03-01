@@ -54,7 +54,7 @@ jobs:
           JULIA_PKG_SERVER: ""
 
       - name: 📰 Upload site generation report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           path: generation_report.html
