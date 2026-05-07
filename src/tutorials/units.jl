@@ -35,24 +35,20 @@ begin
     ),
 	])
 
-	Pkg.add(["DynamicQuantities", "StatsBase", "Distributions", "DimensionalData", "PlutoUI", "Unitful"])
+	Pkg.add(["DynamicQuantities", "StatsBase", "Distributions", "DimensionalData", "PlutoUI", "Unitful", "UnitfulAstro", "PhysicalConstants", "HypertextLiteral"])
 	
-	using DynamicQuantities: @u_str, @us_str, dimension, uconvert, ustrip
-	using DynamicQuantities.Constants: G, pc, h, k_B, c as c_0
+	using DynamicQuantities: DynamicQuantities as DQ
 	using StatsBase: mean
 	using Distributions: Normal
 	using CairoMakie: Colorbar, stephist, heatmap
 	using Makie: DQConversion
-	using DimensionalData: DimArray, val, dims
 	using Unitful: Unitful as U
 	using Random: Xoshiro
+	using HypertextLiteral
+	import UnitfulAstro
+	using DynamicQuantities: Constants as C_DQ
+	using PhysicalConstants: CODATA2018 as C_U
 end
-
-# ╔═╡ 17cd12de-48c2-4189-8ec4-f9fa0033715c
-Pkg.add("HypertextLiteral"); using HypertextLiteral
-
-# ╔═╡ 46817247-368a-4fd1-b702-643fdea13f9b
-Pkg.add(["Unitful", "UnitfulAstro"]); using Unitful, UnitfulAstro
 
 # ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
 using PlutoUI: TableOfContents, details
@@ -87,64 +83,20 @@ md"""
 ## Imports
 """
 
-# ╔═╡ 60c89d86-942e-4c97-bd7a-ad2f792b1155
-md"""
-## 1. Galaxy mass
-
-In this first example, we will use Quantity objects to estimate a hypothetical galaxy's mass, given its half-light radius and radial velocities of stars in the galaxy.
-
-Let's assume that we measured the half-light radius of the galaxy to be 29 pc projected on the sky at the distance of the galaxy. This radius is often called the "effective radius", so we'll store it as a `Quantity` object with the name `Reff`. The easiest way to create a `Quantity` object is by multiplying the value with its unit:
-"""
-
-# ╔═╡ d88f26fa-b150-481d-ab56-48b5bb2feb01
-function side_by_side()
-    @htl("""
-    <style>
-    @media (min-width: 900px) {
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
-            margin-right: 1rem;
-        }
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
-            display: inline-block;
-            vertical-align: top;
-            width: calc((100% - 1rem) / 2);
-            box-sizing: border-box;
-        }
-    }
-    </style>
-    <div class="sbs-marker" style="display:none"></div>
-    """)
-end
-
-# ╔═╡ 1a9a90e5-2524-4d7d-abff-db9889bf79a8
-side_by_side() # Creation
-
 # ╔═╡ 1d2293bd-a236-4b41-a9d7-9c27463b5062
-Reff = 29 * u"Constants.pc"
+Reff_DQ = 29 * DQ.us"Constants.pc"
 
 # ╔═╡ 426c37ea-83dd-4ef4-8a19-f0e16536c034
 Reff_U = 29 * U.u"pc"
 
-# ╔═╡ a9d14d8e-aefa-48d9-a3b3-ca13e284ab08
-side_by_side() # Unit stripping
-
 # ╔═╡ 1b239188-bba1-44d1-bc9c-10b60f762e0d
-ustrip(u"Constants.pc", Reff)
+DQ.ustrip(DQ.u"Constants.pc", Reff_DQ)
 
 # ╔═╡ f2c441b3-374b-439d-ba8c-4b28c0765d45
 U.ustrip(U.u"pc", Reff_U)
 
-# ╔═╡ cc736aec-c48a-411a-af83-4255309d77e9
-md"""
-Furthermore, we can convert the radius to any other unit of length. Here, we convert it to kilometers:
-"""
-
-# ╔═╡ 35bbd795-be20-4398-a060-16fade55e279
-side_by_side()
-
 # ╔═╡ 2c7a71f6-e618-40db-80b7-1ad5f09e59d5
-Reff |> us"km"
+Reff_DQ |> DQ.us"km"
 
 # ╔═╡ 2a11aed4-6516-40dc-94fd-30aa94e76744
 Reff_U |> U.u"km"
@@ -159,35 +111,44 @@ md"""
 Synth. dataset of rad vels
 """
 
+# ╔═╡ 5eabde08-a49a-42e4-ae4f-e06f3381d8b2
+v̄, σ_in = 206, 4.3
+
 # ╔═╡ 892f19a6-af21-4353-9987-9de795ba7ad7
-v = rand(Xoshiro(0), Normal(206, 4.3), 500)u"km/s"
+v = rand(Xoshiro(0), Normal(v̄, σ_in), 500)DQ.us"km/s"
 
 # ╔═╡ 64774c2c-0991-48b2-af4a-ced8fedd115b
-v_U = rand(Xoshiro(0), Normal(206, 4.3), 500)U.u"km/s"
-
-# ╔═╡ f7ceb7c4-6488-43eb-b211-9f7087762a56
-side_by_side()
+v_U = rand(Xoshiro(0), Normal(v̄, σ_in), 500)U.u"km/s"
 
 # ╔═╡ 0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
-stephist(v |> us"km/s")
+stephist(v)
 
 # ╔═╡ 9f14f051-d1e9-4638-8008-840a886b50ab
 stephist(v_U)
 
 # ╔═╡ 2d236d32-faf4-41ef-84de-1d40c02fb238
-sigma = (sqrt ∘ sum)((v .- mean(v)).^2 / length(v))
+sigma_DQ = (sqrt ∘ sum)((v .- mean(v)).^2 / length(v))
 
-# ╔═╡ 64bfb535-ab84-411c-9a1b-3ed8778e8516
-sigma |> us"km/s"
+# ╔═╡ b388f8be-3074-443c-97a9-72eb7098b5e3
+sigma_U = (sqrt ∘ sum)((v_U .- mean(v_U)).^2 / length(v_U))
 
 # ╔═╡ a3baf049-5419-4773-8b7f-0ba07a9f1728
-M = 4 * sigma^2 * Reff / G
+M_DQ = 4 * sigma_DQ^2 * Reff_DQ / C_DQ.G
+
+# ╔═╡ efa15492-4811-4896-8947-b90191651952
+M_U = 4 * sigma_U^2 * Reff_U / C_U.G
 
 # ╔═╡ bb2622f9-98a5-48ca-92cb-bbce84d797f1
-M .|> (us"Constants.M_sun", us"g")
+M_DQ .|> (DQ.us"Constants.M_sun", DQ.us"g")
+
+# ╔═╡ 14909ad6-eb42-48ab-afa7-8b40b700fe3b
+M_U .|> (U.u"Msun", U.u"g")
 
 # ╔═╡ 9e13bde0-eccf-4d21-b603-fd186e87b7d0
-(log10 ∘ ustrip)(us"Constants.M_sun", M)
+(log10 ∘ DQ.ustrip)(DQ.us"Constants.M_sun", M_DQ)
+
+# ╔═╡ 77a81c41-0034-4a18-bb70-d2a1f9379593
+(log10 ∘ U.ustrip)(U.u"Msun", M_U)
 
 # ╔═╡ 5a9dfdf7-aaf8-421d-a451-6a6a5c35e1cc
 md"""
@@ -195,15 +156,16 @@ Note that this is different than:
 """
 
 # ╔═╡ a13de611-145a-40da-9414-8f3f8f85ad98
-(log10 ∘ ustrip)(M)
+(log10 ∘ DQ.ustrip)(M_DQ)
 
-# ╔═╡ a3f42e7e-af38-46b0-b1fb-bdbf77312e16
-md"""
-emphasizing the importance of being explicit with our units. Similarly, taking the logarithm of something with units is not mathematically well defined, so this will sensibly error as well:
-"""
+# ╔═╡ 1e24cdfa-f4a9-4f9e-b95d-af83e724cd90
+(log10 ∘ U.ustrip)(M_U)
 
 # ╔═╡ 095e7efe-f4c6-4a8a-a029-03ce97cd15bd
-log10(M)
+log10(M_DQ)
+
+# ╔═╡ e4a98c65-70de-42fc-b490-f019dd93d3fb
+log10(M_U)
 
 # ╔═╡ 2648b454-2762-4941-b13c-2303ffcd6521
 let
@@ -229,13 +191,11 @@ let
 	md"""
 	!!! warn "Exercise"
 
-		Use DynamicQuantities.jl and Kepler's law in the form given below to determine the (circular) orbital speed of the Earth around the Sun in km/s:
+		Use Kepler's law in the form given below to determine the (circular) orbital speed of the Earth around the Sun in km/s:
 
 		```math
 		v = \sqrt{\frac{G M_⊙}{r}}
 		```
-
-		No need to look up constants or conversion factors to do this calculation -- it's all in `DynamicQuantities.Units` and `DynamicQuantities.Constants`.
 
 		There's a much easier way to figure out the velocity of the Earth using just two units or quantities. Do that and then compare to the Kepler's law answer (the easiest way is probably to compute the percentage difference, if any).
 
@@ -263,10 +223,10 @@ Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 
 """
 
 # ╔═╡ 2c76c406-d15c-4271-baa4-ebebf5299429
-d = 250u"Constants.pc"
+d = 250 * C_DQ.pc
 
 # ╔═╡ cb5b1020-b1f8-4ea1-ad03-a91b5c3ab0c2
-T_ex = 25u"K"
+T_ex = 25 * DQ.u"K"
 
 # ╔═╡ b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
 md"""
@@ -284,9 +244,9 @@ md"""
 # ╔═╡ aab4113d-d7ad-4521-a208-e192ad218cf0
 begin
 	# 1D coordinate quantities
-	ras = range(52, 52.5; length = 100)u"deg"
-	decs = range(0, 0.5; length = 100)u"deg"
-	vs = range(0, 30; length = 300)u"km/s"
+	ras_DQ = range(52, 52.5; length = 100) * DQ.u"deg"
+	decs_DQ = range(0, 0.5; length = 100) * DQ.u"deg"
+	vs_DQ = range(0, 30; length = 300) * DQ.u"km/s"
 end;
 
 # ╔═╡ 539290af-787d-4deb-928c-50e4e9f28173
@@ -309,9 +269,17 @@ data = let
 		)
 		for ra in ras, dec in decs, v in vs
 	] * u"K"
-
-	# DimArray(A * u"K", (RA = ras, Dec = decs, Vel = vs))
 end
+
+# ╔═╡ bb14d291-e0d1-4824-909c-11d0fb500db4
+md"""
+!!! tip
+	DimensionalData.jl
+
+	```julia
+	DimArray(A * u"K", (RA = ras, Dec = decs, Vel = vs))
+	```
+"""
 
 # ╔═╡ e86d6cf7-2274-403a-b1db-017973f33fb7
 md"""
@@ -385,7 +353,8 @@ let
 			xreversed = true,
 			xlabel = "RA",
 			ylabel = "Dec",
-		)
+		),
+		colormap = :cividis,
 	)
 
 	Colorbar(fig[1, 2], p; label = "Intensity")
@@ -681,6 +650,106 @@ end
 # Notebook setup 🔧
 """
 
+# ╔═╡ d88f26fa-b150-481d-ab56-48b5bb2feb01
+function side_by_side(content=nothing)
+    @htl("""
+    <style>
+        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
+            margin-right: 1rem;
+        }
+        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
+        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
+            display: inline-block;
+            vertical-align: top;
+            width: calc((100% - 1rem) / 2);
+            box-sizing: border-box;
+        }
+    </style>
+    <div class="sbs-marker" style="display:none"></div>
+    $(content)
+    """)
+end
+
+# ╔═╡ 60c89d86-942e-4c97-bd7a-ad2f792b1155
+md"""
+## 1. Galaxy mass
+
+In this first example, we will use Quantity objects to estimate a hypothetical galaxy's mass, given its half-light radius and radial velocities of stars in the galaxy.
+
+Let's assume that we measured the half-light radius of the galaxy to be 29 pc projected on the sky at the distance of the galaxy. This radius is often called the "effective radius", so we'll store it as a `Quantity` object with the name `Reff`. The easiest way to create a `Quantity` object is by multiplying the value with its unit:
+""" |> side_by_side
+
+# ╔═╡ a9d14d8e-aefa-48d9-a3b3-ca13e284ab08
+md"""
+Both packages provide a `ustrip` function for stripping the units:
+""" |> side_by_side
+
+# ╔═╡ cc736aec-c48a-411a-af83-4255309d77e9
+md"""
+Furthermore, we can convert the radius to any other unit of length. Here, we convert it to kilometers:
+""" |> side_by_side
+
+# ╔═╡ ca29263f-a6e3-433d-a0b9-b2dd67c118af
+side_by_side()
+
+# ╔═╡ f7ceb7c4-6488-43eb-b211-9f7087762a56
+md"""
+And visualize the results with Makie.jl, which provides automatic units support:
+""" |> side_by_side
+
+# ╔═╡ ce5aea87-2614-4e72-8e88-25a8c590b89f
+md"""
+Do sum math:
+""" |> side_by_side
+
+# ╔═╡ bb9d675b-00ce-4d20-b78b-a08835b47137
+md"""
+All included in DQ:
+```julia
+using DynamicQuantities: Constants as C_DQ
+```
+
+Separate package needed for Unitful:
+```julia
+using PhysicalConstants: CODATA2018 as C_U
+```
+""" |> side_by_side
+
+# ╔═╡ 0ab125c6-568b-414c-acaa-abcfebb559e2
+md"""
+Let's display them in some other useful units:
+""" |> side_by_side
+
+# ╔═╡ 8258d125-5486-4ded-8b4c-4c66aa151c73
+side_by_side()
+
+# ╔═╡ a3f42e7e-af38-46b0-b1fb-bdbf77312e16
+md"""
+emphasizing the importance of being explicit with our units. Similarly, taking the logarithm of something with units is not mathematically well defined, so this will sensibly error as well:
+""" |> side_by_side
+
+# ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
+# function side_by_side(content=nothing)
+#     @htl("""
+#     <style>
+#     @media (min-width: 900px) {
+#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
+#             margin-right: 1rem;
+#         }
+#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
+#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
+#             display: inline-block;
+#             vertical-align: top;
+#             width: calc((100% - 1rem) / 2);
+#             box-sizing: border-box;
+#         }
+#     }
+#     </style>
+#     <div class="sbs-marker" style="display:none"></div>
+#     $(content)
+#     """)
+# end
+
 # ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
 TableOfContents(; title = "On this page", depth = 4)
 
@@ -689,35 +758,41 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
 # ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 # ╟─60c89d86-942e-4c97-bd7a-ad2f792b1155
-# ╠═17cd12de-48c2-4189-8ec4-f9fa0033715c
-# ╠═d88f26fa-b150-481d-ab56-48b5bb2feb01
-# ╠═46817247-368a-4fd1-b702-643fdea13f9b
-# ╠═1a9a90e5-2524-4d7d-abff-db9889bf79a8
 # ╠═1d2293bd-a236-4b41-a9d7-9c27463b5062
 # ╠═426c37ea-83dd-4ef4-8a19-f0e16536c034
-# ╠═a9d14d8e-aefa-48d9-a3b3-ca13e284ab08
+# ╟─a9d14d8e-aefa-48d9-a3b3-ca13e284ab08
 # ╠═1b239188-bba1-44d1-bc9c-10b60f762e0d
 # ╠═f2c441b3-374b-439d-ba8c-4b28c0765d45
 # ╟─cc736aec-c48a-411a-af83-4255309d77e9
-# ╠═35bbd795-be20-4398-a060-16fade55e279
 # ╠═2c7a71f6-e618-40db-80b7-1ad5f09e59d5
 # ╠═2a11aed4-6516-40dc-94fd-30aa94e76744
 # ╟─984fcb2e-049b-4b35-a4b6-5c8c686921a3
 # ╟─c5b4f340-c774-4f09-af4c-f326afce5de3
+# ╠═5eabde08-a49a-42e4-ae4f-e06f3381d8b2
+# ╠═ca29263f-a6e3-433d-a0b9-b2dd67c118af
 # ╠═892f19a6-af21-4353-9987-9de795ba7ad7
 # ╠═64774c2c-0991-48b2-af4a-ced8fedd115b
-# ╠═f7ceb7c4-6488-43eb-b211-9f7087762a56
+# ╟─f7ceb7c4-6488-43eb-b211-9f7087762a56
 # ╠═0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
 # ╠═9f14f051-d1e9-4638-8008-840a886b50ab
+# ╟─ce5aea87-2614-4e72-8e88-25a8c590b89f
 # ╠═2d236d32-faf4-41ef-84de-1d40c02fb238
-# ╠═64bfb535-ab84-411c-9a1b-3ed8778e8516
+# ╠═b388f8be-3074-443c-97a9-72eb7098b5e3
+# ╟─bb9d675b-00ce-4d20-b78b-a08835b47137
 # ╠═a3baf049-5419-4773-8b7f-0ba07a9f1728
+# ╠═efa15492-4811-4896-8947-b90191651952
+# ╟─0ab125c6-568b-414c-acaa-abcfebb559e2
 # ╠═bb2622f9-98a5-48ca-92cb-bbce84d797f1
+# ╠═14909ad6-eb42-48ab-afa7-8b40b700fe3b
 # ╠═9e13bde0-eccf-4d21-b603-fd186e87b7d0
+# ╠═77a81c41-0034-4a18-bb70-d2a1f9379593
 # ╟─5a9dfdf7-aaf8-421d-a451-6a6a5c35e1cc
+# ╠═8258d125-5486-4ded-8b4c-4c66aa151c73
 # ╠═a13de611-145a-40da-9414-8f3f8f85ad98
+# ╠═1e24cdfa-f4a9-4f9e-b95d-af83e724cd90
 # ╟─a3f42e7e-af38-46b0-b1fb-bdbf77312e16
 # ╠═095e7efe-f4c6-4a8a-a029-03ce97cd15bd
+# ╠═e4a98c65-70de-42fc-b490-f019dd93d3fb
 # ╟─2648b454-2762-4941-b13c-2303ffcd6521
 # ╠═48fac714-ab96-4475-ad0b-0c61432bf849
 # ╟─9e8eabc7-f1ce-4dbb-bfd5-e6d28793f9d6
@@ -728,6 +803,7 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─9a002059-650b-4dc1-9395-6f266ed35500
 # ╠═aab4113d-d7ad-4521-a208-e192ad218cf0
 # ╠═539290af-787d-4deb-928c-50e4e9f28173
+# ╟─bb14d291-e0d1-4824-909c-11d0fb500db4
 # ╟─e86d6cf7-2274-403a-b1db-017973f33fb7
 # ╟─00b9d37f-ce7b-4491-b1df-f0963f2598a8
 # ╠═1f6a0d6c-832b-474d-8fbf-a9de6e821d80
@@ -797,5 +873,7 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─c143ab62-b3f0-4b6a-83aa-76e5dc3548ac
 # ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
+# ╠═d88f26fa-b150-481d-ab56-48b5bb2feb01
+# ╠═e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 # ╠═17c6b7df-a8b3-45d1-9491-526afce11318
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
