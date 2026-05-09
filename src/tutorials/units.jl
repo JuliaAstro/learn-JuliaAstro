@@ -35,7 +35,7 @@ begin
     ),
 	])
 
-	Pkg.add(["DynamicQuantities", "StatsBase", "Distributions", "DimensionalData", "PlutoUI", "Unitful", "UnitfulAstro", "PhysicalConstants", "HypertextLiteral", "UnitfulEquivalences"])
+	Pkg.add(["DynamicQuantities", "StatsBase", "Distributions", "DimensionalData", "PlutoUI", "Unitful", "UnitfulAstro", "PhysicalConstants", "HypertextLiteral", "UnitfulEquivalences", "DimensionfulAngles"])
 	
 	using DynamicQuantities: DynamicQuantities as DQ
 	using StatsBase: mean
@@ -49,6 +49,7 @@ begin
 	using DynamicQuantities: SymbolicConstants as C_DQ
 	using PhysicalConstants: CODATA2018 as C_U
 	using UnitfulEquivalences: UnitfulEquivalences as UE
+	import DimensionfulAngles
 end
 
 # ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
@@ -535,7 +536,7 @@ mH₂_U = 2*1.008 * U.u"u"
 # ╔═╡ 9c0862d0-8028-4ef4-a867-18c7932dad91
 md"""
 !!! tip
-	For treatment of angles as units, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [UnitfulAngles.jl](https://github.com/yakir12/UnitfulAngles.jl).
+	For treatment of angles as units, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [DimensionfulAngles.jl](https://github.com/cmichelenstrofer/DimensionfulAngles.jl).
 """
 
 # ╔═╡ 88966b7e-b261-45a6-9f12-6b74f24c03e4
@@ -579,40 +580,49 @@ You meant the inputs to be in arcsec, but alas, you send that to your collaborat
 # ╔═╡ ffc4bdc3-16e3-4b3e-b448-cfdc16428378
 response_func_bad(1.0, 1.2)
 
-# ╔═╡ 71cca345-cffc-4aee-a671-08901a92babe
-md"""
-And now they tell all their friends how terrible the instrument is, because it's supposed to have arcsecond resolution, but your function clearly shows it can only resolve an arcmin at best. But you can solve this by requiring they pass in Quantity objects. The new function could simply be:
-"""
-
 # ╔═╡ 1c3faf9f-adcf-4232-acf4-655d828623e3
-function response_func_good(x, y)
-    xscale = 0.9us"arcsec" # We use symbolic dimensions here
-    yscale = 0.85us"arcsec" # to treat radians as unitful quantities
+function response_func_good_DQ(x, y)
+    xscale = 0.9 * DQ.us"arcsec" # We use symbolic dimensions here
+    yscale = 0.85 * DQ.us"arcsec" # to treat radians as unitful quantities
     xfactor = 1 / (1 + x / xscale)
     yfactor = 1 / (1 + y / yscale)
 
     return xfactor * yfactor
 end
 
-# ╔═╡ 7cfb17fc-81a4-4522-a88b-2fd10001baaa
-md"""
-And your collaborator now has to pay attention. If they just blindly put in a number, they get an error:
-"""
+# ╔═╡ 6708c2f5-a291-486e-8e66-93acfcedbcb7
+function response_func_good_U(x, y)
+    xscale = 0.9 * U.u"arcsecondᵃ" # We use symbolic dimensions here
+    yscale = 0.85 * U.u"arcsecondᵃ" # to treat radians as unitful quantities
+    xfactor = 1 / (1 + x / xscale)
+    yfactor = 1 / (1 + y / yscale)
+
+    return xfactor * yfactor
+end
 
 # ╔═╡ ce1804da-df61-4e4c-aa3b-d950e83b7c13
-response_func_good(1.0, 1.2)
+response_func_good_DQ(1.0, 1.2)
 
-# ╔═╡ 5590c909-6103-4427-b1a2-4cf35265dc07
-md"""
-Which is their cue to provide the units explicitly:
-"""
+# ╔═╡ 910920d2-085a-498f-8458-e6e96903ab92
+response_func_good_U(1.0, 1.2)
 
 # ╔═╡ f7486c08-b74b-471f-bbc2-690439a487f8
-response_func_good(1.0u"arcmin", 1.2u"arcmin")
+response_func_good_DQ(1.0 * DQ.u"arcmin", 1.2 * DQ.u"arcmin")
+
+# ╔═╡ 08c5e6fc-d8b5-4311-8f35-449a830daeec
+response_func_good_U(1.0 * U.u"arcminuteᵃ", 1.2 * U.u"arcminuteᵃ")
 
 # ╔═╡ c143ab62-b3f0-4b6a-83aa-76e5dc3548ac
 md"""
 The funding agency is impressed at the resolution you achieved, and your instrument is saved! You now go on to win the Nobel Prize due to discoveries the instrument makes. And it was all because you used `Quantity` as the input of code you shared.
+"""
+
+# ╔═╡ 0c05c385-67bd-4078-8fe2-34a37a13b312
+md"""
+!!! note
+	**DynamicQuantities.jl:** Note the use of `us""` instead of `u""`, both supplied by DynamicQuantities.jl, to achieve this behavior.
+
+	**Unitful.jl:** Note the use of `ᵃ` supplied by DimensionfulAngles.jl instead of the base angle units provided by Unitful.jl to achieve this behavior.
 """
 
 # ╔═╡ 7d4f9a02-81a7-4bdc-a22d-3435192f9f15
@@ -620,7 +630,7 @@ let
 	sol = details("Example solution",
 	md"""
 	```julia
-	v_orb(M, r) = sqrt(u"Constants.G" * M / r)
+	v_orb(M, r) = sqrt(C_DQ.G * M / r)
 	```
 	""")
 
@@ -637,10 +647,11 @@ end
 # Notebook setup 🔧
 """
 
-# ╔═╡ d88f26fa-b150-481d-ab56-48b5bb2feb01
+# ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 function side_by_side(content=nothing)
     @htl("""
     <style>
+    @media (min-width: 900px) {
         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
             margin-right: 1rem;
         }
@@ -651,6 +662,7 @@ function side_by_side(content=nothing)
             width: calc((100% - 1rem) / 2);
             box-sizing: border-box;
         }
+    }
     </style>
     <div class="sbs-marker" style="display:none"></div>
     $(content)
@@ -826,27 +838,20 @@ md"""
 Finally, multiplying the column density with the pixel area and summing over all the pixels gives us the cloud mass:
 """ |> side_by_side
 
-# ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
-# function side_by_side(content=nothing)
-#     @htl("""
-#     <style>
-#     @media (min-width: 900px) {
-#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
-#             margin-right: 1rem;
-#         }
-#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
-#         pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
-#             display: inline-block;
-#             vertical-align: top;
-#             width: calc((100% - 1rem) / 2);
-#             box-sizing: border-box;
-#         }
-#     }
-#     </style>
-#     <div class="sbs-marker" style="display:none"></div>
-#     $(content)
-#     """)
-# end
+# ╔═╡ 71cca345-cffc-4aee-a671-08901a92babe
+md"""
+And now they tell all their friends how terrible the instrument is, because it's supposed to have arcsecond resolution, but your function clearly shows it can only resolve an arcmin at best. But you can solve this by requiring they pass in Quantity objects. The new function could simply be:
+""" |> side_by_side
+
+# ╔═╡ 7cfb17fc-81a4-4522-a88b-2fd10001baaa
+md"""
+And your collaborator now has to pay attention. If they just blindly put in a number, they get an error:
+""" |> side_by_side
+
+# ╔═╡ 5590c909-6103-4427-b1a2-4cf35265dc07
+md"""
+Which is their cue to provide the units explicitly:
+""" |> side_by_side
 
 # ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
 TableOfContents(; title = "On this page", depth = 4)
@@ -980,14 +985,17 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╠═ffc4bdc3-16e3-4b3e-b448-cfdc16428378
 # ╟─71cca345-cffc-4aee-a671-08901a92babe
 # ╠═1c3faf9f-adcf-4232-acf4-655d828623e3
+# ╠═6708c2f5-a291-486e-8e66-93acfcedbcb7
 # ╟─7cfb17fc-81a4-4522-a88b-2fd10001baaa
 # ╠═ce1804da-df61-4e4c-aa3b-d950e83b7c13
+# ╠═910920d2-085a-498f-8458-e6e96903ab92
 # ╟─5590c909-6103-4427-b1a2-4cf35265dc07
 # ╠═f7486c08-b74b-471f-bbc2-690439a487f8
+# ╠═08c5e6fc-d8b5-4311-8f35-449a830daeec
 # ╟─c143ab62-b3f0-4b6a-83aa-76e5dc3548ac
+# ╟─0c05c385-67bd-4078-8fe2-34a37a13b312
 # ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
-# ╠═d88f26fa-b150-481d-ab56-48b5bb2feb01
-# ╠═e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
+# ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 # ╠═17c6b7df-a8b3-45d1-9491-526afce11318
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
