@@ -254,44 +254,48 @@ end;
 # ╔═╡ 539290af-787d-4deb-928c-50e4e9f28173
 data_DQ = let
     # Cloud's center
-    cen_ra = 52.25 * DQ.u"deg"
-    cen_dec = 0.25 * DQ.u"deg"
-    cen_v = 15 * DQ.u"km/s"
+    ra_0 = 52.25 * DQ.u"deg"
+    d_0 = 0.25 * DQ.u"deg"
+    v_0 = 15 * DQ.u"km/s"
 
     # Cloud's size
-    sig_ra = 3 * DQ.u"arcmin"
-    sig_dec = 4 * DQ.u"arcmin"
-    sig_v = 3 * DQ.u"km/s"
+    ra_σ = 3 * DQ.u"arcmin"
+    d_σ = 4 * DQ.u"arcmin"
+    v_σ = 3 * DQ.us"km/s"
 
 	A = [
 		exp(
-			-0.5 * ((ra - cen_ra) / sig_ra)^2
-			-0.5 * ((dec - cen_dec) / sig_dec)^2
-			-0.5 * ((v - cen_v) / sig_v)^2
+			-0.5 * (
+				((ra - ra_0) / ra_σ)^2
+			  	+ ((d - d_0) / d_σ)^2
+			  	+ ((v - v_0) / v_σ)^2
+			)
 		)
-		for ra in ras_DQ, dec in decs_DQ, v in vs_DQ
+		for ra in ras_DQ, d in decs_DQ, v in vs_DQ
 	] * DQ.us"K"
 end
 
 # ╔═╡ 86d608ec-aca2-4738-9c3e-656ccd562da6
 data_U = let
     # Cloud's center
-    cen_ra = 52.25 * U.u"deg"
-    cen_dec = 0.25 * U.u"deg"
-    cen_v = 15 * U.u"km/s"
+    ra_0 = 52.25 * U.u"deg"
+    d_0 = 0.25 * U.u"deg"
+    v_0 = 15 * U.u"km/s"
 
     # Cloud's size
-    sig_ra = 3 * U.u"arcminute"
-    sig_dec = 4 * U.u"arcminute"
-    sig_v = 3 * U.u"km/s"
+    ra_σ = 3 * U.u"arcminute"
+    d_σ = 4 * U.u"arcminute"
+    v_σ = 3 * U.u"km/s"
 
 	A = [
 		exp(
-			-0.5 * ((ra - cen_ra) / sig_ra)^2
-			-0.5 * ((dec - cen_dec) / sig_dec)^2
-			-0.5 * ((v - cen_v) / sig_v)^2
+			-0.5 * (
+				((ra - ra_0) / ra_σ)^2
+			  	+ ((d - d_0) / d_σ)^2
+			  	+ ((v - v_0) / v_σ)^2
+			)
 		)
-		for ra in ras_U, dec in decs_U, v in vs_U
+		for ra in ras_U, d in decs_U, v in vs_U
 	] * U.u"K"
 end
 
@@ -325,33 +329,28 @@ md"""
 # Average velocity bin width
 Δv_U = (maximum(vs_U) - minimum(vs_U)) / length(vs_U)
 
-# ╔═╡ 175854bb-4385-4199-ada9-358def53a822
-(Δra_DQ, Δdec_DQ) .|> DQ.us"arcsec" # Display in arcseconds
-
-# ╔═╡ f23c0756-9ea4-4db1-b5c2-b61de3729e14
-(Δra_U, Δdec_U) .|> U.u"arcsecond" # Display in arcseconds
-
 # ╔═╡ 6ddeb42d-37a5-48a3-ac82-47e4ec2ca541
 intcloud_DQ = let
 	A = data_DQ * Δv_DQ
-	sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
+	sum(eachslice(A; dims = 3))
+	# sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
 end
 
 # ╔═╡ 9537c91e-03a7-44d7-95ae-e60ea8d5496a
 intcloud_U = let
 	A = data_U * Δv_U
-	sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
+	sum(eachslice(A; dims = 3))
 end
 
 # ╔═╡ 4d4794fb-804d-4b4a-8c32-a32d88e43e30
 md"""
 !!! todo
-	Get `Base.sum` support for DQ. Discussion here: <https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/76#issuecomment-3614719247>
+	Improve `Base.sum` support for DQ. Discussion here: <https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/76#issuecomment-3614719247>
 
-	This works too, but it returns a matrix of quantities, instead of a `QuantityArray`:
+	This works too, but is more verbose:
 	
 	```julia
-	sum(eachslice(A; dims = 3))
+	sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
 	```
 """
 
@@ -417,16 +416,28 @@ B &= \frac{h\nu}{k_\text{B} T}
 """
 
 # ╔═╡ bf618161-ef96-4445-8fc8-25dc5f662242
-λ_13_DQ, λ_18_DQ = 2.60076 * DQ.u"mm", 2.73079 * DQ.u"mm"
+λ_13_DQ, λ_18_DQ = (2.60076, 2.73079) .* DQ.us"mm"
 
 # ╔═╡ 182861a3-2902-4e56-8fff-3bfc182268c7
-λ_13_U, λ_18_U = 2.60076 * U.u"mm", 2.73079 * U.u"mm"
+λ_13_U, λ_18_U = (2.60076, 2.73079) .* U.u"mm"
+
+# ╔═╡ 321fa5f5-be6a-4e5f-ba7f-4c117a240253
+λ_13_DQ |> DQ.us"Hz"
+
+# ╔═╡ 2962b22a-5e4a-4dc1-9be6-8e57979ecba5
+λ_13_U |> U.u"Hz"
 
 # ╔═╡ ee46b865-dbd4-4939-b241-514941dd138d
 ν_13_DQ, ν_18_DQ = C_DQ.c ./ (λ_13_DQ, λ_18_DQ) .|> DQ.us"Hz"
 
 # ╔═╡ 554321c7-cdcb-415c-8ac2-c63b42b6889a
 ν_13_U, ν_18_U = U.uconvert.(U.u"Hz", (λ_13_U, λ_18_U), UE.Spectral())
+
+# ╔═╡ 0af912a5-18ad-4974-a0b5-c1f66c8fa37a
+md"""
+!!! note
+	DynamicQuantities.jl does not have similar unit eqivalence functionality at this time because it is cheap to just roll our own conversions since the physical constants needed are already included in the package. For this reason, we just compute the ``c / λ`` relation directly.
+"""
 
 # ╔═╡ 3a24f4aa-b074-4beb-b77d-6778e2fe580a
 CC_DQ = let
@@ -474,7 +485,7 @@ md"""
 md"""
 ### ``\mathrm{CO}`` to Total Mass
 
-We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}_2``, the quantity we are actually trying to infer. Since most of the mass is in ``\mathrm{H}_2``, we calculate its column density by multiplying the ``\mathrm{CO}`` column density with the (known/assumed) ``\mathrm{H}_2 / \mathrm{CO}`` ratio:
+We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}_2``, the quantity we are actually trying to infer. Using the (known/assumed) ``\mathrm{H}_2 / \mathrm{CO}`` ratio: 
 """
 
 # ╔═╡ de22c778-1529-4177-85e6-a0178f437a8c
@@ -498,24 +509,17 @@ md"""
 	**Peak ``\mathrm{H}_2`` column density (U):** $(maximum(NH₂_U))
 """
 
-# ╔═╡ c6b35992-973b-49d4-bfa7-855e8fe10924
-md"""
-That's a peak column density of roughly 50 magnitudes of visual extinction (assuming the conversion between ``N_{\mathrm{H}_2}`` and ``A_V`` from [Bohlin et al. 1978](http://ui.adsabs.harvard.edu/abs/1978ApJ...224..132B/abstract)), which seems reasonable for a molecular cloud.
-
-We obtain the mass column density by multiplying the number column density by the mass of an individual ``\mathrm{H_2}`` molecule:
-"""
-
-# ╔═╡ 85f84c90-46e6-4d3f-bba2-6fc190a05533
-mH₂_DQ = 2*1.008 * DQ.us"Constants.u"
-
-# ╔═╡ f7bba92a-3025-4e19-92dc-e8f8aaf1ae23
-mH₂_U = 2*1.008 * U.u"u"
-
 # ╔═╡ 522d88d6-5f60-401b-8786-0236c0859eda
-ρ_DQ = NH₂_DQ * mH₂_DQ
+ρ_DQ = let
+	mH₂ = 2*1.008 * C_DQ.u
+	NH₂_DQ * mH₂
+end
 
 # ╔═╡ 014b94b3-a6fa-4627-a24d-fe8c5e275582
-ρ_U = NH₂_U * mH₂_U
+ρ_U = let
+	mH₂ = 2*1.008 * U.u"u"
+	NH₂_U * mH₂
+end
 
 # ╔═╡ 0eefe540-1669-4510-bef7-8fb7f8be68f1
 Δap_DQ = Δra_DQ * Δdec_DQ
@@ -538,7 +542,7 @@ mH₂_U = 2*1.008 * U.u"u"
 # ╔═╡ 9c0862d0-8028-4ef4-a867-18c7932dad91
 md"""
 !!! tip
-	For treatment of angles as units, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [DimensionfulAngles.jl](https://github.com/cmichelenstrofer/DimensionfulAngles.jl).
+	To treat angles as physical units instead of as dimensionless, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [DimensionfulAngles.jl](https://github.com/cmichelenstrofer/DimensionfulAngles.jl).
 """
 
 # ╔═╡ 88966b7e-b261-45a6-9f12-6b74f24c03e4
@@ -557,9 +561,9 @@ md"""
 
 # ╔═╡ 2eed0bc8-2306-42bb-9803-33ae131021e6
 md"""
-## 3. Using `Quantities` with functions
+## 3. Using units with functions
 
-`Quantity` is also a useful tool if you plan to share some of your code, either with collaborators or the wider community. By writing functions that take `Quantity` objects instead of raw numbers or arrays, you can write code that is agnostic to the input unit. In this way, you may even be able to prevent [the destruction of Mars orbiters](http://en.wikipedia.org/wiki/Mars_Climate_Orbiter#Cause_of_failure). Below, we provide a simple example.
+Units are also a useful tool if you plan to share some of your code, either with collaborators or the wider community. By writing functions that take numbers with units objects instead of raw numbers or arrays, you can write code that is agnostic to the input unit. In this way, you may even be able to prevent [the destruction of Mars orbiters](http://en.wikipedia.org/wiki/Mars_Climate_Orbiter#Cause_of_failure). Below, we provide a simple example.
 
 Suppose you are working on an instrument, and the person funding it asks for a function to give an analytic estimate of the response function. You determine from some tests it's basically a Lorentzian, but with a different scale along the two axes. Your first thought might be to do this:
 """
@@ -594,7 +598,7 @@ end
 
 # ╔═╡ 6708c2f5-a291-486e-8e66-93acfcedbcb7
 function response_func_good_U(x, y)
-    xscale = 0.9 * U.u"arcsecondᵃ" # We use symbolic dimensions here
+    xscale = 0.9 * U.u"arcsecondᵃ" # We use dimensionful angles here
     yscale = 0.85 * U.u"arcsecondᵃ" # to treat radians as unitful quantities
     xfactor = 1 / (1 + x / xscale)
     yfactor = 1 / (1 + y / yscale)
@@ -771,12 +775,12 @@ Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 
 
 # ╔═╡ b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
 md"""
-We'll generate a synthetic dataset, assuming the cloud follows a Gaussian distribution in each of RA, Dec, and velocity. We start by creating a 100×100×300 array, such that the first coordinate is right ascension, the second is declination, and the third is velocity. In this data cube, the cloud is positioned at the center, with ``\sigma`` and the center in each dimension shown below. Note in particular that the ``\sigma`` for RA and Dec have different units from the center, but DynamicQuantities.jl automatically does the relevant conversions before computing the exponential.
+We'll generate a synthetic dataset, assuming the cloud follows a Gaussian distribution in each of RA, Dec, and velocity. We start by creating a 100×100×300 array, such that the first coordinate is right ascension, the second is declination, and the third is velocity. In this data cube, the cloud is positioned at the center, with ``\sigma`` and the center in each dimension shown below:
 """ |> side_by_side
 
 # ╔═╡ e13cbda5-ddd4-491e-bf2a-d6ed24d2bdbd
 md"""
-Yee:
+Note in particular that the ``\sigma`` for RA and Dec have different units from the center, but we are able to automatically handle the relevant conversions before computing the exponential:
 """ |> side_by_side
 
 # ╔═╡ 00b9d37f-ce7b-4491-b1df-f0963f2598a8
@@ -787,11 +791,6 @@ We will also need to know the size of each pixel:
 # ╔═╡ ccb58b55-b9c8-4229-aff8-92541af123ec
 md"""
 and the width of each velocity bin:
-""" |> side_by_side
-
-# ╔═╡ 3211ba19-0140-450d-95c6-698a4f0ccbff
-md"""
-We can easily display this or any other quantity in our desired unit system:
 """ |> side_by_side
 
 # ╔═╡ 7ab2fe80-812f-4a21-933a-e169a17f6c32
@@ -813,7 +812,14 @@ First, we look up the wavelength for these emission lines and store them as quan
 
 # ╔═╡ e0a2c745-41cf-4359-bb99-3117fbb507cc
 md"""
-And compute their corresponding frequencies:
+Since the wavelength and frequency of light are related using the speed of light, we can convert between them. However, doing so just using the `uconvert()` function or its equivalent `|>` fails, as units of length and frequency are not directly convertible:
+""" |> side_by_side
+
+# ╔═╡ 7fa76f60-c623-4b25-b185-0cd5e805ef71
+md"""
+Fortunately, the Unitful.jl ecosystem comes to the rescue by providing a feature called "unit equivalences." Equivalences provide a way to convert between two physically different units that are not normally equivalent, but in a certain context have a one-to-one mapping. For more on equivalencies, see [the documentation for UnitfulEquivalences.jl](https://sostock.github.io/UnitfulEquivalences.jl) (UE).
+
+In this case, passing the `Spectral()` argument to `uconvert()` provides the equivalences necessary to handle conversions between wavelength and frequency:
 """ |> side_by_side
 
 # ╔═╡ d0215082-52df-4eae-a409-7c3c7cfc69ed
@@ -834,35 +840,44 @@ md"""
 
 # ╔═╡ 6aff587f-be6f-4fd8-96df-9c12f3769f32
 md"""
-At this point we have all the ingredients to calculate the number density of ``\mathrm{CO}`` molecules in this cloud. We already integrated (summed) over the velocity channels above to show the integrated intensity map, but we'll do it again here for clarity. This gives us the column density of ``\mathrm{CO}`` for each spatial pixel in our map. We can then print out the peak column column density:
+At this point we have all the ingredients to calculate the number density of ``\mathrm{CO}`` molecules in this cloud. We already integrated (summed) over the velocity channels above to show the integrated intensity map, but we'll do it again here for clarity. This gives us the column density of ``\mathrm{CO}`` for each spatial pixel in our map:
 """ |> side_by_side
 
-# ╔═╡ fa11788e-48ce-4537-8a89-fdc8750d203f
-side_by_side()
+# ╔═╡ 63d629a1-379f-44bd-a02d-d252d0594357
+md"""
+We can then print out the peak column column density:
+""" |> side_by_side
 
 # ╔═╡ 072535ef-9a0d-4c1e-aea7-6486d329f66f
-side_by_side()
+md"""
+we can calculate the ``\text{H}_2`` column density by multiplying the ``\mathrm{CO}`` column density found previously with this ratio:
+""" |> side_by_side
 
 # ╔═╡ 00f69c40-f31c-49e6-a1cc-d84a4cb2b43d
-side_by_side()
+md"""
+The peak column column density is then:
+""" |> side_by_side
 
-# ╔═╡ 4e57d7be-b589-4feb-ac70-13979632b6bd
-side_by_side()
+# ╔═╡ c6b35992-973b-49d4-bfa7-855e8fe10924
+md"""
+That's a peak column density of roughly 50 magnitudes of visual extinction (assuming the conversion between ``N_{\mathrm{H}_2}`` and ``A_V`` from [Bohlin et al. 1978](http://ui.adsabs.harvard.edu/abs/1978ApJ...224..132B/abstract)), which seems reasonable for a molecular cloud.
 
-# ╔═╡ 71a4f31d-bed6-407e-8a59-ca376a3793af
-side_by_side()
+We obtain the mass column density by multiplying the number column density by the mass of an individual ``\mathrm{H_2}`` molecule:
+""" |> side_by_side
 
 # ╔═╡ fbd0d75b-b3af-4eb5-a249-423317d656e5
 md"""
 A final step in going from the column density to mass is summing up over the area. If we do this in the straightforward way of length × width of a pixel, this area is then in units of deg²:
 """ |> side_by_side
 
-# ╔═╡ ee421928-b69d-4f83-978d-7a0e8d0aa911
-side_by_side()
+# ╔═╡ a427567e-b6dd-44a9-a61f-a725960cc459
+md"""
+In the small angle approximation, multiplying the pixel area with the square of distance yields the cross-sectional area of the cloud that the pixel covers, in physical units:
+""" |> side_by_side
 
 # ╔═╡ cefdeee7-6a4b-4c60-a14c-c1edac53be98
 md"""
-Angles in both packages are dimensionless by default, so quantities using them can be freely converted to other compatible dimensions:
+Angles in both packages are dimensionless by default, so the above quantities can be freely converted to other compatible dimensions:
 """ |> side_by_side
 
 # ╔═╡ e81f3b44-bc04-4768-81c2-c2733958f5a9
@@ -882,7 +897,7 @@ And your collaborator now has to pay attention. If they just blindly put in a nu
 
 # ╔═╡ 5590c909-6103-4427-b1a2-4cf35265dc07
 md"""
-Which is their cue to provide the units explicitly:
+which is their cue to provide the units explicitly:
 """ |> side_by_side
 
 # ╔═╡ Cell order:
@@ -932,7 +947,7 @@ Which is their cue to provide the units explicitly:
 # ╟─78740b86-45e9-45f5-b4c2-be6cb65f1368
 # ╠═2c76c406-d15c-4271-baa4-ebebf5299429
 # ╠═be30f3c4-0c20-4949-bcc8-f3812b39befc
-# ╟─b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
+# ╠═b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
 # ╠═aab4113d-d7ad-4521-a208-e192ad218cf0
 # ╠═af22e5da-ff9b-4278-95d9-491f84a55add
 # ╟─e13cbda5-ddd4-491e-bf2a-d6ed24d2bdbd
@@ -945,9 +960,6 @@ Which is their cue to provide the units explicitly:
 # ╟─ccb58b55-b9c8-4229-aff8-92541af123ec
 # ╠═6fa07efa-fd25-4bca-bd18-8ba5c557d146
 # ╠═95bf572e-23a0-4554-8ee3-b7932721e850
-# ╟─3211ba19-0140-450d-95c6-698a4f0ccbff
-# ╠═175854bb-4385-4199-ada9-358def53a822
-# ╠═f23c0756-9ea4-4db1-b5c2-b61de3729e14
 # ╟─7ab2fe80-812f-4a21-933a-e169a17f6c32
 # ╠═6ddeb42d-37a5-48a3-ac82-47e4ec2ca541
 # ╠═9537c91e-03a7-44d7-95ae-e60ea8d5496a
@@ -961,8 +973,12 @@ Which is their cue to provide the units explicitly:
 # ╠═bf618161-ef96-4445-8fc8-25dc5f662242
 # ╠═182861a3-2902-4e56-8fff-3bfc182268c7
 # ╟─e0a2c745-41cf-4359-bb99-3117fbb507cc
+# ╠═321fa5f5-be6a-4e5f-ba7f-4c117a240253
+# ╠═2962b22a-5e4a-4dc1-9be6-8e57979ecba5
+# ╟─7fa76f60-c623-4b25-b185-0cd5e805ef71
 # ╠═ee46b865-dbd4-4939-b241-514941dd138d
 # ╠═554321c7-cdcb-415c-8ac2-c63b42b6889a
+# ╟─0af912a5-18ad-4974-a0b5-c1f66c8fa37a
 # ╟─d0215082-52df-4eae-a409-7c3c7cfc69ed
 # ╠═3a24f4aa-b074-4beb-b77d-6778e2fe580a
 # ╠═98869c25-2644-47d1-b8cc-05699292f2a8
@@ -975,28 +991,24 @@ Which is their cue to provide the units explicitly:
 # ╟─6aff587f-be6f-4fd8-96df-9c12f3769f32
 # ╠═ef498536-8fb8-46e3-9d8d-f7eb3994a3f5
 # ╠═84f948ad-f903-46a6-a520-2499864f348f
-# ╠═fa11788e-48ce-4537-8a89-fdc8750d203f
+# ╟─63d629a1-379f-44bd-a02d-d252d0594357
 # ╟─25598fcd-761d-40b8-95ac-8b68a00026da
 # ╟─336f8626-7b0c-459d-bedb-281d010fcbd2
 # ╟─eba2f06f-ebe9-492d-81d2-1cc4fccd5b0a
 # ╠═de22c778-1529-4177-85e6-a0178f437a8c
-# ╠═072535ef-9a0d-4c1e-aea7-6486d329f66f
+# ╟─072535ef-9a0d-4c1e-aea7-6486d329f66f
 # ╠═c262aa56-b9b6-4da4-8810-d6120f0724c6
 # ╠═9a98c6bb-d0d5-426e-9137-9fc94fc944be
-# ╠═00f69c40-f31c-49e6-a1cc-d84a4cb2b43d
+# ╟─00f69c40-f31c-49e6-a1cc-d84a4cb2b43d
 # ╟─1e8ec5c5-3d41-44a7-8dfa-81d981750d9e
 # ╟─dd22bc93-28bf-412e-a52b-d4332475daa2
 # ╟─c6b35992-973b-49d4-bfa7-855e8fe10924
-# ╠═4e57d7be-b589-4feb-ac70-13979632b6bd
-# ╠═85f84c90-46e6-4d3f-bba2-6fc190a05533
-# ╠═f7bba92a-3025-4e19-92dc-e8f8aaf1ae23
-# ╠═71a4f31d-bed6-407e-8a59-ca376a3793af
 # ╠═522d88d6-5f60-401b-8786-0236c0859eda
 # ╠═014b94b3-a6fa-4627-a24d-fe8c5e275582
 # ╟─fbd0d75b-b3af-4eb5-a249-423317d656e5
 # ╠═0eefe540-1669-4510-bef7-8fb7f8be68f1
 # ╠═085c04f2-0762-4213-b874-14f3ce1f0b49
-# ╠═ee421928-b69d-4f83-978d-7a0e8d0aa911
+# ╟─a427567e-b6dd-44a9-a61f-a725960cc459
 # ╠═b057812d-1a8e-479c-8192-1c1acdb97d23
 # ╠═98f0753f-635e-46e3-8045-ff40ca2e827b
 # ╟─cefdeee7-6a4b-4c60-a14c-c1edac53be98
