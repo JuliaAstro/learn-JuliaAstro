@@ -17,6 +17,10 @@ using InteractiveUtils
 begin
 	using Pkg: Pkg
 
+	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
+	# is upstreamed
+	
+	# Data viz
 	Pkg.add([
 		Pkg.PackageSpec(;
     	url = "https://github.com/icweaver/Makie.jl",
@@ -35,54 +39,60 @@ begin
     ),
 	])
 
-	Pkg.add(["DynamicQuantities", "StatsBase", "Distributions", "DimensionalData", "PlutoUI", "Unitful", "UnitfulAstro", "PhysicalConstants", "HypertextLiteral", "UnitfulEquivalences", "DimensionfulAngles"])
+	Pkg.add(["StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
 	
-	using DynamicQuantities: DynamicQuantities as DQ
+	# Statistical analysis
 	using StatsBase: mean
 	using Distributions: Normal
-	using CairoMakie: Colorbar, stephist, heatmap
-	using Makie: DQConversion
-	using Unitful: Unitful as U
 	using Random: Xoshiro
-	using HypertextLiteral
-	import UnitfulAstro
+	
+	# Units - DynamicQuantities
+	using DynamicQuantities: DynamicQuantities as DQ
 	using DynamicQuantities: SymbolicConstants as C_DQ
+	
+	# Units - Unitful
+	using Unitful: Unitful as U
 	using PhysicalConstants: CODATA2018 as C_U
 	using UnitfulEquivalences: UnitfulEquivalences as UE
+	import UnitfulAstro
 	import DimensionfulAngles
+	
+	# Data Viz
+	using CairoMakie: Colorbar, stephist, heatmap
+	using Makie: Makie as M
+	
+	# Notebook setup
+	using PlutoUI: TableOfContents, details
+	using HypertextLiteral: @htl
 end
-
-# ╔═╡ 17c6b7df-a8b3-45d1-9491-526afce11318
-using PlutoUI: TableOfContents, details
 
 # ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b
 md"""
 # Using units in astrophysical calculations
 
-This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>
+This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>.
+
+_Original authors: Ana Bonaca, Erik Tollerud, Jonathan Foster, Lia Corrales, Kris Stern, Stephanie T. Douglas_
 
 !!! tip "Learning Goals"
-	- Use `Quantity` objects to estimate a hypothetical galaxy's mass
-	- Take advantage of constants in the DynamicalQuantities.jl package
+	- Estimate a hypothetical galaxy's mass with units
+	- Take advantage of constants in the various units packages
 	- Print formatted unit strings
-	- Plot `Quantity` objects with unit labels, using Makie.jl
-	- Do math with `Quantity` objects
+	- Plot objects with unit labels, using Makie.jl
+	- Do math with units
 	- Convert quantities
 	- Convert between wavelength and energy
-	- Write functions that take `Quantity` objects instead of plain arrays
+	- Write functions that take objects with units instead of plain arrays
 	- Make synthetic radio observations
-	- Use `Quantity` objects such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
+	- Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
 
 !!! note "Keywords"
 	`units` `plots` `radio astronomy` `data cubes`
 
 !!! warning "Summary"
-	In this tutorial we present some examples showing how `Quantity` objects can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
-"""
+	In this tutorial we present some examples showing how objects with units can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
 
-# ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
-md"""
-## Imports
+	This notebook will cover the main usage for the two most common packages for units in Julia: [DynamicQuantities.jl](https://juliaphysics.github.io/DynamicQuantities.jl/stable/) and [Unitful.jl](https://juliaphysics.github.io/Unitful.jl/stable/). Each package has their own trade-offs, which can be read [about here](https://discourse.julialang.org/t/ann-dynamicquantities-jl-type-stable-physical-quantities/99963). For convenience, the usage for each package will be shown side-by-side in this notebook (if your screen is wide enough), with variables and functions using each appended with `_DQ` and `_U`, respectively. Similarly, functions from each package will be qualified with `DQ` or `U`, respectively.
 """
 
 # ╔═╡ 1d2293bd-a236-4b41-a9d7-9c27463b5062
@@ -92,10 +102,16 @@ Reff_DQ = 29 * DQ.us"Constants.pc"
 Reff_U = 29 * U.u"pc"
 
 # ╔═╡ 1b239188-bba1-44d1-bc9c-10b60f762e0d
-DQ.ustrip(DQ.u"Constants.pc", Reff_DQ)
+DQ.ustrip(DQ.u"Constants.pc", Reff_DQ), DQ.dimension(Reff_DQ)
 
 # ╔═╡ f2c441b3-374b-439d-ba8c-4b28c0765d45
-U.ustrip(U.u"pc", Reff_U)
+U.ustrip(U.u"pc", Reff_U), U.unit(Reff_U)
+
+# ╔═╡ 7ba07e6b-34e0-4206-9cf7-5006c43635a6
+DQ.uconvert(DQ.us"km", Reff_DQ)
+
+# ╔═╡ d6e4fd70-8750-457f-a17f-9a044c25c482
+U.uconvert(U.u"m", Reff_U)
 
 # ╔═╡ 2c7a71f6-e618-40db-80b7-1ad5f09e59d5
 Reff_DQ |> DQ.us"km"
@@ -105,40 +121,41 @@ Reff_U |> U.u"km"
 
 # ╔═╡ 984fcb2e-049b-4b35-a4b6-5c8c686921a3
 md"""
-Note the `us""` for DynamicQuantities.jl (link to symbolic dims)
+!!! note "Symbolic units"
+	Note the use of `us""` for DynamicQuantities.jl, which is required for working with [symbolic units](https://juliaphysics.github.io/DynamicQuantities.jl/stable/symbolic_units/). Will will leverage this later in the notebook to make working with angles more convenient.
 """
 
 # ╔═╡ c5b4f340-c774-4f09-af4c-f326afce5de3
 md"""
-Synth. dataset of rad vels
+Next, we'll first create a synthetic dataset of radial velocity measurements, assuming a normal distribution with a mean velocity of 206 km/s and a velocity dispersion of 4.3 km/s:
 """
 
-# ╔═╡ 5eabde08-a49a-42e4-ae4f-e06f3381d8b2
+# ╔═╡ 2da8169e-a39d-4314-87c0-60b57f80ae96
 v̄, σ_in = 206, 4.3
 
 # ╔═╡ 892f19a6-af21-4353-9987-9de795ba7ad7
-v = rand(Xoshiro(0), Normal(v̄, σ_in), 500)DQ.us"km/s"
+v_DQ = rand(Xoshiro(0), Normal(v̄, σ_in), 500) * DQ.us"km/s"
 
 # ╔═╡ 64774c2c-0991-48b2-af4a-ced8fedd115b
-v_U = rand(Xoshiro(0), Normal(v̄, σ_in), 500)U.u"km/s"
-
-# ╔═╡ 0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
-stephist(v)
+v_U = rand(Xoshiro(0), Normal(v̄, σ_in), 500) * U.u"km/s"
 
 # ╔═╡ 9f14f051-d1e9-4638-8008-840a886b50ab
+stephist(v_DQ)
+
+# ╔═╡ 0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
 stephist(v_U)
 
 # ╔═╡ 2d236d32-faf4-41ef-84de-1d40c02fb238
-sigma_DQ = (sqrt ∘ sum)((v .- mean(v)).^2 / length(v))
+σ_DQ = √(sum((v_DQ .- mean(v_DQ)).^2) / length(v_DQ))
 
 # ╔═╡ b388f8be-3074-443c-97a9-72eb7098b5e3
-sigma_U = (sqrt ∘ sum)((v_U .- mean(v_U)).^2 / length(v_U))
+σ_U = √(sum((v_U .- mean(v_U)).^2) / length(v_U))
 
 # ╔═╡ a3baf049-5419-4773-8b7f-0ba07a9f1728
-M_DQ = 4 * sigma_DQ^2 * Reff_DQ / C_DQ.G
+M_DQ = 4 * σ_DQ^2 * Reff_DQ / C_DQ.G
 
 # ╔═╡ efa15492-4811-4896-8947-b90191651952
-M_U = 4 * sigma_U^2 * Reff_U / C_U.G
+M_U = 4 * σ_U^2 * Reff_U / C_U.G
 
 # ╔═╡ bb2622f9-98a5-48ca-92cb-bbce84d797f1
 M_DQ .|> (DQ.us"Constants.M_sun", DQ.us"g")
@@ -147,15 +164,10 @@ M_DQ .|> (DQ.us"Constants.M_sun", DQ.us"g")
 M_U .|> (U.u"Msun", U.u"g")
 
 # ╔═╡ 9e13bde0-eccf-4d21-b603-fd186e87b7d0
-(log10 ∘ DQ.ustrip)(DQ.us"Constants.M_sun", M_DQ)
+(log10 ∘ DQ.ustrip)(DQ.u"Constants.M_sun", M_DQ)
 
 # ╔═╡ 77a81c41-0034-4a18-bb70-d2a1f9379593
 (log10 ∘ U.ustrip)(U.u"Msun", M_U)
-
-# ╔═╡ 5a9dfdf7-aaf8-421d-a451-6a6a5c35e1cc
-md"""
-Note that this is different than:
-"""
 
 # ╔═╡ a13de611-145a-40da-9414-8f3f8f85ad98
 (log10 ∘ DQ.ustrip)(M_DQ)
@@ -282,16 +294,6 @@ data_U = let
 		for ra in ras_U, dec in decs_U, v in vs_U
 	] * U.u"K"
 end
-
-# ╔═╡ bb14d291-e0d1-4824-909c-11d0fb500db4
-md"""
-!!! tip
-	DimensionalData.jl
-
-	```julia
-	DimArray(A * u"K", (RA = ras, Dec = decs, Vel = vs))
-	```
-"""
 
 # ╔═╡ e86d6cf7-2274-403a-b1db-017973f33fb7
 md"""
@@ -647,6 +649,19 @@ end
 # Notebook setup 🔧
 """
 
+# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
+TableOfContents(; title = "On this page", depth = 4)
+
+# ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
+md"""
+## Packages
+"""
+
+# ╔═╡ d21ab65d-5ea0-4eca-8d1b-09fc83daf3b0
+md"""
+## Utility functions
+"""
+
 # ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 function side_by_side(content=nothing)
     @htl("""
@@ -673,57 +688,74 @@ end
 md"""
 ## 1. Galaxy mass
 
-In this first example, we will use Quantity objects to estimate a hypothetical galaxy's mass, given its half-light radius and radial velocities of stars in the galaxy.
+In this first example, we will use objects with units to estimate a hypothetical galaxy's mass, given its half-light radius and radial velocities of stars in the galaxy.
 
-Let's assume that we measured the half-light radius of the galaxy to be 29 pc projected on the sky at the distance of the galaxy. This radius is often called the "effective radius", so we'll store it as a `Quantity` object with the name `Reff`. The easiest way to create a `Quantity` object is by multiplying the value with its unit:
+Let's assume that we measured the half-light radius of the galaxy to be 29 pc projected on the sky at the distance of the galaxy. This radius is often called the "effective radius", so we'll store it with the name `Reff`. The easiest way to create an object with units is by multiplying the value with its unit:
 """ |> side_by_side
 
 # ╔═╡ a9d14d8e-aefa-48d9-a3b3-ca13e284ab08
 md"""
-Both packages provide a `ustrip` function for stripping the units:
+We can access the value and unit of quantities using the `ustrip()` and `dimension()`/`unit()` functions:
 """ |> side_by_side
 
 # ╔═╡ cc736aec-c48a-411a-af83-4255309d77e9
 md"""
-Furthermore, we can convert the radius to any other unit of length. Here, we convert it to kilometers:
+Furthermore, we can convert the radius to any other unit of length using the `uconvert()` function. Here, we convert it to kilometers:
 """ |> side_by_side
 
-# ╔═╡ ca29263f-a6e3-433d-a0b9-b2dd67c118af
-side_by_side()
+# ╔═╡ b7f7e8e2-7f26-4d27-8dc5-8204761a9965
+md"""
+Units are also "callable," meaning we can treat them like functions. Even though the first example with calling a unit is a bit awkward, the `|>` syntax makes it much more natural:
+""" |> side_by_side
+
+# ╔═╡ eb31da4c-7011-49ec-a9ac-194eaee10c7a
+md"""using the `Normal` distribution from the Distributions.jl package:
+""" |> side_by_side
 
 # ╔═╡ f7ceb7c4-6488-43eb-b211-9f7087762a56
 md"""
-And visualize the results with Makie.jl, which provides automatic units support:
+which we can then visualize with Makie.jl using its automatic unit support:
 """ |> side_by_side
 
 # ╔═╡ ce5aea87-2614-4e72-8e88-25a8c590b89f
 md"""
-Do sum math:
+Now we can calculate the velocity dispersion of the galaxy. This demonstrates how you can perform basic operations like subtraction and division with objects with units, and also use them in standard Julia functions such as `mean()` and `size()`. They retain their units through these operations just as you would expect them to:
 """ |> side_by_side
 
 # ╔═╡ bb9d675b-00ce-4d20-b78b-a08835b47137
 md"""
-All included in DQ:
-```julia
-using DynamicQuantities: Constants as C_DQ
-```
+Now for the actual mass calculation. If a galaxy is pressure-supported (for example, an elliptical or dwarf spheroidal galaxy), its mass within the stellar extent can be estimated using a straightforward formula: ``M_{1/2} = 4σ^2 R_\text{eff}/G``. There are caveats to the use of this formula for science -- see [Wolf et al. 2010](http://ui.adsabs.harvard.edu/abs/2010MNRAS.406.1220W/abstract) for details.
 
-Separate package needed for Unitful:
-```julia
-using PhysicalConstants: CODATA2018 as C_U
-```
+!!! note
+	Constants [are included in DQ](https://juliaphysics.github.io/DynamicQuantities.jl/stable/constants/):
+	
+	```julia
+	using DynamicQuantities: Constants as C_DQ
+	```
+
+	For demonstration purposes, we will actually be importing from `SymbolicConstants` instead. In practice, it is much more performant to work in the base SI system provided by `Constants`, and just convert to whatever units are desired in the end.
+	
+	For Unitful.jl, a separate package like [PhysicalConstants.jl for Unitful.jl](https://juliaphysics.github.io/PhysicalConstants.jl/stable/) is required:
+		
+	```julia
+	using PhysicalConstants: CODATA2018 as C_U
+	```
 """ |> side_by_side
 
 # ╔═╡ 0ab125c6-568b-414c-acaa-abcfebb559e2
 md"""
-Let's display them in some other useful units:
+We can also easily express the mass in whatever form we like -- solar masses are common in astronomy, or maybe you want the default SI and CGS units:
 """ |> side_by_side
 
 # ╔═╡ 5f438b76-7fc7-49ed-8a0a-7f2d5a760414
-side_by_side()
+md"""
+Or, if you want the log of the mass, you can just use the builtin `log10` as long as the logarithm's argument is dimensionless.
+""" |> side_by_side
 
-# ╔═╡ 8258d125-5486-4ded-8b4c-4c66aa151c73
-side_by_side()
+# ╔═╡ 5a9dfdf7-aaf8-421d-a451-6a6a5c35e1cc
+md"""
+Note that this is different than:
+""" |> side_by_side
 
 # ╔═╡ a3f42e7e-af38-46b0-b1fb-bdbf77312e16
 md"""
@@ -853,13 +885,8 @@ md"""
 Which is their cue to provide the units explicitly:
 """ |> side_by_side
 
-# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-TableOfContents(; title = "On this page", depth = 4)
-
 # ╔═╡ Cell order:
 # ╟─c6ad0267-65d1-4372-a538-22acd9b5d02b
-# ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
-# ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 # ╟─60c89d86-942e-4c97-bd7a-ad2f792b1155
 # ╠═1d2293bd-a236-4b41-a9d7-9c27463b5062
 # ╠═426c37ea-83dd-4ef4-8a19-f0e16536c034
@@ -867,17 +894,20 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╠═1b239188-bba1-44d1-bc9c-10b60f762e0d
 # ╠═f2c441b3-374b-439d-ba8c-4b28c0765d45
 # ╟─cc736aec-c48a-411a-af83-4255309d77e9
+# ╠═7ba07e6b-34e0-4206-9cf7-5006c43635a6
+# ╠═d6e4fd70-8750-457f-a17f-9a044c25c482
+# ╟─b7f7e8e2-7f26-4d27-8dc5-8204761a9965
 # ╠═2c7a71f6-e618-40db-80b7-1ad5f09e59d5
 # ╠═2a11aed4-6516-40dc-94fd-30aa94e76744
 # ╟─984fcb2e-049b-4b35-a4b6-5c8c686921a3
 # ╟─c5b4f340-c774-4f09-af4c-f326afce5de3
-# ╠═5eabde08-a49a-42e4-ae4f-e06f3381d8b2
-# ╠═ca29263f-a6e3-433d-a0b9-b2dd67c118af
+# ╠═2da8169e-a39d-4314-87c0-60b57f80ae96
+# ╟─eb31da4c-7011-49ec-a9ac-194eaee10c7a
 # ╠═892f19a6-af21-4353-9987-9de795ba7ad7
 # ╠═64774c2c-0991-48b2-af4a-ced8fedd115b
 # ╟─f7ceb7c4-6488-43eb-b211-9f7087762a56
-# ╠═0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
 # ╠═9f14f051-d1e9-4638-8008-840a886b50ab
+# ╠═0cd8f84d-a6aa-46c7-9e13-535e8e0cea1f
 # ╟─ce5aea87-2614-4e72-8e88-25a8c590b89f
 # ╠═2d236d32-faf4-41ef-84de-1d40c02fb238
 # ╠═b388f8be-3074-443c-97a9-72eb7098b5e3
@@ -887,11 +917,10 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─0ab125c6-568b-414c-acaa-abcfebb559e2
 # ╠═bb2622f9-98a5-48ca-92cb-bbce84d797f1
 # ╠═14909ad6-eb42-48ab-afa7-8b40b700fe3b
-# ╠═5f438b76-7fc7-49ed-8a0a-7f2d5a760414
+# ╟─5f438b76-7fc7-49ed-8a0a-7f2d5a760414
 # ╠═9e13bde0-eccf-4d21-b603-fd186e87b7d0
 # ╠═77a81c41-0034-4a18-bb70-d2a1f9379593
 # ╟─5a9dfdf7-aaf8-421d-a451-6a6a5c35e1cc
-# ╠═8258d125-5486-4ded-8b4c-4c66aa151c73
 # ╠═a13de611-145a-40da-9414-8f3f8f85ad98
 # ╠═1e24cdfa-f4a9-4f9e-b95d-af83e724cd90
 # ╟─a3f42e7e-af38-46b0-b1fb-bdbf77312e16
@@ -909,7 +938,6 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─e13cbda5-ddd4-491e-bf2a-d6ed24d2bdbd
 # ╠═539290af-787d-4deb-928c-50e4e9f28173
 # ╠═86d608ec-aca2-4738-9c3e-656ccd562da6
-# ╟─bb14d291-e0d1-4824-909c-11d0fb500db4
 # ╟─e86d6cf7-2274-403a-b1db-017973f33fb7
 # ╟─00b9d37f-ce7b-4491-b1df-f0963f2598a8
 # ╠═1f6a0d6c-832b-474d-8fbf-a9de6e821d80
@@ -996,6 +1024,8 @@ TableOfContents(; title = "On this page", depth = 4)
 # ╟─0c05c385-67bd-4078-8fe2-34a37a13b312
 # ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
-# ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
-# ╠═17c6b7df-a8b3-45d1-9491-526afce11318
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
+# ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
+# ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
+# ╟─d21ab65d-5ea0-4eca-8d1b-09fc83daf3b0
+# ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
