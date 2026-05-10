@@ -902,6 +902,8 @@ which is their cue to provide the units explicitly:
 
 # ╔═╡ Cell order:
 # ╟─c6ad0267-65d1-4372-a538-22acd9b5d02b
+# ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
+# ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 # ╟─60c89d86-942e-4c97-bd7a-ad2f792b1155
 # ╠═1d2293bd-a236-4b41-a9d7-9c27463b5062
 # ╠═426c37ea-83dd-4ef4-8a19-f0e16536c034
@@ -947,7 +949,7 @@ which is their cue to provide the units explicitly:
 # ╟─78740b86-45e9-45f5-b4c2-be6cb65f1368
 # ╠═2c76c406-d15c-4271-baa4-ebebf5299429
 # ╠═be30f3c4-0c20-4949-bcc8-f3812b39befc
-# ╠═b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
+# ╟─b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
 # ╠═aab4113d-d7ad-4521-a208-e192ad218cf0
 # ╠═af22e5da-ff9b-4278-95d9-491f84a55add
 # ╟─e13cbda5-ddd4-491e-bf2a-d6ed24d2bdbd
@@ -1037,7 +1039,5 @@ which is their cue to provide the units explicitly:
 # ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-# ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
-# ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 # ╟─d21ab65d-5ea0-4eca-8d1b-09fc83daf3b0
 # ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
