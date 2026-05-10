@@ -16,28 +16,30 @@ begin
 	import Pkg
 	Pkg.activate(; temp = true)
 
-	Pkg.add([
-        Pkg.PackageSpec(; name = "Downloads"),
-        Pkg.PackageSpec(; name = "FITSFiles"),
-        Pkg.PackageSpec(; name = "DynamicQuantities"),
-        Pkg.PackageSpec(; name = "LsqFit"),
-        Pkg.PackageSpec(; name = "PlutoUI"),
-		Pkg.PackageSpec(;
-	        url = "https://github.com/MakieOrg/Makie.jl",
-	        subdir = "Makie",
-	        rev = "ff/breaking-0.25",
-    	),
-		Pkg.PackageSpec(;
-	        url = "https://github.com/MakieOrg/Makie.jl",
-	        subdir = "ComputePipeline",
-	        rev = "ff/breaking-0.25",
-    	),
-        Pkg.PackageSpec(;
-			url = "https://github.com/MakieOrg/Makie.jl",
-			subdir = "CairoMakie",
-			rev = "ff/breaking-0.25",
-		),
-    ])
+	Pkg.add(
+		[
+			Pkg.PackageSpec(; name = "Downloads"),
+			Pkg.PackageSpec(; name = "FITSFiles"),
+			Pkg.PackageSpec(; name = "DynamicQuantities"),
+			Pkg.PackageSpec(; name = "LsqFit"),
+			Pkg.PackageSpec(; name = "PlutoUI"),
+			Pkg.PackageSpec(;
+				url = "https://github.com/MakieOrg/Makie.jl",
+				subdir = "Makie",
+				rev = "ff/breaking-0.25",
+			),
+			Pkg.PackageSpec(;
+				url = "https://github.com/MakieOrg/Makie.jl",
+				subdir = "ComputePipeline",
+				rev = "ff/breaking-0.25",
+			),
+			Pkg.PackageSpec(;
+				url = "https://github.com/MakieOrg/Makie.jl",
+				subdir = "CairoMakie",
+				rev = "ff/breaking-0.25",
+			),
+		]
+	)
 
 	using Printf
 	using Downloads: download
@@ -159,13 +161,14 @@ md"""
 
 # ╔═╡ a6cce4f0-d0f8-4955-a75c-8e5ef2fccb5e
 let
-    fig, ax, p = lines(lam, flux;
+	fig, ax, p = lines(
+		lam, flux;
 		color = :black,
 		axis = (; xlabel = "Wavelength", ylabel = "Flux 1e-17"),
 	)
-	
-    vlines!(ax, 6563u"Å", linestyle = :dash)
-	
+
+	vlines!(ax, 6563u"Å", linestyle = :dash)
+
 	xlims!(ax, 6300u"Å", 6700u"Å")
 
 	fig
@@ -195,14 +198,15 @@ p_fit = let
 	model = curve_fit(gaussian, lam.value, flux.value, p0)
 
 	@info model
-	
+
 	coef(model)
 end
 
 # ╔═╡ 4b4beab1-172e-4b16-bbd4-4b4a62c381b8
 let
-    # Data
-	fig, ax, p = lines(lam, flux;
+	# Data
+	fig, ax, p = lines(
+		lam, flux;
 		color = :black,
 		axis = (; xlabel = "Wavelength", ylabel = "Flux 1e-17"),
 	)
@@ -210,8 +214,8 @@ let
 	# Model
 	model = gaussian(lam.value, p_fit)u"erg/cm^2/s/Å"
 	lines!(ax, lam, model)
-    
-    vlines!(ax, 6563u"Å", linestyle = :dash)
+
+	vlines!(ax, 6563u"Å", linestyle = :dash)
 	xlims!(ax, 6300u"Å", 6700u"Å")
 
 	fig
@@ -263,27 +267,28 @@ p_fit_compound = let
 		flux.value,
 		p0;
 		lower = [0.0, 6563 - 0.5, 0, -Inf, -Inf],
-		upper = [Inf, 6563 + 0.5, 10,  Inf,  Inf],
+		upper = [Inf, 6563 + 0.5, 10, Inf, Inf],
 	)
 
 	@info model
-	
+
 	coef(model)
 end
 
 # ╔═╡ 0cb42da2-3b6b-4ef2-868d-fc25dd5832da
 let
-    # Data
-	fig, ax, p = lines(lam, flux;
+	# Data
+	fig, ax, p = lines(
+		lam, flux;
 		color = :black,
 		axis = (; xlabel = "Wavelength", ylabel = "Flux 1e-17"),
 	)
 
 	# Model
-	model =  gaussian_compound(lam.value, p_fit_compound)u"erg/cm^2/s/Å"
+	model = gaussian_compound(lam.value, p_fit_compound)u"erg/cm^2/s/Å"
 	lines!(ax, lam, model)
-    
-    vlines!(ax, 6563u"Å", linestyle = :dash)
+
+	vlines!(ax, 6563u"Å", linestyle = :dash)
 	xlims!(ax, 6300u"Å", 6700u"Å")
 
 	fig

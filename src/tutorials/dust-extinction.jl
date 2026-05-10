@@ -106,7 +106,8 @@ end
 let
 	fig = Figure()
 
-	ax = Axis(fig[1, 1];
+	ax = Axis(
+		fig[1, 1];
 		dim1_conversion = DQConversion(us"1/μm"),
 		xlabel = "λ⁻¹",
 		ylabel = "A(λ) / A(V)",
@@ -117,7 +118,8 @@ let
 	for model in (CCM89, F99)
 		for Rv in (2.0, 3.0, 4.0)
 			ext = model(; Rv)
-			lines!(inv_wav, ext.(ustrip(u"Å", wav));
+			lines!(
+				inv_wav, ext.(ustrip(u"Å", wav));
 				label = string(nameof(model), ", ", "R = ", Rv),
 			)
 		end
@@ -275,7 +277,7 @@ We need to convert these magnitudes to flux so that they can be plotted on the s
 
 # ╔═╡ 844446f9-88e1-468f-bcf2-ad638aaeb844
 # Central wavelengths, stored as an array for plotting later
-wav_phot = wav_U, wav_B, wav_V = [0.3660, 0.4400, 0.5530] .* u"μm"
+wav_phot = wav_U, wav_B, wav_V = [366.0, 440.0, 553.0] .* u"nm"
 
 # ╔═╡ 101318a4-4bd2-4253-9e88-a814cbb6578b
 # Zero-points flux in frequency space
@@ -322,7 +324,8 @@ md"""
 # ╔═╡ 84386f76-3972-4985-9dc4-05501bbc5f41
 let
 	# Spectrum
-	fig, ax, p = lines(wav_spectrum, flux_spectrum;
+	fig, ax, p = lines(
+		wav_spectrum, flux_spectrum;
 		axis = (;
 			dim1_conversion = DQConversion(us"Å"),
 			dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
@@ -363,7 +366,8 @@ flux_phot_deredden = deredden.(
 # ╔═╡ ff040052-e0b3-4447-811e-4f743456aed3
 let
 	# Spectrum
-	fig, ax, p = lines(wav_spectrum, flux_spectrum_deredden;
+	fig, ax, p = lines(
+		wav_spectrum, flux_spectrum_deredden;
 		axis = (;
 			dim1_conversion = DQConversion(us"Å"),
 			dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
@@ -377,18 +381,21 @@ let
 		color = Cycled(5),
 		label = "IUE spectrum dereddened",
 	)
-	lines!(wav_spectrum, flux_spectrum;
+	lines!(
+		wav_spectrum, flux_spectrum;
 		color = Cycled(2),
 		label = "IUE spectrum",
 	)
 
 	# Photometry
-	scatter!(ax, wav_phot, flux_phot_deredden;
+	scatter!(
+		ax, wav_phot, flux_phot_deredden;
 		color = Cycled(1),
 		markersize = 15,
 		label = "U, B, V dereddened",
 	)
-	scatter!(ax, wav_phot, flux_phot;
+	scatter!(
+		ax, wav_phot, flux_phot;
 		color = Cycled(6),
 		markersize = 15,
 		label = "U, B, V",
@@ -396,7 +403,7 @@ let
 
 	# Legend and axis limits
 	axislegend()
-	ylims!(ax, (1e-11u"erg/s/cm^2/Å", 5e-8u"erg/s/cm^2/Å"))
+	ylims!(ax, (1.0e-11u"erg/s/cm^2/Å", 5.0e-8u"erg/s/cm^2/Å"))
 	fig
 end
 
