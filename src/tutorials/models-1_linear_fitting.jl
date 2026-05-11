@@ -141,11 +141,12 @@ with_theme(Theme(aog_theme())) do
 
 	# Combined layers
 	layer_data = layer_scatter + layer_errorbars
-	layers = layer_data * visual(label="data", color=:cornflowerblue) +
-		layer_model * visual(label="model", color="orange")
+	layers = layer_data * visual(label = "data", color = :cornflowerblue) +
+		layer_model * visual(label = "model", color = "orange")
 
 	# Display
-	fig = draw(layers;
+	fig = draw(
+		layers;
 		figure = (;
 			title = "Type II Cepheid observations",
 			subtitle = "Bhardwaj et al. 2017",
@@ -342,7 +343,8 @@ let
 	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
 
 	# Data points
-	fig, ax, p = scatter(log_P, Ks;
+	fig, ax, p = scatter(
+		log_P, Ks;
 		color = :cornflowerblue,
 		label = "data",
 	)
@@ -351,7 +353,8 @@ let
 	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
 
 	# Confidence interval
-	band!(ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
+	band!(
+		ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
 		color = :orange,
 		alpha = 0.15,
 		label = "model",

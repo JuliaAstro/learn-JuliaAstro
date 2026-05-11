@@ -115,7 +115,8 @@ The weights are returned as an `AbstractArray`, which can be viewed directly wit
 """
 
 # ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
-imview(h.weights;
+imview(
+	h.weights;
 	# clims = Percent(99.5),
 	# stretch = identity,
 	cmap = :cividis,
@@ -150,13 +151,15 @@ To start, we will pass the histogram object `h` directly to Makie, which its `pl
 
 # ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
 let
-	fig, ax, p = plot(h;
+	fig, ax, p = plot(
+		h;
 		colorrange = (1, 10_000),
 		colorscale = log10,
 		colormap = :cividis,
 	)
 
-	Colorbar(fig[1, 2], p;
+	Colorbar(
+		fig[1, 2], p;
 		ticks = [1, 3, 6, 500, 10_000],
 		minorticksvisible = true,
 		minorticks = IntervalsBetween(9),
@@ -186,9 +189,10 @@ As with these other packages, its usecases are probably best shown by example:
 let
 	plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
 
-	draw(plt, scales(
-		Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
-	);
+	draw(
+		plt, scales(
+			Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
+		);
 		colorbar = (
 			ticks = [1, 3, 6, 500, 10_000],
 			minorticksvisible = true,
@@ -331,11 +335,12 @@ Here is another example where we add some additional customizations:
 
 # ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
 let
-	fig, ax, p = plot(img;
+	fig, ax, p = plot(
+		img;
 		colorscale = log10, # log scale the colors
 		colormap = :greys,
 		colorbar = (
-			ticks = [4e3, 5e3, 6e4, 1e4, 2e4],
+			ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
 			minorticksvisible = true,
 			minorticks = IntervalsBetween(9),
 		)
@@ -423,7 +428,7 @@ The pixel values looks to be mostly around [2000, 3000] counts, so we set our co
 """
 
 # ╔═╡ edb0adae-ccf7-43cd-8985-626020a3adcb
-plot(img_stacked; colorrange = (2e3, 3e3), colormap = :magma)
+plot(img_stacked; colorrange = (2.0e3, 3.0e3), colormap = :magma)
 
 # ╔═╡ eccd1973-1082-4fb6-920c-0039ddf5482a
 md"""

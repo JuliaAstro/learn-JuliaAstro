@@ -117,7 +117,8 @@ Plotting against `zvals`, we produce the following curve:
 
 # ╔═╡ 0ba60166-cbd1-4f10-9b2b-259b7837a796
 let
-	fig, ax, p = lines(zvals, d;
+	fig, ax, p = lines(
+		zvals, d;
 		color = Cycled(2),
 		axis = (
 			# Uncomment this line for manual unit control
@@ -159,7 +160,8 @@ end
 # ╔═╡ 5ff49cc2-35b1-463a-ad95-5934069f8420
 let
 	# Default model
-	f, ax1, p = lines(zvals, d;
+	fig, ax1, p = lines(
+		zvals, d;
 		color = Cycled(2),
 		axis = (
 			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
@@ -167,7 +169,8 @@ let
 	)
 
 	# Age axis
-	ax2 = Axis(f[1, 1];
+	ax2 = Axis(
+		fig[1, 1];
 		xaxisposition = :top,
 		xticks = age_ticks,
 		xtickformat = x -> string.(round.((age_vals); digits = 2)),
@@ -185,7 +188,7 @@ let
 	hideydecorations!(ax2)
 	linkxaxes!(ax1, ax2)
 
-	f
+	fig
 end
 
 # ╔═╡ dd63c9c9-50e9-4d7b-86e3-8874134d502b
@@ -216,7 +219,8 @@ md"""
 # ╔═╡ dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 fig = let
 	# Plank 2013 model
-	f, ax1, p = lines(zvals, d_planck;
+	fig, ax1, p = lines(
+		zvals, d_planck;
 		label = "Planck 2013",
 		axis = (;
 			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
@@ -229,7 +233,8 @@ fig = let
 	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
 
 	# Age axis
-	ax2 = Axis(f[1, 1];
+	ax2 = Axis(
+		fig[1, 1];
 		xaxisposition = :top,
 		xticks = age_ticks,
 		xtickformat = x -> string.(round.((age_vals); digits = 2)),
@@ -247,7 +252,7 @@ fig = let
 	axislegend(ax1; position = :rb)
 
 	# Display
-	f
+	fig
 end
 
 # ╔═╡ 6734b49a-5a4b-4654-9fd7-e94df8872e88

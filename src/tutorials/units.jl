@@ -19,48 +19,50 @@ begin
 
 	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
 	# is upstreamed
-	
+
 	# Data viz
-	Pkg.add([
-		Pkg.PackageSpec(;
-    	url = "https://github.com/icweaver/Makie.jl",
-    	subdir = "Makie",
-    	rev = "units-matrix",
-    ),
-    Pkg.PackageSpec(;
-        url = "https://github.com/MakieOrg/Makie.jl",
-        subdir = "CairoMakie",
-        rev = "ff/breaking-0.25",
-    ),
-	Pkg.PackageSpec(;
-        url = "https://github.com/MakieOrg/Makie.jl",
-        subdir = "ComputePipeline",
-        rev = "ff/breaking-0.25",
-    ),
-	])
+	Pkg.add(
+		[
+			Pkg.PackageSpec(;
+				url = "https://github.com/icweaver/Makie.jl",
+				subdir = "Makie",
+				rev = "units-matrix",
+			),
+			Pkg.PackageSpec(;
+				url = "https://github.com/MakieOrg/Makie.jl",
+				subdir = "CairoMakie",
+				rev = "ff/breaking-0.25",
+			),
+			Pkg.PackageSpec(;
+				url = "https://github.com/MakieOrg/Makie.jl",
+				subdir = "ComputePipeline",
+				rev = "ff/breaking-0.25",
+			),
+		]
+	)
 
 	Pkg.add(["StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
-	
+
 	# Statistical analysis
 	using StatsBase: mean
 	using Distributions: Normal
 	using Random: Xoshiro
-	
+
 	# Units - DynamicQuantities
 	using DynamicQuantities: DynamicQuantities as DQ
 	using DynamicQuantities: SymbolicConstants as C_DQ
-	
+
 	# Units - Unitful
 	using Unitful: Unitful as U
 	using PhysicalConstants: CODATA2018 as C_U
 	using UnitfulEquivalences: UnitfulEquivalences as UE
 	import UnitfulAstro
 	import DimensionfulAngles
-	
+
 	# Data Viz
 	using CairoMakie: Colorbar, stephist, heatmap
 	using Makie: Makie as M
-	
+
 	# Notebook setup
 	using PlutoUI: TableOfContents, details
 	using HypertextLiteral: @htl
@@ -146,10 +148,10 @@ stephist(v_DQ)
 stephist(v_U)
 
 # ╔═╡ 2d236d32-faf4-41ef-84de-1d40c02fb238
-σ_DQ = √(sum((v_DQ .- mean(v_DQ)).^2) / length(v_DQ))
+σ_DQ = √(sum((v_DQ .- mean(v_DQ)) .^ 2) / length(v_DQ))
 
 # ╔═╡ b388f8be-3074-443c-97a9-72eb7098b5e3
-σ_U = √(sum((v_U .- mean(v_U)).^2) / length(v_U))
+σ_U = √(sum((v_U .- mean(v_U)) .^ 2) / length(v_U))
 
 # ╔═╡ a3baf049-5419-4773-8b7f-0ba07a9f1728
 M_DQ = 4 * σ_DQ^2 * Reff_DQ / C_DQ.G
@@ -183,24 +185,26 @@ log10(M_U)
 
 # ╔═╡ 2648b454-2762-4941-b13c-2303ffcd6521
 let
-	sol = details("Example solution",
-	md"""
-	```julia
-	using DynamicQuantities: Constants as C
+	sol = details(
+		"Example solution",
+		md"""
+		```julia
+		using DynamicQuantities: Constants as C
 
-	# Speed from Kepler's law
-	v_kep = sqrt(C.G * C.M_sun / C.au)
+		# Speed from Kepler's law
+		v_kep = sqrt(C.G * C.M_sun / C.au)
 
-	# View in units of km/s (≈ 29.7847 km/s)
-	v_kep |> us"km/s"
+		# View in units of km/s (≈ 29.7847 km/s)
+		v_kep |> us"km/s"
 
-	# Speed from kinematics (≈ 29.7853 km/s)
-	v_kin = 2π * C.au / u"yr"
+		# Speed from kinematics (≈ 29.7853 km/s)
+		v_kin = 2π * C.au / u"yr"
 
-	# Percent difference (≈ 0.002%)
-	percent_diff = 100 * (v_kin - v_kep) / v_kep
-	```
-	""")
+		# Percent difference (≈ 0.002%)
+		percent_diff = 100 * (v_kin - v_kep) / v_kep
+		```
+		"""
+	)
 
 	md"""
 	!!! warn "Exercise"
@@ -253,49 +257,49 @@ end;
 
 # ╔═╡ 539290af-787d-4deb-928c-50e4e9f28173
 data_DQ = let
-    # Cloud's center
-    ra_0 = 52.25 * DQ.u"deg"
-    d_0 = 0.25 * DQ.u"deg"
-    v_0 = 15 * DQ.u"km/s"
+	# Cloud's center
+	ra_0 = 52.25 * DQ.u"deg"
+	d_0 = 0.25 * DQ.u"deg"
+	v_0 = 15 * DQ.u"km/s"
 
-    # Cloud's size
-    ra_σ = 3 * DQ.u"arcmin"
-    d_σ = 4 * DQ.u"arcmin"
-    v_σ = 3 * DQ.us"km/s"
+	# Cloud's size
+	ra_σ = 3 * DQ.u"arcmin"
+	d_σ = 4 * DQ.u"arcmin"
+	v_σ = 3 * DQ.us"km/s"
 
 	A = [
 		exp(
-			-0.5 * (
-				((ra - ra_0) / ra_σ)^2
-			  	+ ((d - d_0) / d_σ)^2
-			  	+ ((v - v_0) / v_σ)^2
+				-0.5 * (
+					((ra - ra_0) / ra_σ)^2
+					+ ((d - d_0) / d_σ)^2
+					+ ((v - v_0) / v_σ)^2
+				)
 			)
-		)
-		for ra in ras_DQ, d in decs_DQ, v in vs_DQ
+			for ra in ras_DQ, d in decs_DQ, v in vs_DQ
 	] * DQ.us"K"
 end
 
 # ╔═╡ 86d608ec-aca2-4738-9c3e-656ccd562da6
 data_U = let
-    # Cloud's center
-    ra_0 = 52.25 * U.u"deg"
-    d_0 = 0.25 * U.u"deg"
-    v_0 = 15 * U.u"km/s"
+	# Cloud's center
+	ra_0 = 52.25 * U.u"deg"
+	d_0 = 0.25 * U.u"deg"
+	v_0 = 15 * U.u"km/s"
 
-    # Cloud's size
-    ra_σ = 3 * U.u"arcminute"
-    d_σ = 4 * U.u"arcminute"
-    v_σ = 3 * U.u"km/s"
+	# Cloud's size
+	ra_σ = 3 * U.u"arcminute"
+	d_σ = 4 * U.u"arcminute"
+	v_σ = 3 * U.u"km/s"
 
 	A = [
 		exp(
-			-0.5 * (
-				((ra - ra_0) / ra_σ)^2
-			  	+ ((d - d_0) / d_σ)^2
-			  	+ ((v - v_0) / v_σ)^2
+				-0.5 * (
+					((ra - ra_0) / ra_σ)^2
+					+ ((d - d_0) / d_σ)^2
+					+ ((v - v_0) / v_σ)^2
+				)
 			)
-		)
-		for ra in ras_U, d in decs_U, v in vs_U
+			for ra in ras_U, d in decs_U, v in vs_U
 	] * U.u"K"
 end
 
@@ -310,7 +314,7 @@ md"""
 # This is only right if dec ~ 0, because of the cos(dec) factor.
 Δra_DQ, Δdec_DQ = (
 	(maximum(ras_DQ) - minimum(ras_DQ)) / length(ras_DQ), # Typed \Delta<TAB>
-	(maximum(decs_DQ) - minimum(decs_DQ)) / length(decs_DQ)
+	(maximum(decs_DQ) - minimum(decs_DQ)) / length(decs_DQ),
 )
 
 # ╔═╡ efa21003-ee7a-4834-b6f7-7625a7820f70
@@ -318,7 +322,7 @@ md"""
 # This is only right if dec ~ 0, because of the cos(dec) factor.
 Δra_U, Δdec_U = (
 	(maximum(ras_U) - minimum(ras_U)) / length(ras_U), # Typed \Delta<TAB>
-	(maximum(decs_U) - minimum(decs_U)) / length(decs_U)
+	(maximum(decs_U) - minimum(decs_U)) / length(decs_U),
 )
 
 # ╔═╡ 6fa07efa-fd25-4bca-bd18-8ba5c557d146
@@ -362,7 +366,8 @@ md"""
 
 # ╔═╡ f2b222ec-0783-487e-9c52-835976a555b6
 let
-	fig, ax, p =  heatmap(ras_DQ, decs_DQ, intcloud_DQ,
+	fig, ax, p = heatmap(
+		ras_DQ, decs_DQ, intcloud_DQ,
 		axis = (;
 			xreversed = true,
 			xlabel = "RA",
@@ -378,7 +383,8 @@ end
 
 # ╔═╡ f2c3768f-1c81-456d-ba81-6a91fc09e81b
 let
-	fig, ax, p =  heatmap(ras_U, decs_U, intcloud_U,
+	fig, ax, p = heatmap(
+		ras_U, decs_U, intcloud_U,
 		axis = (;
 			xreversed = true,
 			xlabel = "RA",
@@ -442,13 +448,13 @@ md"""
 # ╔═╡ 3a24f4aa-b074-4beb-b77d-6778e2fe580a
 CC_DQ = let
 	A_13, A_18 = (7.4e-8, 8.8e-8) ./ DQ.us"s"
-	3e14 * DQ.us"s/(K*cm^2*km)" * (ν_18_DQ/ν_13_DQ)^3 * (A_13/A_18)
+	3.0e14 * DQ.us"s/(K*cm^2*km)" * (ν_18_DQ / ν_13_DQ)^3 * (A_13 / A_18)
 end
 
 # ╔═╡ 98869c25-2644-47d1-b8cc-05699292f2a8
 CC_U = let
 	A_13, A_18 = (7.4e-8, 8.8e-8) ./ U.u"s"
-	3e14 * U.u"s/(K*cm^2*km)" * (ν_18_U/ν_13_U)^3 * (A_13/A_18)
+	3.0e14 * U.u"s/(K*cm^2*km)" * (ν_18_U / ν_13_U)^3 * (A_13 / A_18)
 end
 
 # ╔═╡ 4092a893-818e-49f4-93d0-be7bd652dddc
@@ -511,13 +517,13 @@ md"""
 
 # ╔═╡ 522d88d6-5f60-401b-8786-0236c0859eda
 ρ_DQ = let
-	mH₂ = 2*1.008 * C_DQ.u
+	mH₂ = 2 * 1.008 * C_DQ.u
 	NH₂_DQ * mH₂
 end
 
 # ╔═╡ 014b94b3-a6fa-4627-a24d-fe8c5e275582
 ρ_U = let
-	mH₂ = 2*1.008 * U.u"u"
+	mH₂ = 2 * 1.008 * U.u"u"
 	NH₂_U * mH₂
 end
 
@@ -633,12 +639,14 @@ md"""
 
 # ╔═╡ 7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 let
-	sol = details("Example solution",
-	md"""
-	```julia
-	v_orb(M, r) = sqrt(C_DQ.G * M / r)
-	```
-	""")
+	sol = details(
+		"Example solution",
+		md"""
+		```julia
+		v_orb(M, r) = sqrt(C_DQ.G * M / r)
+		```
+		"""
+	)
 
 	md"""
 	!!! tip "Exercises"
@@ -649,7 +657,7 @@ let
 end
 
 # ╔═╡ 59b4d441-9a74-468f-ad8c-882516a09049
- md"""
+md"""
 # Notebook setup 🔧
 """
 
@@ -667,25 +675,27 @@ md"""
 """
 
 # ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
-function side_by_side(content=nothing)
-    @htl("""
-    <style>
-    @media (min-width: 900px) {
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
-            margin-right: 1rem;
+function side_by_side(content = nothing)
+    return @htl(
+        """
+        <style>
+        @media (min-width: 900px) {
+            pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell {
+                margin-right: 1rem;
+            }
+            pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
+            pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
+                display: inline-block;
+                vertical-align: top;
+                width: calc((100% - 1rem) / 2);
+                box-sizing: border-box;
+            }
         }
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell,
-        pluto-cell:has(> pluto-output .sbs-marker) + pluto-cell + pluto-cell {
-            display: inline-block;
-            vertical-align: top;
-            width: calc((100% - 1rem) / 2);
-            box-sizing: border-box;
-        }
-    }
-    </style>
-    <div class="sbs-marker" style="display:none"></div>
-    $(content)
-    """)
+        </style>
+        <div class="sbs-marker" style="display:none"></div>
+        $(content)
+        """
+    )
 end
 
 # ╔═╡ 60c89d86-942e-4c97-bd7a-ad2f792b1155
