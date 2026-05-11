@@ -240,7 +240,7 @@ Go back to the previous plot and try to make the fit work. Note: Do not spend mo
 
 # ╔═╡ 2589fab7-3440-4d03-bc61-90b91f3f8fde
 md"""
-## Compund models
+## Compound models
 
 One model is not enough to make this fit work. We need to combine a couple of models to make a compound model. The idea is that we can add, divide, or multiply models that already exist and fit the compound model to our data.
 
