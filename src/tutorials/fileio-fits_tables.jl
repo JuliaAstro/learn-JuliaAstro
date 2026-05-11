@@ -2,7 +2,7 @@
 # v0.20.21
 
 #> [frontmatter]
-#> image = "https://raw.githubusercontent.com/JuliaAstro/learn-JuliaAstro/refs/heads/main/src/assets/fits-table.png"
+#> image = "/assets/fits-table.png"
 #> order = 1
 #> title = "FITS tables"
 #> layout = "layout.jlhtml"
