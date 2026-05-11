@@ -173,7 +173,8 @@ md"""
 """
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
-plot(df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
+plot(
+	df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
 	x = :x,
 	y = :y,
 	kind = :histogram2d,
