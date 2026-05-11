@@ -16,6 +16,7 @@ using InteractiveUtils
 # ╔═╡ fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 begin
 	using Pkg: Pkg
+	Pkg.activate(; temp = true)
 
 	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
 	# is upstreamed
