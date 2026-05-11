@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false # don't run on draft PRs
     steps:
       - name: Checkout learn.JuliaAstro source
         uses: actions/checkout@v6
