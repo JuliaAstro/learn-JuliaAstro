@@ -780,7 +780,7 @@ emphasizing the importance of being explicit with our units. Similarly, taking t
 md"""
 ### Setting up the data cube
 
-Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 1 - 0`` rotational transition of ``\mathrm{C}^{18}\mathrm{O}`` and are interested in measuring its total mass. The measurement produced a data cube with RA and Dec as spatial coordiates and velocity as the third axis. Each voxel in this data cube represents the brightness temperature of the emission at that position and velocity. Furthermore, we'll assume that we have an independent measurement of distance to the cloud ``d = 250\, \mathrm{pc}`` and that the excitation temperature is known and constant throughout the cloud: ``T_\text{ex} = 25\, \mathrm{K}``:
+Let's assume that we've mapped the inner part of a molecular cloud in the ``J = 1 - 0`` rotational transition of ``\mathrm{C}^{18}\mathrm{O}`` and are interested in measuring its total mass. The measurement produced a data cube with RA and Dec as spatial coordinates and velocity as the third axis. Each voxel in this data cube represents the brightness temperature of the emission at that position and velocity. Furthermore, we'll assume that we have an independent measurement of distance to the cloud ``d = 250\, \mathrm{pc}`` and that the excitation temperature is known and constant throughout the cloud: ``T_\text{ex} = 25\, \mathrm{K}``:
 """ |> side_by_side
 
 # ╔═╡ b86a31df-9de1-4e27-8ca7-ce7f3d2576fa
@@ -845,7 +845,7 @@ Now we move on to calculate the constant ``B``. This is given by the ratio of ``
 # ╔═╡ a0b64ba9-cbec-404e-bf39-aee03ae407ae
 md"""
 !!! note
-	Note how DynamicQuantities.jl intelligently cancelled the units for us, while still keeping this as a `Quantity` object. For Unitful.jl, a conversion to `NoUnits` is needed. In practice, it is generaly prefable to not worry about these intermediate units and just convert eveything at the end.
+	Note how DynamicQuantities.jl intelligently cancelled the units for us, while still keeping this as a `Quantity` object. For Unitful.jl, a conversion to `NoUnits` is needed. In practice, it is generally prefable to not worry about these intermediate units and just convert everything at the end.
 """ |> side_by_side
 
 # ╔═╡ 6aff587f-be6f-4fd8-96df-9c12f3769f32

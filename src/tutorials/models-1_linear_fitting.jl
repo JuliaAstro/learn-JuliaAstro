@@ -114,7 +114,7 @@ A fair bit happened here. In the above line, AoG.jl:
 - Made a scatter plot of `log_P` vs. `Ks`.
 - Fit a line to the data.
 - Plot the fitted line along with its estimated 95% confidence interval.
-- Labeled the axes with the appropriate colum names used.
+- Labeled the axes with the appropriate column names used.
 
 While this is convenient for quick visualization to see that there indeed appears to be a linear relationshiop between the log period of the pulsation period and luminosity (inverse relation to observed magnitude), we really would like to take special care with our statistical analysis.
 
@@ -165,7 +165,7 @@ md"""
 	set_theme!(<theme>)
 	```
 
-	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on themeing, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
+	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on theming, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
 """
 
 # ╔═╡ 6ef287bb-7b3f-4fbc-aa24-2b317a22b6f9
@@ -292,7 +292,7 @@ md"""
 For completeness, we also show how we might accomplish this with Optimization.jl:
 
 !!! note
-	This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For exampl, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
+	This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For example, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
 """
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa

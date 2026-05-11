@@ -129,7 +129,7 @@ md"""
 We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs of this notebook for all available options.
 
 !!! tip
-	Try passing your own AbstractArray to `imview`. This function converts an array of numbers to an array of `ColorTypes` (i.e., RGB values) for visualizing our arrays in full color. For mor on this, see the [Arrays, Numbers, and Colors](https://juliaimages.org/latest/tutorials/arrays_colors/#page_arrays_colors) section of the JuliaImages documentation.
+	Try passing your own AbstractArray to `imview`. This function converts an array of numbers to an array of `ColorTypes` (i.e., RGB values) for visualizing our arrays in full color. For more on this, see the [Arrays, Numbers, and Colors](https://juliaimages.org/latest/tutorials/arrays_colors/#page_arrays_colors) section of the JuliaImages documentation.
 """
 
 # ╔═╡ d031ddf9-ee84-46b2-b387-1ec99a2ca79b
@@ -173,7 +173,7 @@ md"""
 !!! tip
 	Try adjusting the plot options above, or try adding your own! See the [Getting started](https://docs.makie.org/stable/tutorials/getting-started) section of the Makie.jl documentation for a comprehensive tutorial.
 
-You may notice that there are still a few things missing from our plot that would be nice to have by defauly, e.g., labeled axes and a formatted colorbar. We will show an ergonomic way to do this next.
+You may notice that there are still a few things missing from our plot that would be nice to have by default, e.g., labeled axes and a formatted colorbar. We will show an ergonomic way to do this next.
 """
 
 # ╔═╡ 414b0415-e784-4089-a683-a20ec15ee44f
