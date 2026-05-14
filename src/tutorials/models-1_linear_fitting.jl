@@ -17,24 +17,24 @@ using DataFramesMeta: DataFramesMeta as DFM
 
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
-	# Data handling
-	using VirtualObservatory: VizierCatalog, table
-	using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
+    # Data handling
+    using VirtualObservatory: VizierCatalog, table
+    using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
 
-	# Statistics and model fitting
-	using StatsBase: coef, predict
-	using LinearAlgebra: Diagonal
-	using GLM: Normal, @formula, glm, aweights
-	using Optimization: OptimizationProblem, solve
-	using OptimizationOptimJL: NelderMead
+    # Statistics and model fitting
+    using StatsBase: coef, predict
+    using LinearAlgebra: Diagonal
+    using GLM: Normal, @formula, glm, aweights
+    using Optimization: OptimizationProblem, solve
+    using OptimizationOptimJL: NelderMead
 
-	# Plotting
-	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
-	using CairoMakie: Scatter, set_theme!, with_theme, Theme
-	using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
-	using LaTeXStrings: @L_str
-	using MathTeXEngine: set_texfont_family!, FontFamily
-	set_texfont_family!(FontFamily("TeXGyreHeros"))
+    # Plotting
+    using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
+    using CairoMakie: Scatter, set_theme!, with_theme, Theme
+    using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
+    using LaTeXStrings: @L_str
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
 end;
 
 # ╔═╡ ad6598b0-99ce-480f-b267-72ac8c9e6848
@@ -87,9 +87,9 @@ This catalog has a lot of information, but for this tutorial we are going to wor
 
 # ╔═╡ 3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
 df = @select catalog begin
-	:log_P = log10.(:Period)
-	:Ks = :"<Ksmag>"
-	:Ks_err = :"e_<Ksmag>"
+    :log_P = log10.(:Period)
+    :Ks = :"<Ksmag>"
+    :Ks_err = :"e_<Ksmag>"
 end
 
 # ╔═╡ ddce8426-9da5-419e-b5f4-65aaf990c7ca
@@ -125,33 +125,33 @@ Let's apply these requirements, and also update the styling of our plot a bit:
 
 # ╔═╡ 1d61727f-b373-4394-b486-79eb63a71f37
 with_theme(Theme(aog_theme())) do
-	# Common data
-	layer_scatter = data(df) * mapping(
-		:log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
-		:Ks => "Ks [mag]",
-	)
+    # Common data
+    layer_scatter = data(df) * mapping(
+        :log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
+        :Ks => "Ks [mag]",
+    )
 
-	# Errorbars
-	layer_errorbars = layer_scatter * mapping(:Ks_err) * visual(Errorbars)
+    # Errorbars
+    layer_errorbars = layer_scatter * mapping(:Ks_err) * visual(Errorbars)
 
-	# Linear model
-	layer_model = layer_scatter *
-		mapping(weights = :Ks_err) *
-		linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+    # Linear model
+    layer_model = layer_scatter *
+        mapping(weights = :Ks_err) *
+        linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
 
-	# Combined layers
-	layer_data = layer_scatter + layer_errorbars
-	layers = layer_data * visual(label = "data", color = :cornflowerblue) +
-		layer_model * visual(label = "model", color = "orange")
+    # Combined layers
+    layer_data = layer_scatter + layer_errorbars
+    layers = layer_data * visual(label = "data", color = :cornflowerblue) +
+        layer_model * visual(label = "model", color = "orange")
 
-	# Display
-	fig = draw(
-		layers;
-		figure = (;
-			title = "Type II Cepheid observations",
-			subtitle = "Bhardwaj et al. 2017",
-		),
-	)
+    # Display
+    fig = draw(
+        layers;
+        figure = (;
+            title = "Type II Cepheid observations",
+            subtitle = "Bhardwaj et al. 2017",
+        ),
+    )
 end
 
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
@@ -232,9 +232,9 @@ md"""
 
 # ╔═╡ 2cf30811-3204-4498-9b73-8a3c3bba28e2
 df_glm = @transform df begin
-	:log_P = Float64.(:log_P)
-	:Ks = Float64.(:Ks)
-	:Ks_err = Float64.(:Ks_err)
+    :log_P = Float64.(:log_P)
+    :Ks = Float64.(:Ks)
+    :Ks_err = Float64.(:Ks_err)
 end;
 
 # ╔═╡ 19df3403-ef9d-4b07-8b14-3b10056475e8
@@ -297,14 +297,14 @@ For completeness, we also show how we might accomplish this with Optimization.jl
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
 function objective(u, data)
-	b, m = u
-	x, y, y_err = eachcol(data)
+    b, m = u
+    x, y, y_err = eachcol(data)
 
-	# Compute weighted residuals
-	residuals = @. (y - (m * x + b)) / y_err
+    # Compute weighted residuals
+    residuals = @. (y - (m * x + b)) / y_err
 
-	# Sum of squared weighted residuals (χ²)
-	return sum(residuals .^ 2)
+    # Sum of squared weighted residuals (χ²)
+    return sum(residuals .^ 2)
 end
 
 # ╔═╡ a3582cb7-c2a6-414c-bf7b-d764c2311c80
@@ -339,42 +339,42 @@ md"""
 
 # ╔═╡ c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 let
-# with_theme(Theme(aog_theme())) do
-	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
+    # with_theme(Theme(aog_theme())) do
+    log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
 
-	# Data points
-	fig, ax, p = scatter(
-		log_P, Ks;
-		color = :cornflowerblue,
-		label = "data",
-	)
+    # Data points
+    fig, ax, p = scatter(
+        log_P, Ks;
+        color = :cornflowerblue,
+        label = "data",
+    )
 
-	# Data uncertainty
-	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
+    # Data uncertainty
+    errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
 
-	# Confidence interval
-	band!(
-		ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
-		color = :orange,
-		alpha = 0.15,
-		label = "model",
-	)
+    # Confidence interval
+    band!(
+        ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
+        color = :orange,
+        alpha = 0.15,
+        label = "model",
+    )
 
-	# Model prediction
-	lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
+    # Model prediction
+    lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
 
-	# Display
-	ax.title = "Type II Cepheid observations"
-	ax.titlesize = 16
-	ax.titlealign = :left
-	ax.subtitle = "Bhardwaj et al. 2017"
-	ax.xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}"
-	ax.ylabel = "Ks [mag]"
-	ax.ylabelfont = :bold
+    # Display
+    ax.title = "Type II Cepheid observations"
+    ax.titlesize = 16
+    ax.titlealign = :left
+    ax.subtitle = "Bhardwaj et al. 2017"
+    ax.xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}"
+    ax.ylabel = "Ks [mag]"
+    ax.ylabelfont = :bold
 
-	Legend(fig[1, 2], ax; merge = true)
+    Legend(fig[1, 2], ax; merge = true)
 
-	fig
+    fig
 end
 
 # ╔═╡ 3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75

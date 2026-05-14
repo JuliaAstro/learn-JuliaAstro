@@ -15,25 +15,25 @@ using InteractiveUtils
 
 # ╔═╡ 1d4c2ee6-c6eb-11f0-8669-cd67adc8e577
 begin
-	# Cosmological analysis
-	using Cosmology: cosmology, angular_diameter_dist, age
+    # Cosmological analysis
+    using Cosmology: cosmology, angular_diameter_dist, age
 
-	# Plotting
-	using CairoMakie:
-		Makie,
-		Axis,
-		Cycled,
-		lines,
-		lines!,
-		hideydecorations!,
-		linkxaxes!,
-		axislegend
-	using LaTeXStrings: @L_str
-	using MathTeXEngine: set_texfont_family!, FontFamily
-	set_texfont_family!(FontFamily("TeXGyreHeros"))
+    # Plotting
+    using CairoMakie:
+        Makie,
+        Axis,
+        Cycled,
+        lines,
+        lines!,
+        hideydecorations!,
+        linkxaxes!,
+        axislegend
+    using LaTeXStrings: @L_str
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
 
-	# Units
-	using DynamicQuantities: @u_str, @us_str, ustrip
+    # Units
+    using DynamicQuantities: @u_str, @us_str, ustrip
 end
 
 # ╔═╡ f74f122b-2320-45c2-a3e7-ae049f6a897d
@@ -99,7 +99,7 @@ For a collection of redshifts, `zvals`, we compute the following angular diamete
 """
 
 # ╔═╡ 620d15bc-f613-431b-8e6e-d1dbe100d933
-zvals = 0 : 0.1 : 6
+zvals = 0:0.1:6
 
 # ╔═╡ 5f70dcc4-8aab-44b6-aa82-ffd4dae92b74
 d = [angular_diameter_dist(us"Constants.Mpc", cosmo, z) for z in zvals]
@@ -117,19 +117,19 @@ Plotting against `zvals`, we produce the following curve:
 
 # ╔═╡ 0ba60166-cbd1-4f10-9b2b-259b7837a796
 let
-	fig, ax, p = lines(
-		zvals, d;
-		color = Cycled(2),
-		axis = (
-			# Uncomment this line for manual unit control
-			# dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
-			xminorticksvisible = true,
-			xlabel = "Redshift",
-			ylabel = "Angular diameter distance",
-		),
-	)
+    fig, ax, p = lines(
+        zvals, d;
+        color = Cycled(2),
+        axis = (
+            # Uncomment this line for manual unit control
+            # dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+            xminorticksvisible = true,
+            xlabel = "Redshift",
+            ylabel = "Angular diameter distance",
+        ),
+    )
 
-	fig
+    fig
 end
 
 # ╔═╡ b8a0440f-3da8-488e-a52f-b9cf98f977b2
@@ -150,45 +150,45 @@ It would be useful to see the corresponding universe ages at each redshift. Let'
 # ╔═╡ ba65782d-fa00-4e3d-9e49-fdafd3a7e47c
 # Just show a few of the ages for clarity
 age_ticks, age_vals = let
-	n = 15 # Sample every n point
-	z_sampled = zvals[begin:n:end]
-	age_sampled = [age(us"Gyr", cosmo, z) for z in z_sampled]
-	age_sampled_vals = ustrip.(u"Gyr", age_sampled)
-	z_sampled, age_sampled_vals
+    n = 15 # Sample every n point
+    z_sampled = zvals[begin:n:end]
+    age_sampled = [age(us"Gyr", cosmo, z) for z in z_sampled]
+    age_sampled_vals = ustrip.(u"Gyr", age_sampled)
+    z_sampled, age_sampled_vals
 end
 
 # ╔═╡ 5ff49cc2-35b1-463a-ad95-5934069f8420
 let
-	# Default model
-	fig, ax1, p = lines(
-		zvals, d;
-		color = Cycled(2),
-		axis = (
-			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
-		),
-	)
+    # Default model
+    fig, ax1, p = lines(
+        zvals, d;
+        color = Cycled(2),
+        axis = (
+            dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+        ),
+    )
 
-	# Age axis
-	ax2 = Axis(
-		fig[1, 1];
-		xaxisposition = :top,
-		xticks = age_ticks,
-		xtickformat = x -> string.(round.((age_vals); digits = 2)),
-	)
+    # Age axis
+    ax2 = Axis(
+        fig[1, 1];
+        xaxisposition = :top,
+        xticks = age_ticks,
+        xtickformat = x -> string.(round.((age_vals); digits = 2)),
+    )
 
-	# Labels
-	ax1.xlabel = "Redshift"
-	ax1.ylabel = "Angular diameter distance"
-	ax2.xlabel = "Time since Big Bang (Gyr)"
+    # Labels
+    ax1.xlabel = "Redshift"
+    ax1.ylabel = "Angular diameter distance"
+    ax2.xlabel = "Time since Big Bang (Gyr)"
 
-	# Grid lines + ticks
-	ax1.xminorticksvisible = true
-	ax1.xgridvisible = false
-	ax2.xgridvisible = false
-	hideydecorations!(ax2)
-	linkxaxes!(ax1, ax2)
+    # Grid lines + ticks
+    ax1.xminorticksvisible = true
+    ax1.xgridvisible = false
+    ax2.xgridvisible = false
+    hideydecorations!(ax2)
+    linkxaxes!(ax1, ax2)
 
-	fig
+    fig
 end
 
 # ╔═╡ dd63c9c9-50e9-4d7b-86e3-8874134d502b
@@ -218,41 +218,41 @@ md"""
 
 # ╔═╡ dbcc87a3-fe96-42aa-87b7-e8147ac1a48c
 fig = let
-	# Plank 2013 model
-	fig, ax1, p = lines(
-		zvals, d_planck;
-		label = "Planck 2013",
-		axis = (;
-			dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
-			xlabel = "Redshift",
-			ylabel = "Angular diameter distance",
-		)
-	)
+    # Plank 2013 model
+    fig, ax1, p = lines(
+        zvals, d_planck;
+        label = "Planck 2013",
+        axis = (;
+            dim2_conversion = Makie.DQConversion(us"Constants.Mpc"),
+            xlabel = "Redshift",
+            ylabel = "Angular diameter distance",
+        )
+    )
 
-	# Default model
-	lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
+    # Default model
+    lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
 
-	# Age axis
-	ax2 = Axis(
-		fig[1, 1];
-		xaxisposition = :top,
-		xticks = age_ticks,
-		xtickformat = x -> string.(round.((age_vals); digits = 2)),
-	)
-	ax2.xlabel = "Time since Big Bang (Gyr)"
+    # Age axis
+    ax2 = Axis(
+        fig[1, 1];
+        xaxisposition = :top,
+        xticks = age_ticks,
+        xtickformat = x -> string.(round.((age_vals); digits = 2)),
+    )
+    ax2.xlabel = "Time since Big Bang (Gyr)"
 
-	# Grid lines + ticks
-	ax1.xminorticksvisible = true
-	ax1.xgridvisible = false
-	ax2.xgridvisible = false
-	hideydecorations!(ax2)
-	linkxaxes!(ax1, ax2)
+    # Grid lines + ticks
+    ax1.xminorticksvisible = true
+    ax1.xgridvisible = false
+    ax2.xgridvisible = false
+    hideydecorations!(ax2)
+    linkxaxes!(ax1, ax2)
 
-	# Legend
-	axislegend(ax1; position = :rb)
+    # Legend
+    axislegend(ax1; position = :rb)
 
-	# Display
-	fig
+    # Display
+    fig
 end
 
 # ╔═╡ 6734b49a-5a4b-4654-9fd7-e94df8872e88

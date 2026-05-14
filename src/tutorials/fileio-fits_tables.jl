@@ -15,10 +15,10 @@ using InteractiveUtils
 
 # ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
 begin
-	using Downloads: download
-	using FITSFiles: fits, info
-	using DataFramesMeta: DataFrame, @rsubset
-	using PlutoPlotly: Layout, plot, attr
+    using Downloads: download
+    using FITSFiles: fits, info
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
 end
 
 # ╔═╡ 6785bdad-a606-4039-8378-4ba0257b477b
@@ -174,14 +174,14 @@ md"""
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
 plot(
-	df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
-	x = :x,
-	y = :y,
-	kind = :histogram2d,
-	nbinsx = 200,
-	nbinsy = 200,
-	zmin = 0,
-	zmax = 200,
+    df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
+    x = :x,
+    y = :y,
+    kind = :histogram2d,
+    nbinsx = 200,
+    nbinsy = 200,
+    zmin = 0,
+    zmax = 200,
 )
 
 # ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a

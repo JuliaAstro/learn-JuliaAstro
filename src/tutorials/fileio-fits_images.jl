@@ -15,21 +15,21 @@ using InteractiveUtils
 
 # ╔═╡ 61c0bf34-302b-4732-a44d-4c2da611eb74
 begin
-	# Data handling
-	using DataFramesMeta: DataFrame, @rsubset!
-	using Downloads: download
-	using FITSFiles: fits, info
-	using Printf: @sprintf
+    # Data handling
+    using DataFramesMeta: DataFrame, @rsubset!
+    using Downloads: download
+    using FITSFiles: fits, info
+    using Printf: @sprintf
 
-	# AstroImages example
-	using StatsBase: Histogram, fit, mean, median, std
-	using AstroImages: Percent, Near, X, Y, load, imview
+    # AstroImages example
+    using StatsBase: Histogram, fit, mean, median, std
+    using AstroImages: Percent, Near, X, Y, load, imview
 
-	# Makie example
-	using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
+    # Makie example
+    using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
 
-	# Makie + AlgebraOfGraphics example
-	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
+    # Makie + AlgebraOfGraphics example
+    using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
 end
 
 # ╔═╡ cbc2c762-2e54-4cf7-b36a-e5f2af24e488
@@ -75,11 +75,11 @@ We start by loading in the data from the previous tutorial. For brevity, we comb
 
 # ╔═╡ b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
 df_evt_main = let
-	event_filename = download(
-		"http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits"
-	)
-	df_evt = fits(event_filename)[2].data |> DataFrame
-	@rsubset! df_evt :ccd_id ∈ 0:3
+    event_filename = download(
+        "http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits"
+    )
+    df_evt = fits(event_filename)[2].data |> DataFrame
+    @rsubset! df_evt :ccd_id ∈ 0:3
 end
 
 # ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
@@ -116,12 +116,12 @@ The weights are returned as an `AbstractArray`, which can be viewed directly wit
 
 # ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
 imview(
-	h.weights;
-	# clims = Percent(99.5),
-	# stretch = identity,
-	cmap = :cividis,
-	# contrast = 1.0,
-	# bias = 0.5,
+    h.weights;
+    # clims = Percent(99.5),
+    # stretch = identity,
+    cmap = :cividis,
+    # contrast = 1.0,
+    # bias = 0.5,
 )
 
 # ╔═╡ 7401caa5-c891-4306-bb3c-a4a9cab7012b
@@ -151,21 +151,21 @@ To start, we will pass the histogram object `h` directly to Makie, which its `pl
 
 # ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
 let
-	fig, ax, p = plot(
-		h;
-		colorrange = (1, 10_000),
-		colorscale = log10,
-		colormap = :cividis,
-	)
+    fig, ax, p = plot(
+        h;
+        colorrange = (1, 10_000),
+        colorscale = log10,
+        colormap = :cividis,
+    )
 
-	Colorbar(
-		fig[1, 2], p;
-		ticks = [1, 3, 6, 500, 10_000],
-		minorticksvisible = true,
-		minorticks = IntervalsBetween(9),
-	)
+    Colorbar(
+        fig[1, 2], p;
+        ticks = [1, 3, 6, 500, 10_000],
+        minorticksvisible = true,
+        minorticks = IntervalsBetween(9),
+    )
 
-	fig
+    fig
 end
 
 # ╔═╡ 74f155a2-fe8a-404f-b0c6-7a4f2724c408
@@ -187,18 +187,18 @@ As with these other packages, its usecases are probably best shown by example:
 
 # ╔═╡ 235242b0-a8c6-4627-9b2c-fc14f705c686
 let
-	plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
+    plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
 
-	draw(
-		plt, scales(
-			Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
-		);
-		colorbar = (
-			ticks = [1, 3, 6, 500, 10_000],
-			minorticksvisible = true,
-			minorticks = IntervalsBetween(9),
-		)
-	)
+    draw(
+        plt, scales(
+            Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
+        );
+        colorbar = (
+            ticks = [1, 3, 6, 500, 10_000],
+            minorticksvisible = true,
+            minorticks = IntervalsBetween(9),
+        )
+    )
 end
 
 # ╔═╡ f7aca318-a535-4a86-8c29-92d90db96271
@@ -231,8 +231,8 @@ We start by downloading our data of the Horsehead Nebula from the link below:
 
 # ╔═╡ 1e05c329-a82a-4ed8-ba02-11e155539059
 hdus = let
-	fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
-	fits(fpath; scale = false)
+    fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
+    fits(fpath; scale = false)
 end
 
 # ╔═╡ eaf39dba-e724-4eac-9a14-28fcd179efc7
@@ -306,10 +306,10 @@ std(img)
 
 # ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
 let
-	fig, ax, p = stephist(vec(img_data); bins = 50)
-	ax.xlabel = "Pixel value"
-	ax.ylabel = "Counts"
-	fig
+    fig, ax, p = stephist(vec(img_data); bins = 50)
+    ax.xlabel = "Pixel value"
+    ax.ylabel = "Counts"
+    fig
 end
 
 # ╔═╡ 997258a0-39ca-4e5f-a143-f3bdbefd265f
@@ -335,18 +335,18 @@ Here is another example where we add some additional customizations:
 
 # ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
 let
-	fig, ax, p = plot(
-		img;
-		colorscale = log10, # log scale the colors
-		colormap = :greys,
-		colorbar = (
-			ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
-			minorticksvisible = true,
-			minorticks = IntervalsBetween(9),
-		)
-	)
+    fig, ax, p = plot(
+        img;
+        colorscale = log10, # log scale the colors
+        colormap = :greys,
+        colorbar = (
+            ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
+            minorticksvisible = true,
+            minorticks = IntervalsBetween(9),
+        )
+    )
 
-	fig
+    fig
 end
 
 # ╔═╡ 0e690360-cdb1-47c9-b637-b0184508ac03
@@ -377,7 +377,7 @@ Let's start by opening a series of FITS files and storing the data in a vector c
 # We use the @sprintf macro from the base Printf.jl Julia module
 # to format our strings
 fpaths = map(1:5) do i
-	@sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
+    @sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
 end
 
 # ╔═╡ 215e0183-adfa-4da0-80d7-108894f73f23

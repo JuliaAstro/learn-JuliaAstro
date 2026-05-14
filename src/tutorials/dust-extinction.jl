@@ -15,26 +15,26 @@ using InteractiveUtils
 
 # ╔═╡ b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 begin
-	# Analysis
-	using DustExtinction
+    # Analysis
+    using DustExtinction
 
-	# Data handling
-	using DataFramesMeta: DataFrame, Not, @rsubset
-	using VirtualObservatory: execute, TAPService
-	using FITSFiles: fits, info
-	using Downloads: download
-	using CodecZlib: GzipDecompressor
+    # Data handling
+    using DataFramesMeta: DataFrame, Not, @rsubset
+    using VirtualObservatory: execute, TAPService
+    using FITSFiles: fits, info
+    using Downloads: download
+    using CodecZlib: GzipDecompressor
 
-	# Units
-	using DynamicQuantities: DynamicQuantities, @u_str, @us_str
-	using DynamicQuantities.Constants: c as c0
+    # Units
+    using DynamicQuantities: DynamicQuantities, @u_str, @us_str
+    using DynamicQuantities.Constants: c as c0
 
-	# Plots
-	using Makie: Cycled, DQConversion, IntervalsBetween
-	using CairoMakie: Figure, Axis, axislegend, lines, lines!, scatter!, ylims!
-	using LaTeXStrings: @L_str
-	using MathTeXEngine: set_texfont_family!, FontFamily
-	set_texfont_family!(FontFamily("TeXGyreHeros"))
+    # Plots
+    using Makie: Cycled, DQConversion, IntervalsBetween
+    using CairoMakie: Figure, Axis, axislegend, lines, lines!, scatter!, ylims!
+    using LaTeXStrings: @L_str
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
 end;
 
 # ╔═╡ e7266de8-ba60-45b3-8988-6143e7098b72
@@ -82,36 +82,36 @@ md"""
 # ╔═╡ 0250218a-6670-483f-8122-045ca65d28e4
 # Avoid floating point issue right at boundary
 wav = let
-	ϵ = eps()
-	( (0.1 + ϵ) : 0.001 : 3.0 )u"μm"
+    ϵ = eps()
+    ((0.1 + ϵ):0.001:3.0)u"μm"
 end
 
 # ╔═╡ eb1c1b16-c391-45a5-81c2-5fd3dbb12c50
 let
-	fig = Figure()
+    fig = Figure()
 
-	ax = Axis(
-		fig[1, 1];
-		dim1_conversion = DQConversion(us"1/μm"),
-		xlabel = "λ⁻¹",
-		ylabel = "A(λ) / A(V)",
-	)
+    ax = Axis(
+        fig[1, 1];
+        dim1_conversion = DQConversion(us"1/μm"),
+        xlabel = "λ⁻¹",
+        ylabel = "A(λ) / A(V)",
+    )
 
-	inv_wav = inv.(collect(wav))
+    inv_wav = inv.(collect(wav))
 
-	for model in (CCM89, F99)
-		for Rv in (2.0, 3.0, 4.0)
-			ext = model(; Rv)
-			lines!(
-				inv_wav, ext.(ustrip(u"Å", wav));
-				label = string(nameof(model), ", ", "R = ", Rv),
-			)
-		end
-	end
+    for model in (CCM89, F99)
+        for Rv in (2.0, 3.0, 4.0)
+            ext = model(; Rv)
+            lines!(
+                inv_wav, ext.(ustrip(u"Å", wav));
+                label = string(nameof(model), ", ", "R = ", Rv),
+            )
+        end
+    end
 
-	axislegend(; position = :lt)
+    axislegend(; position = :lt)
 
-	fig
+    fig
 end
 
 # ╔═╡ 943661a3-3b40-4c01-a624-79726e56b385
@@ -129,17 +129,17 @@ md"""
 
 # ╔═╡ d57bbe7f-b21a-479a-8249-a96d6aac3e95
 df_spectra = execute(
-	TAPService("https://mast.stsci.edu/vo-tap/api/v0.1/caom/"),
-	"""
-	SELECT *
-	FROM ivoa.ObsCore
-	WHERE target_name = 'HD 147933'
-	AND CONTAINS(
-		POINT('ICRS', s_ra, s_dec),
-		CIRCLE('ICRS', 246.396, -23.447, .00028)
-	) = 1
-	AND dataproduct_type = 'spectrum'
-	"""
+    TAPService("https://mast.stsci.edu/vo-tap/api/v0.1/caom/"),
+    """
+    SELECT *
+    FROM ivoa.ObsCore
+    WHERE target_name = 'HD 147933'
+    AND CONTAINS(
+    	POINT('ICRS', s_ra, s_dec),
+    	CIRCLE('ICRS', 246.396, -23.447, .00028)
+    ) = 1
+    AND dataproduct_type = 'spectrum'
+    """
 ) |> DataFrame
 
 # ╔═╡ 70cefdd5-4afb-4e09-b2df-75983bb40e85
@@ -212,21 +212,21 @@ and store the wavelength and flux information into `wave_spectrum` and `flux_spe
 
 # ╔═╡ ccb3ce4f-731e-433b-9479-773aa97ac0ce
 wav_spectrum, flux_spectrum = let
-	flux_spectrum_raw = vec(t.data.FLUX)
+    flux_spectrum_raw = vec(t.data.FLUX)
 
-	wav_spectrum_raw = range(;
-		start = first(t.data.WAVELENGTH),
-		step = first(t.data.DELTAW),
-		length = length(flux_spectrum_raw),
-	)
+    wav_spectrum_raw = range(;
+        start = first(t.data.WAVELENGTH),
+        step = first(t.data.DELTAW),
+        length = length(flux_spectrum_raw),
+    )
 
-	# Remove spurious negative fluxes
-	idxs_bad = findall(<(0), flux_spectrum_raw)
+    # Remove spurious negative fluxes
+    idxs_bad = findall(<(0), flux_spectrum_raw)
 
-	(
-		wav_spectrum_raw[Not(idxs_bad)]u"Å",
-		flux_spectrum_raw[Not(idxs_bad)]u"erg/s/cm^2/Å",
-	)
+    (
+        wav_spectrum_raw[Not(idxs_bad)]u"Å",
+        flux_spectrum_raw[Not(idxs_bad)]u"erg/s/cm^2/Å",
+    )
 end
 
 # ╔═╡ e92c118e-7547-4fbe-8a6b-9487beb99ff9
@@ -243,12 +243,12 @@ See here for more <https://simbad.cds.unistra.fr/simbad/sim-tap/>
 
 # ╔═╡ a439386d-2b9b-44e8-9c41-cb2ec787024e
 phot_simbad = execute(
-	TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
-	"""
-	select U, B, V from allfluxes
-	join ident using(oidref)
-	where id = 'HD 147933'
-	"""
+    TAPService("https://simbad.u-strasbg.fr/simbad/sim-tap/"),
+    """
+    select U, B, V from allfluxes
+    join ident using(oidref)
+    where id = 'HD 147933'
+    """
 )
 
 # ╔═╡ 39eb85ea-9eac-4c5b-91a8-9252418dfc33
@@ -279,9 +279,9 @@ to_Flam(Fnu, wav_cen) = Fnu * (c0 / wav_cen^2)
 # ╔═╡ 4ee58446-1563-44c8-b31f-6f9c3722f707
 # Zero-point flux in wavelength space
 flux_U0, flux_B0, flux_V0 = (
-	to_Flam(flux_U0_nu, wav_U),
-	to_Flam(flux_B0_nu, wav_B),
-	to_Flam(flux_V0_nu, wav_V),
+    to_Flam(flux_U0_nu, wav_U),
+    to_Flam(flux_B0_nu, wav_B),
+    to_Flam(flux_V0_nu, wav_V),
 );
 
 # ╔═╡ 855cfb7b-5e66-415c-9d48-f66b38e835ff
@@ -289,9 +289,9 @@ to_flux(flux_0, mag) = flux_0 * exp10(-0.4 * mag)
 
 # ╔═╡ 1c4d9d17-ab51-4ecc-9caf-c068ffc65fd2
 flux_phot = [
-	to_flux(flux_U0, Umag),
-	to_flux(flux_B0, Bmag),
-	to_flux(flux_V0, Vmag),
+    to_flux(flux_U0, Umag),
+    to_flux(flux_B0, Bmag),
+    to_flux(flux_V0, Vmag),
 ]
 
 # ╔═╡ 637830ec-1b5a-4eaa-bb76-55acd3b08985
@@ -307,27 +307,27 @@ md"""
 
 # ╔═╡ 84386f76-3972-4985-9dc4-05501bbc5f41
 let
-	# Spectrum
-	fig, ax, p = lines(
-		wav_spectrum, flux_spectrum;
-		axis = (;
-			dim1_conversion = DQConversion(us"Å"),
-			dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
-			xlabel = "Wavelength",
-			ylabel = "Flux",
-			title = "ρ Oph",
-		),
-		color = Cycled(2),
-		label = "IEU Spectrum",
-	)
+    # Spectrum
+    fig, ax, p = lines(
+        wav_spectrum, flux_spectrum;
+        axis = (;
+            dim1_conversion = DQConversion(us"Å"),
+            dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
+            xlabel = "Wavelength",
+            ylabel = "Flux",
+            title = "ρ Oph",
+        ),
+        color = Cycled(2),
+        label = "IEU Spectrum",
+    )
 
-	# Photometry
-	scatter!(ax, wav_phot, flux_phot; color = Cycled(6), markersize = 15, label = "U, B, V")
+    # Photometry
+    scatter!(ax, wav_phot, flux_phot; color = Cycled(6), markersize = 15, label = "U, B, V")
 
-	# Legend and axis limits
-	axislegend()
-	ylims!(ax, (0u"erg/s/cm^2/Å", (3.1e-10)u"erg/s/cm^2/Å"))
-	fig
+    # Legend and axis limits
+    axislegend()
+    ylims!(ax, (0u"erg/s/cm^2/Å", (3.1e-10)u"erg/s/cm^2/Å"))
+    fig
 end
 
 # ╔═╡ dba6f2b7-890a-4e7d-a86c-02e99f985796
@@ -337,58 +337,58 @@ md"""
 
 # ╔═╡ b1207731-73be-4390-a329-30f8c1e7bc94
 flux_spectrum_deredden = deredden.(
-	F99(; Rv = 5), ustrip.(u"Å", wav_spectrum), flux_spectrum;
-	Av = 5 * 0.5 # Aᵥ = Rᵥ * E(B - V)
+    F99(; Rv = 5), ustrip.(u"Å", wav_spectrum), flux_spectrum;
+    Av = 5 * 0.5 # Aᵥ = Rᵥ * E(B - V)
 ) .|> us"erg/s/cm^2/Å"
 
 # ╔═╡ 7f53c04c-5e51-4fb4-bd7c-64bc2b9d2944
 flux_phot_deredden = deredden.(
-	F99(; Rv = 5), ustrip.(u"Å", wav_phot), flux_phot;
-	Av = 5 * 0.5 # Aᵥ = Rᵥ * E(B - V)
+    F99(; Rv = 5), ustrip.(u"Å", wav_phot), flux_phot;
+    Av = 5 * 0.5 # Aᵥ = Rᵥ * E(B - V)
 ) .|> us"erg/s/cm^2/Å"
 
 # ╔═╡ ff040052-e0b3-4447-811e-4f743456aed3
 let
-	# Spectrum
-	fig, ax, p = lines(
-		wav_spectrum, flux_spectrum_deredden;
-		axis = (;
-			dim1_conversion = DQConversion(us"Å"),
-			dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
-			yscale = log10,
-			yminorticksvisible = true,
-			yminorticks = IntervalsBetween(9),
-			xlabel = "Wavelength",
-			ylabel = "Flux",
-			title = "ρ Oph",
-		),
-		color = Cycled(5),
-		label = "IUE spectrum dereddened",
-	)
-	lines!(
-		wav_spectrum, flux_spectrum;
-		color = Cycled(2),
-		label = "IUE spectrum",
-	)
+    # Spectrum
+    fig, ax, p = lines(
+        wav_spectrum, flux_spectrum_deredden;
+        axis = (;
+            dim1_conversion = DQConversion(us"Å"),
+            dim2_conversion = DQConversion(us"erg/s/cm^2/Å"),
+            yscale = log10,
+            yminorticksvisible = true,
+            yminorticks = IntervalsBetween(9),
+            xlabel = "Wavelength",
+            ylabel = "Flux",
+            title = "ρ Oph",
+        ),
+        color = Cycled(5),
+        label = "IUE spectrum dereddened",
+    )
+    lines!(
+        wav_spectrum, flux_spectrum;
+        color = Cycled(2),
+        label = "IUE spectrum",
+    )
 
-	# Photometry
-	scatter!(
-		ax, wav_phot, flux_phot_deredden;
-		color = Cycled(1),
-		markersize = 15,
-		label = "U, B, V dereddened",
-	)
-	scatter!(
-		ax, wav_phot, flux_phot;
-		color = Cycled(6),
-		markersize = 15,
-		label = "U, B, V",
-	)
+    # Photometry
+    scatter!(
+        ax, wav_phot, flux_phot_deredden;
+        color = Cycled(1),
+        markersize = 15,
+        label = "U, B, V dereddened",
+    )
+    scatter!(
+        ax, wav_phot, flux_phot;
+        color = Cycled(6),
+        markersize = 15,
+        label = "U, B, V",
+    )
 
-	# Legend and axis limits
-	axislegend()
-	ylims!(ax, (1.0e-11u"erg/s/cm^2/Å", 5.0e-8u"erg/s/cm^2/Å"))
-	fig
+    # Legend and axis limits
+    axislegend()
+    ylims!(ax, (1.0e-11u"erg/s/cm^2/Å", 5.0e-8u"erg/s/cm^2/Å"))
+    fig
 end
 
 # ╔═╡ 8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
