@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.25
 
 #> [frontmatter]
 #> image = "/assets/fits-images.png"
@@ -15,50 +15,40 @@ using InteractiveUtils
 
 # ╔═╡ 61c0bf34-302b-4732-a44d-4c2da611eb74
 begin
-	# Data handling
-	using DataFramesMeta: DataFrame, @rsubset!
-	using Downloads: download
-	using FITSFiles: fits, info
-	using Printf: @sprintf
+    # Data handling
+    using DataFramesMeta: DataFrame, @rsubset!
+    using Downloads: download
+    using FITSFiles: fits, info
+    using Printf: @sprintf
 
-	# AstroImages example
-	using StatsBase: Histogram, fit, mean, median, std
-	using AstroImages: Percent, Near, X, Y, load, imview
+    # AstroImages example
+    using StatsBase: Histogram, fit, mean, median, std
+    using AstroImages: Percent, Near, X, Y, load, imview
 
-	# Makie example
-	using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
+    # Makie example
+    using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
 
-	# Makie + AlgebraOfGraphics example
-	using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
+    # Makie + AlgebraOfGraphics example
+    using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
 end
 
-# ╔═╡ cbc2c762-2e54-4cf7-b36a-e5f2af24e488
-using PlutoUI: TableOfContents
+# ╔═╡ 7d07caf5-e203-4152-8bb9-c1f396c4f80c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
-# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
+# ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
 md"""
-# Working with FITS images
+## Summary
 
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
-
-Companion to: [Working with FITS tables](/tutorials/fits-tables/)
-
-!!! tip "Learning Goals"
-	- Customize a 2D histogram with image data.
-	- Stack several images into a single image (Todo).
-	- Write image data to a FITS file (Todo).
-
-!!! note "Keywords"
-
-	`file I/O` `FITS` `images` `image processing` `plots` `histograms` `colorbars`
-
-!!! warning "Summary"
-	Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
+Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
 """
 
 # ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
 md"""
-## Imports
+### Packages 📦
 """
 
 # ╔═╡ f87da6ab-c718-47c3-bedc-78cd025b40e6
@@ -75,11 +65,11 @@ We start by loading in the data from the previous tutorial. For brevity, we comb
 
 # ╔═╡ b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
 df_evt_main = let
-	event_filename = download(
-		"http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits"
-	)
-	df_evt = fits(event_filename)[2].data |> DataFrame
-	@rsubset! df_evt :ccd_id ∈ 0:3
+    event_filename = download(
+        "http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits"
+    )
+    df_evt = fits(event_filename)[2].data |> DataFrame
+    @rsubset! df_evt :ccd_id ∈ 0:3
 end
 
 # ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
@@ -116,12 +106,12 @@ The weights are returned as an `AbstractArray`, which can be viewed directly wit
 
 # ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
 imview(
-	h.weights;
-	# clims = Percent(99.5),
-	# stretch = identity,
-	cmap = :cividis,
-	# contrast = 1.0,
-	# bias = 0.5,
+    h.weights;
+    # clims = Percent(99.5),
+    # stretch = identity,
+    cmap = :cividis,
+    # contrast = 1.0,
+    # bias = 0.5,
 )
 
 # ╔═╡ 7401caa5-c891-4306-bb3c-a4a9cab7012b
@@ -151,21 +141,21 @@ To start, we will pass the histogram object `h` directly to Makie, which its `pl
 
 # ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
 let
-	fig, ax, p = plot(
-		h;
-		colorrange = (1, 10_000),
-		colorscale = log10,
-		colormap = :cividis,
-	)
+    fig, ax, p = plot(
+        h;
+        colorrange = (1, 10_000),
+        colorscale = log10,
+        colormap = :cividis,
+    )
 
-	Colorbar(
-		fig[1, 2], p;
-		ticks = [1, 3, 6, 500, 10_000],
-		minorticksvisible = true,
-		minorticks = IntervalsBetween(9),
-	)
+    Colorbar(
+        fig[1, 2], p;
+        ticks = [1, 3, 6, 500, 10_000],
+        minorticksvisible = true,
+        minorticks = IntervalsBetween(9),
+    )
 
-	fig
+    fig
 end
 
 # ╔═╡ 74f155a2-fe8a-404f-b0c6-7a4f2724c408
@@ -187,18 +177,18 @@ As with these other packages, its usecases are probably best shown by example:
 
 # ╔═╡ 235242b0-a8c6-4627-9b2c-fc14f705c686
 let
-	plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
+    plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
 
-	draw(
-		plt, scales(
-			Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
-		);
-		colorbar = (
-			ticks = [1, 3, 6, 500, 10_000],
-			minorticksvisible = true,
-			minorticks = IntervalsBetween(9),
-		)
-	)
+    draw(
+        plt, scales(
+            Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
+        );
+        colorbar = (
+            ticks = [1, 3, 6, 500, 10_000],
+            minorticksvisible = true,
+            minorticks = IntervalsBetween(9),
+        )
+    )
 end
 
 # ╔═╡ f7aca318-a535-4a86-8c29-92d90db96271
@@ -231,8 +221,8 @@ We start by downloading our data of the Horsehead Nebula from the link below:
 
 # ╔═╡ 1e05c329-a82a-4ed8-ba02-11e155539059
 hdus = let
-	fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
-	fits(fpath; scale = false)
+    fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
+    fits(fpath; scale = false)
 end
 
 # ╔═╡ eaf39dba-e724-4eac-9a14-28fcd179efc7
@@ -306,10 +296,10 @@ std(img)
 
 # ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
 let
-	fig, ax, p = stephist(vec(img_data); bins = 50)
-	ax.xlabel = "Pixel value"
-	ax.ylabel = "Counts"
-	fig
+    fig, ax, p = stephist(vec(img_data); bins = 50)
+    ax.xlabel = "Pixel value"
+    ax.ylabel = "Counts"
+    fig
 end
 
 # ╔═╡ 997258a0-39ca-4e5f-a143-f3bdbefd265f
@@ -335,18 +325,18 @@ Here is another example where we add some additional customizations:
 
 # ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
 let
-	fig, ax, p = plot(
-		img;
-		colorscale = log10, # log scale the colors
-		colormap = :greys,
-		colorbar = (
-			ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
-			minorticksvisible = true,
-			minorticks = IntervalsBetween(9),
-		)
-	)
+    fig, ax, p = plot(
+        img;
+        colorscale = log10, # log scale the colors
+        colormap = :greys,
+        colorbar = (
+            ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
+            minorticksvisible = true,
+            minorticks = IntervalsBetween(9),
+        )
+    )
 
-	fig
+    fig
 end
 
 # ╔═╡ 0e690360-cdb1-47c9-b637-b0184508ac03
@@ -377,7 +367,7 @@ Let's start by opening a series of FITS files and storing the data in a vector c
 # We use the @sprintf macro from the base Printf.jl Julia module
 # to format our strings
 fpaths = map(1:5) do i
-	@sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
+    @sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
 end
 
 # ╔═╡ 215e0183-adfa-4da0-80d7-108894f73f23
@@ -448,8 +438,36 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ c28e551a-ad35-4ec5-a461-a173a53f673c
-TableOfContents(; title = "On this page", depth = 4)
+# ╔═╡ 89e8f2a6-9d3b-44b8-8805-91daa24124c3
+TableOfContents(; depth = 4)
+
+# ╔═╡ e892e25d-06a0-496a-bf63-40a8a988d089
+function keywords(kind = "note", title = "Keywords")
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    return Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
+md"""
+# Working with FITS images
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
+
+_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
+
+!!! tip "Learning goals"
+	- Customize a 2D histogram with image data.
+	- Stack several images into a single image (Todo).
+	- Write image data to a FITS file (Todo).
+
+$(keywords())
+
+!!! warning "Companion content"
+	[learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -460,9 +478,11 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
 AstroImages = {rev = "aog-v0.12", url = "https://github.com/icweaver/AstroImages.jl"}
@@ -473,6 +493,7 @@ AstroImages = "~0.5.1"
 CairoMakie = "~0.15.8"
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.1"
+Pluto = "~0.20.25"
 PlutoUI = "~0.7.77"
 StatsBase = "~0.34.9"
 """
@@ -481,9 +502,9 @@ StatsBase = "~0.34.9"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.3"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "dac5cf7e07b94b30a9244f668c2ea2c96e435e4f"
+project_hash = "326007b82199adb453a692c6af8b299fb51ce1b2"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -655,6 +676,11 @@ git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
 
+[[deps.BitFlags]]
+git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
+uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
+version = "0.1.9"
+
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -800,6 +826,18 @@ deps = ["Observables", "Preferences"]
 git-tree-sha1 = "76dab592fa553e378f9dd8adea16fe2591aa3daa"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.6"
+
+[[deps.ConcurrentUtilities]]
+deps = ["Serialization", "Sockets"]
+git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
+uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
+version = "2.5.1"
+
+[[deps.Configurations]]
+deps = ["ExproniconLite", "OrderedCollections", "TOML"]
+git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
+uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+version = "0.17.6"
 
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
@@ -956,11 +994,27 @@ git-tree-sha1 = "83231673ea4d3d6008ac74dc5079e77ab2209d8f"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
 
+[[deps.ExceptionUnwrapping]]
+deps = ["Test"]
+git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
+uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
+version = "0.1.11"
+
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "27af30de8b5445644e8ffe3bcb0d72049c089cf1"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.7.3+0"
+
+[[deps.ExpressionExplorer]]
+git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
+uuid = "21656369-7473-754a-2065-74616d696c43"
+version = "1.1.4"
+
+[[deps.ExproniconLite]]
+git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
+uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
+version = "0.10.14"
 
 [[deps.Extents]]
 git-tree-sha1 = "b309b36a9e02fe7be71270dd8c0fd873625332b4"
@@ -1002,12 +1056,10 @@ deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "d60eb76f37d7e5a40cc2e7c36974d864b82dc802"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.17.1"
+weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
-
-    [deps.FileIO.weakdeps]
-    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -1148,6 +1200,12 @@ git-tree-sha1 = "6b4d2dc81736fe3980ff0e8879a9fc7c33c44ddf"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.86.2+0"
 
+[[deps.GracefulPkg]]
+deps = ["Compat", "Pkg", "TOML"]
+git-tree-sha1 = "a854d6c0e9fb561b88cd20b4ad64f518cb1bfb8d"
+uuid = "828d9ff0-206c-6161-646e-6576656f7244"
+version = "2.4.3"
+
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
 git-tree-sha1 = "a641238db938fff9b2f60d08ed9030387daf428c"
@@ -1170,6 +1228,12 @@ version = "0.11.2"
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
+
+[[deps.HTTP]]
+deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
+uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+version = "1.11.0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1431,6 +1495,15 @@ git-tree-sha1 = "eb62a3deb62fc6d8822c0c4bef73e4412419c5d8"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
 version = "18.1.8+0"
 
+[[deps.LRUCache]]
+git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
+uuid = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
+version = "1.6.2"
+weakdeps = ["Serialization"]
+
+    [deps.LRUCache.extensions]
+    SerializationExt = ["Serialization"]
+
 [[deps.LZO_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1c602b1127f4751facb671441ca72715cc95938a"
@@ -1441,6 +1514,11 @@ version = "2.10.3+0"
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.LazilyInitializedFields]]
+git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
+uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
+version = "1.3.0"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1548,6 +1626,12 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LoggingExtras]]
+deps = ["Dates", "Logging"]
+git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
+uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+version = "1.2.0"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -1576,6 +1660,12 @@ version = "0.24.8"
     [deps.Makie.weakdeps]
     DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 
+[[deps.Malt]]
+deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
+git-tree-sha1 = "c2335b4e291f2422e2be8abf8936ccad58a98992"
+uuid = "36869731-bdee-424d-aa32-cab38c994e3b"
+version = "1.4.1"
+
 [[deps.MappedArrays]]
 git-tree-sha1 = "0ee4497a4e80dbd29c058fcee6493f5219556f40"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
@@ -1591,6 +1681,18 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
+
+[[deps.MbedTLS]]
+deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
+git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
+uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
+version = "1.1.10"
+
+[[deps.MbedTLS_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
+uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
+version = "2.28.1010+0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1610,7 +1712,13 @@ version = "0.3.4"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2025.5.20"
+version = "2025.11.4"
+
+[[deps.MsgPack]]
+deps = ["Serialization"]
+git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
+uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
+version = "1.2.1"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -1680,6 +1788,12 @@ version = "3.2.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
+
+[[deps.OpenSSL]]
+deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
+git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
+uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
+version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1775,6 +1889,18 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.Pluto]]
+deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
+git-tree-sha1 = "8a3ff632cae8ac73192aa316689f44a18a09820d"
+uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+version = "0.20.25"
+
+[[deps.PlutoDependencyExplorer]]
+deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
+git-tree-sha1 = "c3e5073a977b1c58b2d55c1ec187c3737e64e6af"
+uuid = "72656b73-756c-7461-726b-72656b6b696b"
+version = "1.2.2"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "6ed167db158c7c1031abf3bd67f8e689c8bdf2b7"
@@ -1791,6 +1917,11 @@ deps = ["DataAPI", "Future"]
 git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.4.3"
+
+[[deps.PrecompileSignatures]]
+git-tree-sha1 = "18ef344185f25ee9d51d80e179f8dad33dc48eb1"
+uuid = "91cefc8d-f054-46dc-8f8c-26e11d7c5411"
+version = "3.0.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1880,6 +2011,12 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.RegistryInstances]]
+deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
+git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
+uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
+version = "0.1.0"
+
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
 git-tree-sha1 = "ffdaf70d81cf6ff22c2b6e733c900c3321cab864"
@@ -1962,6 +2099,11 @@ deps = ["Random", "Statistics", "Test"]
 git-tree-sha1 = "d263a08ec505853a5ff1c1ebde2070419e3f28e9"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.0"
+
+[[deps.SimpleBufferStream]]
+git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
+uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
+version = "1.2.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -2409,6 +2551,7 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─3c48207e-ae5d-4597-8010-587d6ed8736b
+# ╟─91f00e98-e69c-4435-b9d0-10d30006efef
 # ╟─a6e33cf8-1fe3-4810-a66b-adc07166871e
 # ╠═61c0bf34-302b-4732-a44d-4c2da611eb74
 # ╟─f87da6ab-c718-47c3-bedc-78cd025b40e6
@@ -2470,7 +2613,8 @@ version = "4.1.0+0"
 # ╠═edb0adae-ccf7-43cd-8985-626020a3adcb
 # ╟─eccd1973-1082-4fb6-920c-0039ddf5482a
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
-# ╠═cbc2c762-2e54-4cf7-b36a-e5f2af24e488
-# ╠═c28e551a-ad35-4ec5-a461-a173a53f673c
+# ╠═89e8f2a6-9d3b-44b8-8805-91daa24124c3
+# ╟─e892e25d-06a0-496a-bf63-40a8a988d089
+# ╠═7d07caf5-e203-4152-8bb9-c1f396c4f80c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

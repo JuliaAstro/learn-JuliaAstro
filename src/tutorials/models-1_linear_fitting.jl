@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.25
 
 #> [frontmatter]
 #> image = "/assets/linear-model-fitting.png"
@@ -12,59 +12,43 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 8ae8adab-5af9-4962-8837-aff542acfea6
-using DataFramesMeta: DataFramesMeta as DFM
-
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
-	# Data handling
-	using VirtualObservatory: VizierCatalog, table
-	using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
+    # Data handling
+    using VirtualObservatory: VizierCatalog, table
+    using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
 
-	# Statistics and model fitting
-	using StatsBase: coef, predict
-	using LinearAlgebra: Diagonal
-	using GLM: Normal, @formula, glm, aweights
-	using Optimization: OptimizationProblem, solve
-	using OptimizationOptimJL: NelderMead
+    # Statistics and model fitting
+    using StatsBase: coef, predict
+    using LinearAlgebra: Diagonal
+    using GLM: Normal, @formula, glm, aweights
+    using Optimization: OptimizationProblem, solve
+    using OptimizationOptimJL: NelderMead
 
-	# Plotting
-	using CairoMakie: Errorbars, Legend, scatter, errorbars!, band!, lines!
-	using CairoMakie: Scatter, set_theme!, with_theme, Theme
-	using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
-	using LaTeXStrings: @L_str
-	using MathTeXEngine: set_texfont_family!, FontFamily
-	set_texfont_family!(FontFamily("TeXGyreHeros"))
-end;
+    # Plotting
+    using CairoMakie
+    using AlgebraOfGraphics: aog_theme, data, linear, draw, mapping, visual
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
+end
 
-# ╔═╡ ad6598b0-99ce-480f-b267-72ac8c9e6848
-using PlutoUI
+# ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
-# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
+# ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
 md"""
-# Modeling 1: Make a quick linear model fit
+## Summary
 
-This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
-
-!!! tip "Learning goals"
-	- Use VirtualObservatory.jl to download data from Vizier.
-	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
-	- Learn common functions to fit.
-	- Generate a quick fit to data.
-	- Plot the model with the data.
-	- Compare different models and fitters.
-
-!!! note "Keywords"
-	`models` `model fitting` `astrostatistics` `catalog` `query` `Makie` `plots` `errorbars` `scatter`
-
-
-!!! warning "Summary"
-	In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
+In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
 """
 
 # ╔═╡ a68daf19-dae6-4442-8234-d6636ef931c7
 md"""
-## Imports
+### Packages 📦
 """
 
 # ╔═╡ 6096dc80-a434-4f1a-9af5-40fbbf897d05
@@ -87,9 +71,9 @@ This catalog has a lot of information, but for this tutorial we are going to wor
 
 # ╔═╡ 3bfaf85e-7cd8-4fa8-be0c-34afeae5ed06
 df = @select catalog begin
-	:log_P = log10.(:Period)
-	:Ks = :"<Ksmag>"
-	:Ks_err = :"e_<Ksmag>"
+    :log_P = log10.(:Period)
+    :Ks = :"<Ksmag>"
+    :Ks_err = :"e_<Ksmag>"
 end
 
 # ╔═╡ ddce8426-9da5-419e-b5f4-65aaf990c7ca
@@ -125,33 +109,33 @@ Let's apply these requirements, and also update the styling of our plot a bit:
 
 # ╔═╡ 1d61727f-b373-4394-b486-79eb63a71f37
 with_theme(Theme(aog_theme())) do
-	# Common data
-	layer_scatter = data(df) * mapping(
-		:log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
-		:Ks => "Ks [mag]",
-	)
+    # Common data
+    layer_scatter = data(df) * mapping(
+        :log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
+        :Ks => "Ks [mag]",
+    )
 
-	# Errorbars
-	layer_errorbars = layer_scatter * mapping(:Ks_err) * visual(Errorbars)
+    # Errorbars
+    layer_errorbars = layer_scatter * mapping(:Ks_err) * visual(Errorbars)
 
-	# Linear model
-	layer_model = layer_scatter *
-		mapping(weights = :Ks_err) *
-		linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+    # Linear model
+    layer_model = layer_scatter *
+        mapping(weights = :Ks_err) *
+        linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
 
-	# Combined layers
-	layer_data = layer_scatter + layer_errorbars
-	layers = layer_data * visual(label = "data", color = :cornflowerblue) +
-		layer_model * visual(label = "model", color = "orange")
+    # Combined layers
+    layer_data = layer_scatter + layer_errorbars
+    layers = layer_data * visual(label = "data", color = :cornflowerblue) +
+        layer_model * visual(label = "model", color = "orange")
 
-	# Display
-	fig = draw(
-		layers;
-		figure = (;
-			title = "Type II Cepheid observations",
-			subtitle = "Bhardwaj et al. 2017",
-		),
-	)
+    # Display
+    fig = draw(
+        layers;
+        figure = (;
+            title = "Type II Cepheid observations",
+            subtitle = "Bhardwaj et al. 2017",
+        ),
+    )
 end
 
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
@@ -232,9 +216,9 @@ md"""
 
 # ╔═╡ 2cf30811-3204-4498-9b73-8a3c3bba28e2
 df_glm = @transform df begin
-	:log_P = Float64.(:log_P)
-	:Ks = Float64.(:Ks)
-	:Ks_err = Float64.(:Ks_err)
+    :log_P = Float64.(:log_P)
+    :Ks = Float64.(:Ks)
+    :Ks_err = Float64.(:Ks_err)
 end;
 
 # ╔═╡ 19df3403-ef9d-4b07-8b14-3b10056475e8
@@ -297,14 +281,14 @@ For completeness, we also show how we might accomplish this with Optimization.jl
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
 function objective(u, data)
-	b, m = u
-	x, y, y_err = eachcol(data)
+    b, m = u
+    x, y, y_err = eachcol(data)
 
-	# Compute weighted residuals
-	residuals = @. (y - (m * x + b)) / y_err
+    # Compute weighted residuals
+    residuals = @. (y - (m * x + b)) / y_err
 
-	# Sum of squared weighted residuals (χ²)
-	return sum(residuals .^ 2)
+    # Sum of squared weighted residuals (χ²)
+    return sum(residuals .^ 2)
 end
 
 # ╔═╡ a3582cb7-c2a6-414c-bf7b-d764c2311c80
@@ -339,42 +323,43 @@ md"""
 
 # ╔═╡ c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 let
-# with_theme(Theme(aog_theme())) do
-	log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
+    # with_theme(Theme(aog_theme())) do
+    log_P, Ks, Ks_err = df.log_P, df.Ks, df.Ks_err
 
-	# Data points
-	fig, ax, p = scatter(
-		log_P, Ks;
-		color = :cornflowerblue,
-		label = "data",
-	)
+    # Data points
+    fig, ax, p = scatter(
+        log_P, Ks;
+        color = :cornflowerblue,
+        label = "data",
+        axis = (;
+            title = "Type II Cepheid observations",
+            titlesize = 16,
+            titlealign = :left,
+            subtitle = "Bhardwaj et al. 2017",
+            xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}",
+            ylabel = "Ks [mag]",
+            ylabelfont = :bold,
+        ),
+    )
 
-	# Data uncertainty
-	errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
+    # Data uncertainty
+    errorbars!(ax, log_P, Ks, Ks_err; color = :cornflowerblue, label = "data")
 
-	# Confidence interval
-	band!(
-		ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
-		color = :orange,
-		alpha = 0.15,
-		label = "model",
-	)
+    # Confidence interval
+    band!(
+        ax, log_P, disallowmissing(Ks_lower), disallowmissing(Ks_upper);
+        color = :orange,
+        alpha = 0.15,
+        label = "model",
+    )
 
-	# Model prediction
-	lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
+    # Model prediction
+    lines!(ax, log_P, Ks_pred; color = :orange, label = "model")
 
-	# Display
-	ax.title = "Type II Cepheid observations"
-	ax.titlesize = 16
-	ax.titlealign = :left
-	ax.subtitle = "Bhardwaj et al. 2017"
-	ax.xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}"
-	ax.ylabel = "Ks [mag]"
-	ax.ylabelfont = :bold
+    # Legend
+    Legend(fig[1, 2], ax; merge = true)
 
-	Legend(fig[1, 2], ax; merge = true)
-
-	fig
+    fig
 end
 
 # ╔═╡ 3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
@@ -388,8 +373,40 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ 50435095-f83d-4746-bd53-eeeba6a96f4a
-TableOfContents(; title = "On this page", depth = 4)
+# ╔═╡ 7cb7ae25-79c2-4138-aa50-fdc27615245b
+TableOfContents(; depth = 4)
+
+# ╔═╡ 2b57e162-b642-4dfe-88e7-45a6bb3f8447
+function keywords(kind = "note", title = "Keywords")
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    return Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
+md"""
+# Modeling 1: Make a quick linear model fit
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+	- Use VirtualObservatory.jl to download data from Vizier.
+	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+	- Learn common functions to fit.
+	- Generate a quick fit to data.
+	- Plot the model with the data.
+	- Compare different models and fitters.
+
+$(keywords())
+
+
+!!! warning "Companion content"
+	Content here.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -398,13 +415,14 @@ AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
-LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 VirtualObservatory = "d7ce213e-d3b9-4ed1-b00e-1146b7ac83e0"
 
 [sources]
@@ -416,10 +434,10 @@ AlgebraOfGraphics = "~0.12.0"
 CairoMakie = "~0.15.8"
 DataFramesMeta = "~0.15.6"
 GLM = "~2.0.0"
-LaTeXStrings = "~1.4.0"
 MathTeXEngine = "~0.6.7"
 Optimization = "~5.2.0"
 OptimizationOptimJL = "~0.4.8"
+Pluto = "~0.20.25"
 PlutoUI = "~0.7.75"
 StatsBase = "~0.34.9"
 VirtualObservatory = "~0.1.14"
@@ -429,9 +447,9 @@ VirtualObservatory = "~0.1.14"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.3"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "43fa75c619a9f9d7cb58f3a868b175a23c4405ee"
+project_hash = "88c86dfc6f0a300d7b79c16e7a04a95716850c11"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "8b2b045b22740e4be20654175cc38291d48539db"
@@ -829,6 +847,12 @@ git-tree-sha1 = "d9d26935a0bcffc87d2613ce14c527c99fc543fd"
 uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.5.0"
 
+[[deps.Configurations]]
+deps = ["ExproniconLite", "OrderedCollections", "TOML"]
+git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
+uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+version = "0.17.6"
+
 [[deps.ConsoleProgressMonitor]]
 deps = ["Logging", "ProgressMeter"]
 git-tree-sha1 = "3ab7b2136722890b9af903859afcf457fa3059e8"
@@ -1066,6 +1090,11 @@ version = "2.7.3+0"
 git-tree-sha1 = "27415f162e6028e81c72b82ef756bf321213b6ec"
 uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
 version = "0.1.10"
+
+[[deps.ExpressionExplorer]]
+git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
+uuid = "21656369-7473-754a-2065-74616d696c43"
+version = "1.1.4"
 
 [[deps.ExproniconLite]]
 git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
@@ -1331,6 +1360,12 @@ deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll",
 git-tree-sha1 = "6b4d2dc81736fe3980ff0e8879a9fc7c33c44ddf"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.86.2+0"
+
+[[deps.GracefulPkg]]
+deps = ["Compat", "Pkg", "TOML"]
+git-tree-sha1 = "a854d6c0e9fb561b88cd20b4ad64f518cb1bfb8d"
+uuid = "828d9ff0-206c-6161-646e-6576656f7244"
+version = "2.4.3"
 
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
@@ -1633,6 +1668,11 @@ git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
 
+[[deps.LazilyInitializedFields]]
+git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
+uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
+version = "1.3.0"
+
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
 uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
@@ -1785,6 +1825,12 @@ version = "0.24.8"
     [deps.Makie.weakdeps]
     DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 
+[[deps.Malt]]
+deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
+git-tree-sha1 = "c2335b4e291f2422e2be8abf8936ccad58a98992"
+uuid = "36869731-bdee-424d-aa32-cab38c994e3b"
+version = "1.4.1"
+
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
@@ -1842,7 +1888,13 @@ version = "0.3.7"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2025.5.20"
+version = "2025.11.4"
+
+[[deps.MsgPack]]
+deps = ["Serialization"]
+git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
+uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
+version = "1.2.1"
 
 [[deps.NLSolversBase]]
 deps = ["ADTypes", "DifferentiationInterface", "Distributed", "FiniteDiff", "ForwardDiff"]
@@ -2071,6 +2123,18 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.Pluto]]
+deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
+git-tree-sha1 = "8a3ff632cae8ac73192aa316689f44a18a09820d"
+uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+version = "0.20.25"
+
+[[deps.PlutoDependencyExplorer]]
+deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
+git-tree-sha1 = "c3e5073a977b1c58b2d55c1ec187c3737e64e6af"
+uuid = "72656b73-756c-7461-726b-72656b6b696b"
+version = "1.2.2"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "db8a06ef983af758d285665a0398703eb5bc1d66"
@@ -2109,6 +2173,11 @@ version = "0.4.34"
     ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
     ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
     SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
+
+[[deps.PrecompileSignatures]]
+git-tree-sha1 = "18ef344185f25ee9d51d80e179f8dad33dc48eb1"
+uuid = "91cefc8d-f054-46dc-8f8c-26e11d7c5411"
+version = "3.0.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -2240,6 +2309,12 @@ version = "3.39.0"
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
+
+[[deps.RegistryInstances]]
+deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
+git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
+uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
+version = "0.1.0"
 
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
@@ -2979,8 +3054,8 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─ec1a7344-e375-4847-b4f7-765a53c066d0
+# ╟─101f85ed-9442-4b95-a771-f7516e6d84cb
 # ╟─a68daf19-dae6-4442-8234-d6636ef931c7
-# ╠═8ae8adab-5af9-4962-8837-aff542acfea6
 # ╠═b944163c-02c4-4ace-a866-ae6e6f7115ef
 # ╟─6096dc80-a434-4f1a-9af5-40fbbf897d05
 # ╠═002fa353-906a-4e3c-bd8e-12d681417240
@@ -3001,7 +3076,7 @@ version = "4.1.0+0"
 # ╠═af209cbf-1144-42cc-8c52-029988b0d5e4
 # ╠═616d9778-106e-46ae-bf87-92828e98339f
 # ╟─e6d108e2-6ea1-4875-a3db-239248100bc7
-# ╠═d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
+# ╟─d8e6db3b-f1c3-46f5-b092-1ef25d762cdb
 # ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
 # ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
 # ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
@@ -3027,7 +3102,8 @@ version = "4.1.0+0"
 # ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 # ╟─3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
 # ╟─b2805e96-5cce-4200-842b-931187007a31
-# ╠═50435095-f83d-4746-bd53-eeeba6a96f4a
-# ╠═ad6598b0-99ce-480f-b267-72ac8c9e6848
+# ╠═7cb7ae25-79c2-4138-aa50-fdc27615245b
+# ╟─2b57e162-b642-4dfe-88e7-45a6bb3f8447
+# ╠═b880641e-5101-4857-a5bf-558482ca1b21
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

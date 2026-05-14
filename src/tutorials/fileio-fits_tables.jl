@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.25
 
 #> [frontmatter]
 #> image = "/assets/fits-table.png"
@@ -15,37 +15,29 @@ using InteractiveUtils
 
 # ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
 begin
-	using Downloads: download
-	using FITSFiles: fits, info
-	using DataFramesMeta: DataFrame, @rsubset
-	using PlutoPlotly: Layout, plot, attr
+    using Downloads: download
+    using FITSFiles: fits, info
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
 end
 
-# ╔═╡ 6785bdad-a606-4039-8378-4ba0257b477b
-using PlutoUI: TableOfContents
+# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
-# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
+# ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 md"""
-# Working with FITS tables
+## Summary
 
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
-
-!!! tip "Learning Goals"
-	- Download a FITS table file from a URL.
-	- Open a FITS table file and view table contents.
-	- Make a 2D histogram with the table data.
-
-!!! note "Keywords"
-
-	`file I/O` `FITS` `tables` `plots` `histograms`
-
-!!! warning "Summary"
-	This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLang/Downloads.jl) from base Julia to download a data file, then uses [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) to open the file and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to work with the tabular data. Lastly, we use [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) to visualize the data as 1D and 2D histograms.
+This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLang/Downloads.jl) from base Julia to download a data file, then uses [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) to open the file and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to work with the tabular data. Lastly, we use [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) to visualize the data as 1D and 2D histograms.
 """
 
 # ╔═╡ bfe84763-0062-41a3-aa09-ae61a016766c
 md"""
-## Imports
+## Packages 📦
 """
 
 # ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
@@ -174,14 +166,14 @@ md"""
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
 plot(
-	df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
-	x = :x,
-	y = :y,
-	kind = :histogram2d,
-	nbinsx = 200,
-	nbinsy = 200,
-	zmin = 0,
-	zmax = 200,
+    df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
+    x = :x,
+    y = :y,
+    kind = :histogram2d,
+    nbinsx = 200,
+    nbinsy = 200,
+    zmin = 0,
+    zmax = 200,
 )
 
 # ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
@@ -194,8 +186,36 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ 8af534db-2bda-49a3-b538-7a6290de2302
-TableOfContents(; title = "On this page", depth = 4)
+# ╔═╡ 14245719-d3a1-4d46-9fc4-d2ddba6a3d93
+TableOfContents(; depth = 4)
+
+# ╔═╡ 9f14d02c-b104-478c-9a7a-9ae34893d8c6
+function keywords(kind = "note", title = "Keywords")
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    return Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
+md"""
+# Working with FITS tables
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
+
+_Original authors: Lia Corrales, Kris Stern_
+
+!!! tip "Learning goals"
+	- Download a FITS table file from a URL.
+	- Open a FITS table file and view table contents.
+	- Make a 2D histogram with the table data.
+
+$(keywords())
+
+!!! warning "Companion content"
+	Content here.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -203,12 +223,15 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.1"
+Pluto = "~0.20.25"
 PlutoPlotly = "~0.6.5"
 PlutoUI = "~0.7.77"
 """
@@ -217,9 +240,9 @@ PlutoUI = "~0.7.77"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.3"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "ef2f53965ce8db075c1f133135d2b87e5278b94a"
+project_hash = "1b637ac8bc26e41b1e3f645cdedc78a30fc99d36"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -238,6 +261,11 @@ version = "1.11.0"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
+
+[[deps.BitFlags]]
+git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
+uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
+version = "0.1.9"
 
 [[deps.Chain]]
 git-tree-sha1 = "765487f32aeece2cf28aa7038e29c31060cb5a69"
@@ -299,6 +327,18 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.3.0+1"
 
+[[deps.ConcurrentUtilities]]
+deps = ["Serialization", "Sockets"]
+git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
+uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
+version = "2.5.1"
+
+[[deps.Configurations]]
+deps = ["ExproniconLite", "OrderedCollections", "TOML"]
+git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
+uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+version = "0.17.6"
+
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
@@ -343,6 +383,11 @@ git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
 
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+version = "1.11.0"
+
 [[deps.DocStringExtensions]]
 git-tree-sha1 = "7442a5dfe1ebb773c29cc2962a8980f47221d76c"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -352,6 +397,22 @@ version = "0.9.5"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.7.0"
+
+[[deps.ExceptionUnwrapping]]
+deps = ["Test"]
+git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
+uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
+version = "0.1.11"
+
+[[deps.ExpressionExplorer]]
+git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
+uuid = "21656369-7473-754a-2065-74616d696c43"
+version = "1.1.4"
+
+[[deps.ExproniconLite]]
+git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
+uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
+version = "0.10.14"
 
 [[deps.FITSFiles]]
 deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAngles", "UnitfulAstro", "UnitfulAtomic"]
@@ -372,6 +433,18 @@ version = "0.8.5"
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+version = "1.11.0"
+
+[[deps.GracefulPkg]]
+deps = ["Compat", "Pkg", "TOML"]
+git-tree-sha1 = "a854d6c0e9fb561b88cd20b4ad64f518cb1bfb8d"
+uuid = "828d9ff0-206c-6161-646e-6576656f7244"
+version = "2.4.3"
+
+[[deps.HTTP]]
+deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
+uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 version = "1.11.0"
 
 [[deps.HashArrayMappedTries]]
@@ -425,6 +498,12 @@ git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
+[[deps.JLLWrappers]]
+deps = ["Artifacts", "Preferences"]
+git-tree-sha1 = "7204148362dafe5fe6a273f855b8ccbe4df8173e"
+uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+version = "1.8.0"
+
 [[deps.JSON]]
 deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
 git-tree-sha1 = "5b6bb73f555bc753a6153deec3717b8904f5551c"
@@ -442,10 +521,24 @@ deps = ["StyledStrings"]
 uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
 version = "1.12.0"
 
+[[deps.LRUCache]]
+git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
+uuid = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
+version = "1.6.2"
+weakdeps = ["Serialization"]
+
+    [deps.LRUCache.extensions]
+    SerializationExt = ["Serialization"]
+
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.LazilyInitializedFields]]
+git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
+uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
+version = "1.3.0"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -485,6 +578,12 @@ version = "1.12.0"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LoggingExtras]]
+deps = ["Dates", "Logging"]
+git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
+uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+version = "1.2.0"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -495,10 +594,28 @@ git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.16"
 
+[[deps.Malt]]
+deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
+git-tree-sha1 = "c2335b4e291f2422e2be8abf8936ccad58a98992"
+uuid = "36869731-bdee-424d-aa32-cab38c994e3b"
+version = "1.4.1"
+
 [[deps.Markdown]]
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
+
+[[deps.MbedTLS]]
+deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
+git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
+uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
+version = "1.1.10"
+
+[[deps.MbedTLS_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
+uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
+version = "2.28.1010+0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -512,7 +629,13 @@ version = "1.11.0"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2025.5.20"
+version = "2025.11.4"
+
+[[deps.MsgPack]]
+deps = ["Serialization"]
+git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
+uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
+version = "1.2.1"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -522,6 +645,12 @@ version = "1.3.0"
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.29+0"
+
+[[deps.OpenSSL]]
+deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
+git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
+uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
+version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -572,6 +701,18 @@ version = "0.8.22"
     IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
     JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 
+[[deps.Pluto]]
+deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
+git-tree-sha1 = "8a3ff632cae8ac73192aa316689f44a18a09820d"
+uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+version = "0.20.25"
+
+[[deps.PlutoDependencyExplorer]]
+deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
+git-tree-sha1 = "c3e5073a977b1c58b2d55c1ec187c3737e64e6af"
+uuid = "72656b73-756c-7461-726b-72656b6b696b"
+version = "1.2.2"
+
 [[deps.PlutoPlotly]]
 deps = ["AbstractPlutoDingetjes", "Artifacts", "ColorSchemes", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "PrecompileTools", "Reexport", "ScopedValues", "Scratch", "TOML"]
 git-tree-sha1 = "8acd04abc9a636ef57004f4c2e6f3f6ed4611099"
@@ -597,6 +738,11 @@ deps = ["DataAPI", "Future"]
 git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.4.3"
+
+[[deps.PrecompileSignatures]]
+git-tree-sha1 = "18ef344185f25ee9d51d80e179f8dad33dc48eb1"
+uuid = "91cefc8d-f054-46dc-8f8c-26e11d7c5411"
+version = "3.0.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -636,6 +782,18 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.RegistryInstances]]
+deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
+git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
+uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
+version = "0.1.0"
+
+[[deps.RelocatableFolders]]
+deps = ["SHA", "Scratch"]
+git-tree-sha1 = "ffdaf70d81cf6ff22c2b6e733c900c3321cab864"
+uuid = "05181044-ff0b-4ac5-8273-598c1e38db00"
+version = "1.0.1"
+
 [[deps.Requires]]
 deps = ["UUIDs"]
 git-tree-sha1 = "62389eeff14780bfe55195b7204c0d8738436d64"
@@ -667,6 +825,11 @@ version = "1.4.9"
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
+
+[[deps.SimpleBufferStream]]
+git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
+uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
+version = "1.2.0"
 
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
@@ -846,6 +1009,7 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─7f40f78e-c509-11f0-afed-03ce3a08418b
+# ╟─d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 # ╟─bfe84763-0062-41a3-aa09-ae61a016766c
 # ╠═5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
 # ╟─c15cb9ec-786b-44db-941c-1812597e10da
@@ -869,7 +1033,8 @@ version = "17.7.0+0"
 # ╠═2e1b6a9c-5005-4862-96e6-1ab1fa253509
 # ╟─6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
 # ╟─1f60ce5a-e909-44f2-867a-02be8a1ba37c
-# ╠═6785bdad-a606-4039-8378-4ba0257b477b
-# ╠═8af534db-2bda-49a3-b538-7a6290de2302
+# ╠═14245719-d3a1-4d46-9fc4-d2ddba6a3d93
+# ╟─9f14d02c-b104-478c-9a7a-9ae34893d8c6
+# ╠═4bba77e4-81ba-453f-9666-924cf566e02c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
