@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.2
 
 #> [frontmatter]
 #> title = "Units and integration"
@@ -13,53 +13,45 @@ using InteractiveUtils
 
 # ╔═╡ 8d51b4dd-fca2-4ac0-a706-90261ce1035c
 begin
-	using Pkg: Pkg
-	Pkg.activate(; temp = true)
+    using Pkg: Pkg
+    Pkg.activate(; temp = true)
 
-	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-	# is upstreamed
+    # Data viz
+    Pkg.add(
+        [
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "Makie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+        ]
+    )
 
-	# Data viz
-	Pkg.add(
-		[
-			Pkg.PackageSpec(;
-				url = "https://github.com/icweaver/Makie.jl",
-				subdir = "Makie",
-				rev = "units-matrix",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "CairoMakie",
-				rev = "ff/breaking-0.25",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "ComputePipeline",
-				rev = "ff/breaking-0.25",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/icweaver/DynamicQuantities.jl",
-				rev = "thz",
-			),
-		]
-	)
+    Pkg.add(["DynamicQuantities", "PlutoUI", "QuadGK", "NumericalIntegration", "InitialMassFunctions"])
 
-	Pkg.add(["PlutoUI", "QuadGK", "Trapz", "NumericalIntegration", "InitialMassFunctions"])
-
-	using DynamicQuantities
-	using CairoMakie
-	using DynamicQuantities.Constants: c, h, k_B
-	using Trapz
-	using NumericalIntegration
-	using QuadGK
-	using InitialMassFunctions: Salpeter1955, pdf
+    using DynamicQuantities
+    using CairoMakie
+    using DynamicQuantities.Constants: c, h, k_B
+    using NumericalIntegration
+    using QuadGK
+    using InitialMassFunctions: Salpeter1955, pdf
 end
 
 # ╔═╡ 00b0c01d-3d3c-4822-9738-e33efe95cef8
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents
-	using Test: @test
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
 end
 
 # ╔═╡ 4a95f7da-6c3e-4290-9985-9f5209c9e5e0
@@ -81,7 +73,10 @@ The Planck function describes how a blackbody radiates energy. We will explore h
 
 Let's say we have a black-body at 5000 Kelvin. We can find out the total intensity (bolometric) from this object by integrating the Planck function. The simplest way to do this is by approximating the integral using the trapezoid rule. Let's do this first using the frequency definition of the Planck function.
 
-We'll define a photon frequency grid, and evaluate the Planck function at those frequencies. Those will be used to numerically integrate using the trapezoidal rule. By multiplying an array by a unit [`DynamicQuantities.Quantity`](https://juliaphysics.github.io/DynamicQuantities.jl/stable/types/#DynamicQuantities.Quantity), we get a [`DynamicQuantities.QuantityArray`](https://juliaphysics.github.io/DynamicQuantities.jl/stable/types/#DynamicQuantities.QuantityArray), which is effectively a combination of one or more numbers and a unit:
+We'll define a photon frequency grid, and evaluate the Planck function at those frequencies. Those will be used to numerically integrate using the trapezoidal rule. By multiplying a collection by a unit (e.g., `[1, 2, 3] * u"m"`), we get a collection of quantities:
+
+!!! note
+	There are a wide range of other "quantity" types in DynamicQuantities.jl. See the manual for more.
 """
 
 # ╔═╡ 219d613e-1b22-428a-ba2b-2a21ebc9dee4
@@ -93,7 +88,7 @@ We next compute our `blackbody` function in this frequency space:
 """
 
 # ╔═╡ a27c20a0-aa84-4d2a-95e6-1c830be322f8
-blackbody_ν(ν, T) = 2 * h * ν^3 / c^2 / expm1(h * ν / (k_B * T)) 
+blackbody_ν(ν, T) = 2 * h * ν^3 / c^2 / expm1(h * ν / (k_B * T))
 
 # ╔═╡ 6ead29e6-301b-46dc-831a-8f8e42bf57ea
 bb5000K_ν = blackbody_ν.(νs, 5_000u"K")
@@ -104,14 +99,15 @@ And plot the results with Makie.jl for [automatic unit support](https://docs.mak
 """
 
 # ╔═╡ 5cd159cc-3939-4827-883f-d61f9f4931c5
-lines(νs, bb5000K_ν;
-	axis = (;
-		xlabel = L"\nu",
-		ylabel = L"I_\nu",
-		title = "Planck function in frequency",
-		dim1_conversion = Makie.DQConversion(us"THz"),
-		dim2_conversion = Makie.DQConversion(us"erg/Hz/s/sr/cm^2"),
-	),
+lines(
+    νs, bb5000K_ν;
+    axis = (;
+        xlabel = L"\nu",
+        ylabel = L"I_\nu",
+        title = "Planck function in frequency",
+        dim1_conversion = Makie.DQConversion(us"THz"),
+        dim2_conversion = Makie.DQConversion(us"erg/Hz/s/sr/cm^2"),
+    ),
 )
 
 # ╔═╡ 25efd32c-5beb-47d2-9d75-32ce1cf9960b
@@ -163,18 +159,19 @@ md"""
 
 # ╔═╡ 88e247da-d821-446d-a371-175290f511bf
 let
-	fig, ax, p = lines(λs, bb5000K_λ;
-		axis = (;
-			xlabel = "λ",
-			ylabel = "I_λ",
-			title = "Planck function in wavelength",
-			xtickformat = "{:.0f}", # Disable scientific notation on x-axis
-			dim1_conversion = Makie.DQConversion(us"Å"),
-			dim2_conversion = Makie.DQConversion(us"erg/(s * Å * sr * cm^2)"),
-		),
-	)
-    
-	xlims!(ax, 1.0e3u"Å", 5.5e4u"Å")
+    fig, ax, p = lines(
+        λs, bb5000K_λ;
+        axis = (;
+            xlabel = "λ",
+            ylabel = "I_λ",
+            title = "Planck function in wavelength",
+            xtickformat = "{:.0f}", # Disable scientific notation on x-axis
+            dim1_conversion = Makie.DQConversion(us"Å"),
+            dim2_conversion = Makie.DQConversion(us"erg/(s * Å * sr * cm^2)"),
+        ),
+    )
+
+    xlims!(ax, 1.0e3u"Å", 5.5e4u"Å")
 
     fig
 end
@@ -214,8 +211,8 @@ People generally think of the IMF as a power-law probability density function. I
 
 # ╔═╡ de615b56-ee1e-4fd7-96fb-a0a6c0cb51d3
 struct PowerLawPDF_0
-	γ
-	B
+    γ
+    B
 end
 
 # ╔═╡ f42bcbe2-6b97-471d-abc1-8bb4ef583b63
@@ -270,11 +267,11 @@ Let's make this a bit more convenient to work with by making the following addit
 
 # ╔═╡ 3fb419ea-dfc4-4a4b-96c7-cdb6bb533853
 begin
-Base.@kwdef struct PowerLawPDF{T}
-	γ::T = 1.0
-	B::T = 1.0
-end
-(p::PowerLawPDF)(x) = x^p.γ / p.B
+    Base.@kwdef struct PowerLawPDF{T}
+        γ::T = 1.0
+        B::T = 1.0
+    end
+    (p::PowerLawPDF)(x) = x^p.γ / p.B
 end
 
 # ╔═╡ 5c60e813-f63a-4046-8de5-3d8654d7ef0c
@@ -312,12 +309,13 @@ Next, we plot the resulting normalized curve evaluated over our grid of stellar 
 m_grid = logrange(10^-2, 10^2, length = 100)
 
 # ╔═╡ ddbce299-cd22-4d87-ae5f-c44b50f46f1a
-lines(m_grid, salpeter.(m_grid);
+lines(
+    m_grid, salpeter.(m_grid);
     axis = (;
         xscale = log10,
-		yscale = log10,
+        yscale = log10,
         xlabel = "Stellar mass",
-		ylabel = "Probability density",
+        ylabel = "Probability density",
     )
 )
 
@@ -414,13 +412,10 @@ md"""
 - Think about which stars are producing most of the light, and which stars have most of the mass. How might this result in difficulty inferring stellar masses from the light they produce? If you’re interested in learning more, see [this review article](https://ned.ipac.caltech.edu/level5/Sept14/Courteau/Courteau_contents.html).
 """
 
-# ╔═╡ a18532ae-d59f-4f4e-a767-0616e4cde6c8
-md"""
-## Challenge problems
-"""
-
 # ╔═╡ 40ae6e9e-7d72-4363-a94c-ff1dec656ff6
 md"""
+## Challenge problems
+
 - Right now, we aren’t worried about the bounds of the power law, but the IMF should drop off to zero probability at masses below .01 solar masses and above 100 solar masses. Modify `PowerLawPDF` in a way that allows both float and array inputs.
 
 - Modify the `PowerLawPDF` class to explicitly use units.
@@ -448,18 +443,21 @@ md"""
 # Notebook setup 🔧
 """
 
+# ╔═╡ 508c13fe-39cc-47e9-a792-92ca463de0dd
+TableOfContents()
+
 # ╔═╡ be7aa3a4-7adc-4138-84de-e52ea23be4b9
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ 3080205e-60c5-11ef-3df9-cd4326814e34
 md"""
-# Integration with units and blackbody curves
+# Integration with units and blackbody curves -- DQ
 
 This tutorial is modified from <https://learn.astropy.org/tutorials/units-and-integration.html>.
 
@@ -479,11 +477,8 @@ _Original authors: Zach Pace, Lia Corrales, Stephanie T. Douglas_
 $(keywords())
 
 !!! warning "Companion content"
-	- [learn.JuliaAstro > Unit handling](http://www.astropy.org/astropy-tutorials/rst-tutorials/quantities.html)
+	- [learn.JuliaAstro > Unit handling](https://learn.juliaastro.org/tutorials/units/)
 """
-
-# ╔═╡ 508c13fe-39cc-47e9-a792-92ca463de0dd
-TableOfContents()
 
 # ╔═╡ Cell order:
 # ╟─3080205e-60c5-11ef-3df9-cd4326814e34
@@ -543,9 +538,8 @@ TableOfContents()
 # ╠═1e72e3f5-343c-40bd-9dbb-3bc4d9194103
 # ╠═77e0f5da-3c0d-4276-ba09-8b465862509e
 # ╟─8f4baa15-9471-4f6a-be8b-ba47112128dc
-# ╟─a18532ae-d59f-4f4e-a767-0616e4cde6c8
 # ╟─40ae6e9e-7d72-4363-a94c-ff1dec656ff6
 # ╟─096ede9d-7900-4cdc-b66f-ef3703ac5898
-# ╠═00b0c01d-3d3c-4822-9738-e33efe95cef8
-# ╟─be7aa3a4-7adc-4138-84de-e52ea23be4b9
 # ╠═508c13fe-39cc-47e9-a792-92ca463de0dd
+# ╟─be7aa3a4-7adc-4138-84de-e52ea23be4b9
+# ╠═00b0c01d-3d3c-4822-9738-e33efe95cef8
