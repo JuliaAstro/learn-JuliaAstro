@@ -15,38 +15,38 @@ using InteractiveUtils
 
 # ╔═╡ 1d4c2ee6-c6eb-11f0-8669-cd67adc8e577
 begin
-	import Pkg
-	Pkg.activate(; temp = true)
+    import Pkg
+    Pkg.activate(; temp = true)
 
-	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-	# is upstreamed
+    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
+    # is upstreamed
 
-	# Data viz
-	Pkg.add(
-		[
-			Pkg.PackageSpec(;
-				url = "https://github.com/icweaver/Makie.jl",
-				subdir = "Makie",
-				rev = "units-matrix",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "CairoMakie",
-				rev = "ff/breaking-0.25",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "ComputePipeline",
-				rev = "ff/breaking-0.25",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/JuliaAstro/Cosmology.jl",
-				rev = "units",
-			),
-		]
-	)
+    # Data viz
+    Pkg.add(
+        [
+            Pkg.PackageSpec(;
+                url = "https://github.com/icweaver/Makie.jl",
+                subdir = "Makie",
+                rev = "units-matrix",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaAstro/Cosmology.jl",
+                rev = "units",
+            ),
+        ]
+    )
 
-	Pkg.add(["PlutoUI", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["PlutoUI", "DynamicQuantities", "MathTeXEngine"])
 
     # Cosmological analysis
     using Cosmology: cosmology, angular_diameter_dist, age
@@ -62,9 +62,9 @@ end
 
 # ╔═╡ 49b56034-eb0e-4c54-84de-a619eb9785c7
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents
-	using Test: @test
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
 end
 
 # ╔═╡ 078f30c6-ec2b-4163-896d-1852f31ace3b
@@ -166,30 +166,30 @@ let
         color = Cycled(2),
         axis = (
             xlabel = "Redshift",
-			ylabel = "Angular diameter distance",
+            ylabel = "Angular diameter distance",
         ),
     )
 
     # Age axis
     ax2 = Axis(
         fig[1, 1];
-		xlabel = "Time since Big Bang",
+        xlabel = "Time since Big Bang",
         xaxisposition = :top,
         # Just sample every 15 zvals
-		xticks = zvals[begin:15:end],
-		# Transform ticks from z --> age
-		xtickformat = vs -> [
-			string(round(ustrip(age(cosmo, v)), digits = 2))
-			for v in vs
-		],
-		dim1_conversion = Makie.DQConversion(us"Gyr"),
+        xticks = zvals[begin:15:end],
+        # Transform ticks from z --> age
+        xtickformat = vs -> [
+            string(round(ustrip(age(cosmo, v)), digits = 2))
+                for v in vs
+        ],
+        dim1_conversion = Makie.DQConversion(us"Gyr"),
     )
 
     # Grid lines + ticks
     hidexdecorations!(ax2; label = false, ticklabels = false)
-	hideydecorations!(ax2)
+    hideydecorations!(ax2)
     linkxaxes!(ax1, ax2)
-	xlims!(ax1, 0, 6.5)
+    xlims!(ax1, 0, 6.5)
 
     fig
 end
@@ -215,7 +215,7 @@ md"""
 
 # ╔═╡ fc3a8b66-4c0b-4a72-81b0-615441b697cf
 fig = let
-	# Plank 2013 model
+    # Plank 2013 model
     fig, ax1, p = lines(
         zvals, d_planck;
         label = "Planck 2013",
@@ -225,31 +225,31 @@ fig = let
         )
     )
 
-	# Default model
+    # Default model
     lines!(ax1, zvals, d; label = L"h = 0.7,\ \Omega_M = 0.3,\ \Omega_\Lambda = 0.7")
 
     # Age axis
     ax2 = Axis(
         fig[1, 1];
-		xlabel = "Time since Big Bang",
+        xlabel = "Time since Big Bang",
         xaxisposition = :top,
         # Just sample every 15 zvals
-		xticks = zvals[begin:15:end],
-		# Transform ticks from z --> age
-		xtickformat = vs -> [
-			string(round(ustrip(age(cosmo, v)), digits = 2))
-			for v in vs
-		],
-		dim1_conversion = Makie.DQConversion(us"Gyr"),
+        xticks = zvals[begin:15:end],
+        # Transform ticks from z --> age
+        xtickformat = vs -> [
+            string(round(ustrip(age(cosmo, v)), digits = 2))
+                for v in vs
+        ],
+        dim1_conversion = Makie.DQConversion(us"Gyr"),
     )
 
     # Grid lines + ticks
     hidexdecorations!(ax2; label = false, ticklabels = false)
-	hideydecorations!(ax2)
+    hideydecorations!(ax2)
     linkxaxes!(ax1, ax2)
-	xlims!(ax1, 0, 6.5)
+    xlims!(ax1, 0, 6.5)
 
-	# Legend
+    # Legend
     axislegend(ax1; position = :rb)
 
     fig
@@ -280,11 +280,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ e24cb37e-acfd-441c-9839-40649611c1c7
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ 33515b2a-5ee4-4eab-9c7e-4aa6780ee369

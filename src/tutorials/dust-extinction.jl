@@ -15,34 +15,34 @@ using InteractiveUtils
 
 # ╔═╡ b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 begin
-	import Pkg
-	Pkg.activate(; temp = true)
+    import Pkg
+    Pkg.activate(; temp = true)
 
-	# TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-	# is upstreamed
+    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
+    # is upstreamed
 
-	# Data viz
-	Pkg.add(
-		[
-			Pkg.PackageSpec(;
-				url = "https://github.com/icweaver/Makie.jl",
-				subdir = "Makie",
-				rev = "units-matrix",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "CairoMakie",
-				rev = "ff/breaking-0.25",
-			),
-			Pkg.PackageSpec(;
-				url = "https://github.com/MakieOrg/Makie.jl",
-				subdir = "ComputePipeline",
-				rev = "ff/breaking-0.25",
-			),
-		]
-	)
+    # Data viz
+    Pkg.add(
+        [
+            Pkg.PackageSpec(;
+                url = "https://github.com/icweaver/Makie.jl",
+                subdir = "Makie",
+                rev = "units-matrix",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+        ]
+    )
 
-	Pkg.add(["PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
 
     # Analysis
     using DustExtinction
@@ -61,14 +61,14 @@ begin
 
     # Units
     using DynamicQuantities: @u_str, @us_str, ustrip
-	using DynamicQuantities.Constants: c as c0
+    using DynamicQuantities.Constants: c as c0
 end
 
 # ╔═╡ 2a612197-bae8-456c-8ad1-0897b19d95f6
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents
-	using Test: @test
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
 end
 
 # ╔═╡ 1da2981b-91f6-4e35-97c5-bafb3c0a12b4
@@ -155,7 +155,8 @@ df_spectra = execute(
     ) = 1
     AND dataproduct_type = 'spectrum'
     """
-; strict = false) |> DataFrame
+    ; strict = false
+) |> DataFrame
 
 # ╔═╡ 70cefdd5-4afb-4e09-b2df-75983bb40e85
 md"""
@@ -413,11 +414,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ 267b8569-c7a4-42cf-bb85-c9285298de8d
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ f18df5a0-1dda-4371-aea6-8ecbce67908c

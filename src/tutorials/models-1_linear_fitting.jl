@@ -34,9 +34,9 @@ end
 
 # ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents
-	using Test: @test
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
 end
 
 # ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
@@ -331,15 +331,15 @@ let
         log_P, Ks;
         color = :cornflowerblue,
         label = "data",
-		axis = (;
-			title = "Type II Cepheid observations",
-		    titlesize = 16,
-		    titlealign = :left,
-		    subtitle = "Bhardwaj et al. 2017",
-		    xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}",
-		    ylabel = "Ks [mag]",
-		    ylabelfont = :bold,
-		),
+        axis = (;
+            title = "Type II Cepheid observations",
+            titlesize = 16,
+            titlealign = :left,
+            subtitle = "Bhardwaj et al. 2017",
+            xlabel = L"\mathbf{\log_{10}(\text{Period [days]})}",
+            ylabel = "Ks [mag]",
+            ylabelfont = :bold,
+        ),
     )
 
     # Data uncertainty
@@ -378,11 +378,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ 2b57e162-b642-4dfe-88e7-45a6bb3f8447
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0

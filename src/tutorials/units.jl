@@ -67,10 +67,10 @@ end
 
 # ╔═╡ 90fd3ea9-e115-41a5-b020-b8ade6cc6398
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents, details
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
-	using Test: @test    
+    using Test: @test
 end
 
 # ╔═╡ 2670973e-750c-47f0-9c6a-a58aadf87682
@@ -891,11 +891,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ dd1fc1c9-c55e-453a-bda7-a2036542cdcb
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b

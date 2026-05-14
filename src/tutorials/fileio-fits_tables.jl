@@ -23,9 +23,9 @@ end
 
 # ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
 begin
-	using Pluto: frontmatter
-	using PlutoUI: TableOfContents
-	using Test: @test
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
 end
 
 # ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
@@ -191,11 +191,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ 9f14d02c-b104-478c-9a7a-9ae34893d8c6
 function keywords(kind = "note", title = "Keywords")
-	nb_path = split(@__FILE__, "#==#") |> first |> string
-	tags = (nb_path |> frontmatter)["tags"]
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
-    Markdown.parse("$header\n    $body")
+    return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
