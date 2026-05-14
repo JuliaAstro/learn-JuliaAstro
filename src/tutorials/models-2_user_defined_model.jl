@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.25
 
 #> [frontmatter]
 #> title = "Modeling 2: Create a User Defined Model using astropy.modeling"
@@ -41,47 +41,30 @@ begin
         ]
     )
 
-    using Printf
     using Downloads: download
     using FITSFiles: FITSFiles
     using DynamicQuantities
     using CairoMakie
     using LsqFit
-    using PlutoUI
 end
 
-# ╔═╡ 2d19d3b7-096c-44e5-bb86-7551095e0df9
-md"""
-# Modeling 2: Create a User Defined Model
-
-This notebook is modified from <https://learn.astropy.org/tutorials/2_user-defined-model.html>
-
-**Authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Douglas**
-"""
-
-# ╔═╡ 280d1a3e-59fa-4ad9-932e-40c468530048
-md"""
-!!! tip "Learning goals"
-	- Define a new model
-	- Identify cases were a user-defined model could be useful
-	- Define models in two different ways:
-	  - Compound models
-	  - Custom models
-
-!!! note "Keywords"
-	`models` `model fitting` `astrostatistics` `catalog` `query` `Makie` `plots` `errorbars` `scatter`
-
-!!! warning "Summary"
-	In this tutorial, we will learn how to define a new model in two ways: with a compound model and with a custom model.
-"""
+# ╔═╡ 9d88288c-6415-4851-a52f-0008fecacf0e
+begin
+	using Pluto: frontmatter
+	using PlutoUI: TableOfContents
+	using Test: @test
+end
 
 # ╔═╡ 4027b761-1f9c-4fbc-9cf7-8d0d479e8a33
 md"""
 ## Summary
 
 In this tutorial, we will learn how to define a new model in two ways: with a compound model and with a custom model.
+"""
 
-Companion to: <https://learn.juliaastro.org/tutorials/models-1_linear_fitting/>
+# ╔═╡ f5b35c02-47ce-4f61-8371-c3033f1c8017
+md"""
+### Packages 📦
 """
 
 # ╔═╡ 6f86435d-3dd2-465d-a707-02fee87f4179
@@ -304,18 +287,44 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ 80aeee16-376b-48c4-9668-3849c44e89ed
-TableOfContents()
+# ╔═╡ 5d9e2890-00fb-4370-9337-f6e93d49e5ed
+TableOfContents(; depth = 4)
 
-# ╔═╡ 3111059f-ea42-4c3f-9cc5-73e3d31e64bc
+# ╔═╡ a42a6e27-f5a9-4958-9b26-905fbb3dad9d
+function keywords(kind = "note", title = "Keywords")
+	nb_path = split(@__FILE__, "#==#") |> first |> string
+	tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ 2d19d3b7-096c-44e5-bb86-7551095e0df9
 md"""
-## Packages
+# Modeling 2: Create a User Defined Model
+
+This notebook is modified from <https://learn.astropy.org/tutorials/2_user-defined-model.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+	- Define a new model
+	- Identify cases were a user-defined model could be useful
+	- Define models in two different ways:
+	  - Compound models
+	  - Custom models
+
+$(keywords())
+
+!!! warning "Companion content"
+	[learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/models-1_linear_fitting/)
 """
 
 # ╔═╡ Cell order:
 # ╟─2d19d3b7-096c-44e5-bb86-7551095e0df9
-# ╟─280d1a3e-59fa-4ad9-932e-40c468530048
 # ╟─4027b761-1f9c-4fbc-9cf7-8d0d479e8a33
+# ╟─f5b35c02-47ce-4f61-8371-c3033f1c8017
+# ╠═33e2fa03-a93d-400e-b3aa-87683e5bbd5a
 # ╟─6f86435d-3dd2-465d-a707-02fee87f4179
 # ╠═ea94f687-01d6-4b6d-b436-eafa14f933c0
 # ╠═21120560-b6e7-47ff-9834-592463a942b9
@@ -345,6 +354,6 @@ md"""
 # ╠═0cb42da2-3b6b-4ef2-868d-fc25dd5832da
 # ╟─8879c1a4-accd-4afc-b636-a975c6cf929e
 # ╟─3c0d99d6-ae1a-414b-af86-ead5c8211543
-# ╠═80aeee16-376b-48c4-9668-3849c44e89ed
-# ╟─3111059f-ea42-4c3f-9cc5-73e3d31e64bc
-# ╠═33e2fa03-a93d-400e-b3aa-87683e5bbd5a
+# ╠═5d9e2890-00fb-4370-9337-f6e93d49e5ed
+# ╟─a42a6e27-f5a9-4958-9b26-905fbb3dad9d
+# ╠═9d88288c-6415-4851-a52f-0008fecacf0e

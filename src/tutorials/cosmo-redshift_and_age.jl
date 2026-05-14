@@ -306,7 +306,7 @@ _Original authors: Neil Crighton, Stephanie T. Douglas_
 $(keywords())
 
 !!! warning "Companion content"
-	Content here
+	Content here.
 """
 
 # ╔═╡ Cell order:

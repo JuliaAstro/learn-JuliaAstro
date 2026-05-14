@@ -426,6 +426,10 @@ md"""
 
 This tutorial is modified from <https://learn.astropy.org/tutorials/color-excess.html>
 
+_Original authors: Kristen Larson, Lia Corrales, Stephanie T. Douglas, Kelle Cruz_
+
+_Original input from: Emir Karamehmetoglu, Pey Lian Lim, Karl Gordon, Kevin Covey_
+
 !!! tip "Learning goals"
 	- Investigate extinction curve shapes.
 	- Deredden spectral energy distributions and spectra.

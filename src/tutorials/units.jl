@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.25
 
 #> [frontmatter]
 #> image = "/assets/units.png"
@@ -63,39 +63,27 @@ begin
     # Data Viz
     using CairoMakie: Colorbar, stephist, heatmap
     using Makie: Makie as M
-
-    # Notebook setup
-    using PlutoUI: TableOfContents, details
-    using HypertextLiteral: @htl
 end
 
-# ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b
+# ╔═╡ 90fd3ea9-e115-41a5-b020-b8ade6cc6398
+begin
+	using Pluto: frontmatter
+	using PlutoUI: TableOfContents, details
+    using HypertextLiteral: @htl
+	using Test: @test    
+end
+
+# ╔═╡ 2670973e-750c-47f0-9c6a-a58aadf87682
 md"""
-# Using units in astrophysical calculations
+## Summary
+In this tutorial we present some examples showing how objects with units can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
 
-This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>.
+This notebook will cover the main usage for the two most common packages for units in Julia: [DynamicQuantities.jl](https://juliaphysics.github.io/DynamicQuantities.jl/stable/) and [Unitful.jl](https://juliaphysics.github.io/Unitful.jl/stable/). Each package has their own trade-offs, which can be read [about here](https://discourse.julialang.org/t/ann-dynamicquantities-jl-type-stable-physical-quantities/99963). For convenience, the usage for each package will be shown side-by-side in this notebook (if your screen is wide enough), with variables and functions using each appended with `_DQ` and `_U`, respectively. Similarly, functions from each package will be qualified with `DQ` or `U`, respectively.
+"""
 
-_Original authors: Ana Bonaca, Erik Tollerud, Jonathan Foster, Lia Corrales, Kris Stern, Stephanie T. Douglas_
-
-!!! tip "Learning Goals"
-	- Estimate a hypothetical galaxy's mass with units
-	- Take advantage of constants in the various units packages
-	- Print formatted unit strings
-	- Plot objects with unit labels, using Makie.jl
-	- Do math with units
-	- Convert quantities
-	- Convert between wavelength and energy
-	- Write functions that take objects with units instead of plain arrays
-	- Make synthetic radio observations
-	- Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
-
-!!! note "Keywords"
-	`units` `plots` `radio astronomy` `data cubes`
-
-!!! warning "Summary"
-	In this tutorial we present some examples showing how objects with units can make astrophysics calculations easier. The examples include calculating the mass of a galaxy from its velocity dispersion and determining masses of molecular clouds from ``\mathrm{CO}`` intensity maps. We end with an example of good practices for using quantities in functions you might distribute to other people.
-
-	This notebook will cover the main usage for the two most common packages for units in Julia: [DynamicQuantities.jl](https://juliaphysics.github.io/DynamicQuantities.jl/stable/) and [Unitful.jl](https://juliaphysics.github.io/Unitful.jl/stable/). Each package has their own trade-offs, which can be read [about here](https://discourse.julialang.org/t/ann-dynamicquantities-jl-type-stable-physical-quantities/99963). For convenience, the usage for each package will be shown side-by-side in this notebook (if your screen is wide enough), with variables and functions using each appended with `_DQ` and `_U`, respectively. Similarly, functions from each package will be qualified with `DQ` or `U`, respectively.
+# ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
+md"""
+### Packages 📦
 """
 
 # ╔═╡ 1d2293bd-a236-4b41-a9d7-9c27463b5062
@@ -662,19 +650,6 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-TableOfContents(; title = "On this page", depth = 4)
-
-# ╔═╡ 05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
-md"""
-## Packages
-"""
-
-# ╔═╡ d21ab65d-5ea0-4eca-8d1b-09fc83daf3b0
-md"""
-## Utility functions
-"""
-
 # ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 function side_by_side(content = nothing)
     return @htl(
@@ -911,8 +886,47 @@ md"""
 which is their cue to provide the units explicitly:
 """ |> side_by_side
 
+# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
+TableOfContents(; depth = 4)
+
+# ╔═╡ dd1fc1c9-c55e-453a-bda7-a2036542cdcb
+function keywords(kind = "note", title = "Keywords")
+	nb_path = split(@__FILE__, "#==#") |> first |> string
+	tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b
+md"""
+# Using units in astrophysical calculations
+
+This notebook is modified from <https://learn.astropy.org/tutorials/quantities.html>.
+
+_Original authors: Ana Bonaca, Erik Tollerud, Jonathan Foster, Lia Corrales, Kris Stern, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+	- Estimate a hypothetical galaxy's mass with units
+	- Take advantage of constants in the various units packages
+	- Print formatted unit strings
+	- Plot objects with unit labels, using Makie.jl
+	- Do math with units
+	- Convert quantities
+	- Convert between wavelength and energy
+	- Write functions that take objects with units instead of plain arrays
+	- Make synthetic radio observations
+	- Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
+
+$(keywords())
+
+!!! warning "Companion content"
+	Content here.
+"""
+
 # ╔═╡ Cell order:
 # ╟─c6ad0267-65d1-4372-a538-22acd9b5d02b
+# ╟─2670973e-750c-47f0-9c6a-a58aadf87682
 # ╟─05b485e7-115a-4dbb-aa73-0ca6ace2f5c0
 # ╠═fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 # ╟─60c89d86-942e-4c97-bd7a-ad2f792b1155
@@ -1050,5 +1064,6 @@ which is their cue to provide the units explicitly:
 # ╟─7d4f9a02-81a7-4bdc-a22d-3435192f9f15
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-# ╟─d21ab65d-5ea0-4eca-8d1b-09fc83daf3b0
 # ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
+# ╟─dd1fc1c9-c55e-453a-bda7-a2036542cdcb
+# ╠═90fd3ea9-e115-41a5-b020-b8ade6cc6398
