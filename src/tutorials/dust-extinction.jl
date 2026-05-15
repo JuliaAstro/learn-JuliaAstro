@@ -73,14 +73,6 @@ begin
     using TOML: TOML
     using PlutoUI: TableOfContents
     using Test: @test
-
-    function frontmatter(path)
-        prefix = "#> "
-        is_fm = startswith(prefix)
-        block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-        toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-        return toml["frontmatter"]
-    end
 end
 
 # ╔═╡ 1da2981b-91f6-4e35-97c5-bafb3c0a12b4
@@ -424,6 +416,15 @@ md"""
 # ╔═╡ f819c0d7-9563-447d-8768-c2c93512b60f
 TableOfContents(; depth = 4)
 
+# ╔═╡ 600681a9-0e10-477b-9ebb-3dc47a5c4e47
+function frontmatter(path)
+	prefix = "#> "
+	is_fm = startswith(prefix)
+	block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+	toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+	return toml["frontmatter"]
+end
+
 # ╔═╡ 267b8569-c7a4-42cf-bb85-c9285298de8d
 function keywords(kind = "note", title = "Keywords")
     nb_path = split(@__FILE__, "#==#") |> first |> string
@@ -503,5 +504,6 @@ $(keywords())
 # ╠═ff040052-e0b3-4447-811e-4f743456aed3
 # ╟─8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
 # ╠═f819c0d7-9563-447d-8768-c2c93512b60f
+# ╟─600681a9-0e10-477b-9ebb-3dc47a5c4e47
 # ╟─267b8569-c7a4-42cf-bb85-c9285298de8d
 # ╠═2a612197-bae8-456c-8ad1-0897b19d95f6
