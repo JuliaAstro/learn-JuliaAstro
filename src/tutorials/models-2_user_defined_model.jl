@@ -46,10 +46,14 @@ begin
     using DynamicQuantities
     using CairoMakie
     using LsqFit
+
+    deps_ready = true
 end
 
 # ╔═╡ 9d88288c-6415-4851-a52f-0008fecacf0e
 begin
+    deps_ready
+
     using Pluto: frontmatter
     using PlutoUI: TableOfContents
     using Test: @test

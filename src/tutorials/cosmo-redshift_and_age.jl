@@ -58,10 +58,14 @@ begin
 
     # Units
     using DynamicQuantities: @u_str, @us_str, ustrip
+
+    deps_ready = true
 end
 
 # ╔═╡ 49b56034-eb0e-4c54-84de-a619eb9785c7
 begin
+    deps_ready
+
     using Pluto: frontmatter
     using PlutoUI: TableOfContents
     using Test: @test
