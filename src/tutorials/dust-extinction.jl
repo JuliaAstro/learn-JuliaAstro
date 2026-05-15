@@ -418,11 +418,11 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ 600681a9-0e10-477b-9ebb-3dc47a5c4e47
 function frontmatter(path)
-	prefix = "#> "
-	is_fm = startswith(prefix)
-	block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-	toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-	return toml["frontmatter"]
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
 end
 
 # ╔═╡ 267b8569-c7a4-42cf-bb85-c9285298de8d

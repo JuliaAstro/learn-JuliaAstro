@@ -895,11 +895,11 @@ which is their cue to provide the units explicitly:
 
 # ╔═╡ 3dbbae92-27cf-4573-8752-c2c400017812
 function frontmatter(path)
-	prefix = "#> "
-	is_fm = startswith(prefix)
-	block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-	toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-	return toml["frontmatter"]
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
 end
 
 # ╔═╡ dd1fc1c9-c55e-453a-bda7-a2036542cdcb
