@@ -42,7 +42,7 @@ begin
         ]
     )
 
-    Pkg.add(["Pluto", "StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
+    Pkg.add(["TOML", "StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
 
     # Statistical analysis
     using StatsBase: mean
@@ -71,10 +71,18 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
     using Test: @test
+
+    function frontmatter(path)
+        prefix = "#> "
+        is_fm = startswith(prefix)
+        block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+        toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+        return toml["frontmatter"]
+    end
 end
 
 # ╔═╡ 2670973e-750c-47f0-9c6a-a58aadf87682

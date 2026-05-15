@@ -42,7 +42,7 @@ begin
         ]
     )
 
-    Pkg.add(["Pluto", "PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["TOML", "PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
 
     # Analysis
     using DustExtinction
@@ -70,9 +70,17 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents
     using Test: @test
+
+    function frontmatter(path)
+        prefix = "#> "
+        is_fm = startswith(prefix)
+        block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+        toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+        return toml["frontmatter"]
+    end
 end
 
 # ╔═╡ 1da2981b-91f6-4e35-97c5-bafb3c0a12b4
