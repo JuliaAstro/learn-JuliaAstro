@@ -46,7 +46,7 @@ begin
         ]
     )
 
-    Pkg.add(["PlutoUI", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["Pluto", "PlutoUI", "DynamicQuantities", "MathTeXEngine"])
 
     # Cosmological analysis
     using Cosmology: cosmology, angular_diameter_dist, age

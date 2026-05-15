@@ -42,7 +42,7 @@ begin
         ]
     )
 
-    Pkg.add(["PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["Pluto", "PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
 
     # Analysis
     using DustExtinction

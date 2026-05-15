@@ -42,7 +42,7 @@ begin
         ]
     )
 
-    Pkg.add(["StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
+    Pkg.add(["Pluto", "StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
 
     # Statistical analysis
     using StatsBase: mean

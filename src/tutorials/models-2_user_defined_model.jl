@@ -41,6 +41,8 @@ begin
         ]
     )
 
+    Pkg.add("Pluto")
+
     using Downloads: download
     using FITSFiles: FITSFiles
     using DynamicQuantities
