@@ -62,10 +62,14 @@ begin
     # Units
     using DynamicQuantities: @u_str, @us_str, ustrip
     using DynamicQuantities.Constants: c as c0
+
+    deps_ready = true
 end
 
 # ╔═╡ 2a612197-bae8-456c-8ad1-0897b19d95f6
 begin
+    deps_ready
+
     using Pluto: frontmatter
     using PlutoUI: TableOfContents
     using Test: @test

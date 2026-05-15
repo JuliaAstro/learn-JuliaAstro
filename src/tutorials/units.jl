@@ -63,10 +63,14 @@ begin
     # Data Viz
     using CairoMakie: Colorbar, stephist, heatmap
     using Makie: Makie as M
+
+    deps_ready = true
 end
 
 # ╔═╡ 90fd3ea9-e115-41a5-b020-b8ade6cc6398
 begin
+    deps_ready
+
     using Pluto: frontmatter
     using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
