@@ -46,7 +46,7 @@ begin
         ]
     )
 
-    Pkg.add(["PlutoUI", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["TOML", "PlutoUI", "DynamicQuantities", "MathTeXEngine"])
 
     # Cosmological analysis
     using Cosmology: cosmology, angular_diameter_dist, age
@@ -66,7 +66,7 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents
     using Test: @test
 end
@@ -124,7 +124,7 @@ d = [angular_diameter_dist(cosmo, z) for z in zvals]
 # ╔═╡ 20d549be-006c-48df-8e80-1bec80d62b55
 md"""
 !!! todo
-	Trying out experimental DQ unit support here: <https://github.com/JuliaAstro/Cosmology.jl/tree/units>
+    Trying out experimental DQ unit support here: <https://github.com/JuliaAstro/Cosmology.jl/tree/units>
 """
 
 # ╔═╡ c6c7ee1f-ea7c-47d3-bda4-77e87c83ad75
@@ -150,9 +150,9 @@ end
 # ╔═╡ b8a0440f-3da8-488e-a52f-b9cf98f977b2
 md"""
 !!! note
-	We use the [`Cycled`](https://docs.makie.org/v0.21/explanations/theming/themes#Manual-cycling-using-Cycled) object from Makie.jl to plot the second default color in our colormap series instead of the first. We do this because we are going to plot a second cosmology on this plot soon, and would like it to appear first in the series.
+    We use the [`Cycled`](https://docs.makie.org/v0.21/explanations/theming/themes#Manual-cycling-using-Cycled) object from Makie.jl to plot the second default color in our colormap series instead of the first. We do this because we are going to plot a second cosmology on this plot soon, and would like it to appear first in the series.
 
-	For more on plotting with DynamicQuantities, see [this section](https://docs.makie.org/dev/explanations/dim-converts#Experimental-DynamicQuantities.jl-support) of the Makie.jl documentation.
+    For more on plotting with DynamicQuantities, see [this section](https://docs.makie.org/dev/explanations/dim-converts#Experimental-DynamicQuantities.jl-support) of the Makie.jl documentation.
 """
 
 # ╔═╡ 0b7a66e1-75d1-4197-90ac-723420f276e0
@@ -214,7 +214,7 @@ d_planck = [angular_diameter_dist(cosmo_planck, z) for z in zvals]
 # ╔═╡ 5879e1c3-b6b0-4216-b00c-af0bf819ab47
 md"""
 !!! todo
-	See if we can upstream Chris's work <https://github.com/JuliaAstro/Cosmology.jl/issues/43#issuecomment-2790915234>
+    See if we can upstream Chris's work <https://github.com/JuliaAstro/Cosmology.jl/issues/43#issuecomment-2790915234>
 """
 
 # ╔═╡ fc3a8b66-4c0b-4a72-81b0-615441b697cf
@@ -265,13 +265,13 @@ fig
 # ╔═╡ d7d4e075-0445-46c2-b88e-56a3f1df0bba
 md"""
 !!! tip
-	This figure can be saved with:
+    This figure can be saved with:
 
-	```julia
-	using CairoMakie
+    ```julia
+    using CairoMakie
 
-	save("my_plot.pdf", fig)
-	```
+    save("my_plot.pdf", fig)
+    ```
 """
 
 # ╔═╡ 6afad2fa-0555-400a-9de7-e341e5956955
@@ -282,9 +282,18 @@ md"""
 # ╔═╡ 5fc3b3de-86af-423e-81c4-f41b23977fbc
 TableOfContents(; depth = 4)
 
+# ╔═╡ 34a1f8ae-f2bb-4ae1-9e91-ae6cd70a7d13
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
+
 # ╔═╡ e24cb37e-acfd-441c-9839-40649611c1c7
 function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
+    nb_path = split(@__FILE__, "#==#") |> first
     tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
@@ -300,17 +309,17 @@ This notebook is modified from <https://learn.astropy.org/tutorials/redshift-plo
 _Original authors: Neil Crighton, Stephanie T. Douglas_
 
 !!! tip "Learning goals"
-	* Plot relationships using Makie.jl.
+    * Plot relationships using Makie.jl.
 
-	* Add a second axis to the plot.
+    * Add a second axis to the plot.
 
-	* Relate distance, redshift, and age for two different types of cosmologies.
+    * Relate distance, redshift, and age for two different types of cosmologies.
 
 
 $(keywords())
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ Cell order:
@@ -339,5 +348,6 @@ $(keywords())
 # ╟─d7d4e075-0445-46c2-b88e-56a3f1df0bba
 # ╟─6afad2fa-0555-400a-9de7-e341e5956955
 # ╠═5fc3b3de-86af-423e-81c4-f41b23977fbc
+# ╟─34a1f8ae-f2bb-4ae1-9e91-ae6cd70a7d13
 # ╟─e24cb37e-acfd-441c-9839-40649611c1c7
 # ╠═49b56034-eb0e-4c54-84de-a619eb9785c7

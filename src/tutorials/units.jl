@@ -42,7 +42,7 @@ begin
         ]
     )
 
-    Pkg.add(["StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
+    Pkg.add(["TOML", "StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
 
     # Statistical analysis
     using StatsBase: mean
@@ -71,7 +71,7 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
     using Test: @test
@@ -654,6 +654,9 @@ md"""
 # Notebook setup 🔧
 """
 
+# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
+TableOfContents(; depth = 4)
+
 # ╔═╡ e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
 function side_by_side(content = nothing)
     return @htl(
@@ -890,8 +893,14 @@ md"""
 which is their cue to provide the units explicitly:
 """ |> side_by_side
 
-# ╔═╡ bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
-TableOfContents(; depth = 4)
+# ╔═╡ 3dbbae92-27cf-4573-8752-c2c400017812
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
 
 # ╔═╡ dd1fc1c9-c55e-453a-bda7-a2036542cdcb
 function keywords(kind = "note", title = "Keywords")
@@ -1069,5 +1078,6 @@ $(keywords())
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
 # ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
+# ╟─3dbbae92-27cf-4573-8752-c2c400017812
 # ╟─dd1fc1c9-c55e-453a-bda7-a2036542cdcb
 # ╠═90fd3ea9-e115-41a5-b020-b8ade6cc6398

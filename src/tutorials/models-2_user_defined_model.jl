@@ -41,6 +41,8 @@ begin
         ]
     )
 
+    Pkg.add("TOML")
+
     using Downloads: download
     using FITSFiles: FITSFiles
     using DynamicQuantities
@@ -54,7 +56,7 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents
     using Test: @test
 end
@@ -294,6 +296,15 @@ md"""
 # ╔═╡ 5d9e2890-00fb-4370-9337-f6e93d49e5ed
 TableOfContents(; depth = 4)
 
+# ╔═╡ b04e9eeb-e476-49ff-8bbf-5a7ae199df31
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
+
 # ╔═╡ a42a6e27-f5a9-4958-9b26-905fbb3dad9d
 function keywords(kind = "note", title = "Keywords")
     nb_path = split(@__FILE__, "#==#") |> first |> string
@@ -359,5 +370,6 @@ $(keywords())
 # ╟─8879c1a4-accd-4afc-b636-a975c6cf929e
 # ╟─3c0d99d6-ae1a-414b-af86-ead5c8211543
 # ╠═5d9e2890-00fb-4370-9337-f6e93d49e5ed
+# ╟─b04e9eeb-e476-49ff-8bbf-5a7ae199df31
 # ╟─a42a6e27-f5a9-4958-9b26-905fbb3dad9d
 # ╠═9d88288c-6415-4851-a52f-0008fecacf0e
