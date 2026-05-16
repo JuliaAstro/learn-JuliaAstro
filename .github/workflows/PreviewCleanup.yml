@@ -1,0 +1,35 @@
+name: Clean up PR preview
+
+on:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: preview-cleanup-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # push the deletion to gh-pages
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove preview directory
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -d "previews/PR${PR}" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git rm -rf "previews/PR${PR}"
+            git commit -m "Remove preview for PR #${PR}"
+            git push
+          else
+            echo "No preview directory for PR #${PR}, nothing to do."
+          fi
