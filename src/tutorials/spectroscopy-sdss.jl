@@ -2,6 +2,7 @@
 # v0.20.25
 
 #> [frontmatter]
+#> layout = "layout.jlhtml"
 #> title = "Spectroscopy with SDSS"
 #> tags = ["spectroscopy", "SDSS", "units", "dust exctinction", "cosmology", "plots"]
 #> date = "2026-05-16"
