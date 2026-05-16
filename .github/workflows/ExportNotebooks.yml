@@ -16,6 +16,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false # don't run on draft PRs
+    permissions:
+      contents: write   # push to gh-pages (main site + PR previews)
+      statuses: write   # add the preview link to the PR's checks
     steps:
       - name: Checkout learn.JuliaAstro source
         uses: actions/checkout@v6
@@ -61,8 +64,39 @@ jobs:
           path: generation_report.html
 
       - name: 🚀 Deploy to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: _site
+          clean-exclude: |
+            previews/**
+            CNAME
+
+      - name: 🌐 Deploy PR preview
+        if: github.event_name == 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: _site
+          target-folder: previews/PR${{ github.event.pull_request.number }}
+          clean: false   # don't touch the live site or other previews
+          commit-message: "Deploy preview for PR #${{ github.event.pull_request.number }}"
+
+      - name: 🔗 Add preview link to PR checks
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request.number;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state: "success",
+              context: "preview / learn.juliaastro.org",
+              target_url: `https://learn.juliaastro.org/previews/PR${pr}/`,
+              description: "Preview deployed — click Details",
+            });
