@@ -6,7 +6,7 @@
 #> tags = ["spectroscopy", "SDSS", "units", "dust exctinction", "cosmology", "plots"]
 #> date = "2026-05-16"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
-#> 
+#>
 #>     [[frontmatter.author]]
 #>     name = "Aditya Kumar Pandey"
 #>     [[frontmatter.author]]
@@ -58,8 +58,8 @@ begin
     # Analysis
     using DustExtinction, Cosmology, SkyCoords, FITSFiles, SpectrumBase
 
-	using Downloads
-	
+    using Downloads
+
     # Plotting
     using CairoMakie
     using MathTeXEngine: set_texfont_family!, FontFamily
@@ -111,9 +111,9 @@ We use a publicly available spectrum from SDSS DR14 -- a galaxy on plate 1323, M
 
 # ╔═╡ 645822c8-d735-4ec5-8db7-7cdbb3fd191b
 sdss_file = let
-	sdss_url  = "https://dr14.sdss.org/optical/spectrum/view/data/format=fits/spec=lite?plateid=1323&mjd=52797&fiberid=12"
-	sdss_file = joinpath(@__DIR__, "sdss_example.fits")
-	isfile(sdss_file) ? sdss_file : Downloads.download(sdss_url, sdss_file)
+    sdss_url = "https://dr14.sdss.org/optical/spectrum/view/data/format=fits/spec=lite?plateid=1323&mjd=52797&fiberid=12"
+    sdss_file = joinpath(@__DIR__, "sdss_example.fits")
+    isfile(sdss_file) ? sdss_file : Downloads.download(sdss_url, sdss_file)
 end
 
 # ╔═╡ 8b96f755-9cfd-479d-a32b-6a664004793b
@@ -131,17 +131,17 @@ We next load the wavelength and flux information from the `COADD` table into a s
 
 # ╔═╡ ae4d28da-8c69-481c-8589-149e51ddd9fa
 spec = let
-	# Unpack fields
-	hdu = hdus[2].data
-	loglam = hdu["loglam"] # log wavelength
-	ivar = hdu["ivar"] # Inverse variance (σ_flux = 1 / √ivar)
-	flux_err = inv.(sqrt.(ivar))
+    # Unpack fields
+    hdu = hdus[2].data
+    loglam = hdu["loglam"] # log wavelength
+    ivar = hdu["ivar"] # Inverse variance (σ_flux = 1 / √ivar)
+    flux_err = inv.(sqrt.(ivar))
 
-	# Store result
-	spectrum(
-		exp10.(loglam) * u"Å", # wavelength
-		(hdu["flux"] .± flux_err) * u"erg/s/cm^2/Å" # flux
-	)
+    # Store result
+    spectrum(
+        exp10.(loglam) * u"Å", # wavelength
+        (hdu["flux"] .± flux_err) * u"erg/s/cm^2/Å" # flux
+    )
 end
 
 # ╔═╡ df8b47f8-7692-4032-a9e5-e99397f7808a
@@ -154,24 +154,24 @@ We then can use Makie.jl to plot this spectrum directly:
 
 # ╔═╡ 143e0860-0704-437e-b2d3-22f5298a9198
 let
-	wav, flux = spec.spectral_axis, spec.flux_axis
-	
-	fig, ax, p = band(
-		wav,
-		flux;
-		axis = (;
-			xlabel = "Wavelength",
-			ylabel = "Flux density * 1e-17",
-			title = "SDSS Galaxy — plate 1323, fiber 12",
-		),
-		color = :orange,
-	)
-	
-	lines!(ax, wav, flux)
+    wav, flux = spec.spectral_axis, spec.flux_axis
 
-	xlims!(ax, 6450u"Å", 6800u"Å")
-	
-	fig
+    fig, ax, p = band(
+        wav,
+        flux;
+        axis = (;
+            xlabel = "Wavelength",
+            ylabel = "Flux density * 1e-17",
+            title = "SDSS Galaxy — plate 1323, fiber 12",
+        ),
+        color = :orange,
+    )
+
+    lines!(ax, wav, flux)
+
+    xlims!(ax, 6450u"Å", 6800u"Å")
+
+    fig
 end
 
 # ╔═╡ 366d72e2-8f5f-4b8a-986b-467f662aaf5b
@@ -201,7 +201,7 @@ We can use DustExctinction.jl to deredden our spectrum.
 """
 
 # ╔═╡ 43fad909-2733-48db-8c0b-cefd532ed267
-eq  = ICRSCoords(deg2rad(178.90417), deg2rad(0.66278))
+eq = ICRSCoords(deg2rad(178.90417), deg2rad(0.66278))
 
 # ╔═╡ c8529662-9746-4d0f-bef5-796c33d09ac5
 md"""
@@ -232,20 +232,21 @@ spec_dered = SpectrumBase.deredden(spec, Av)
 
 # ╔═╡ 9e824cb8-ff28-40e0-be4f-36e579fae709
 let
-	fig, ax, p = lines(spec.spectral_axis, spec.flux_axis;
-		axis = (;
-			xlabel = "Wavelength",
-			ylabel = "Flux density",
-			title = "CCM89 Dust Dereddening",
-		),
-		label = "original",
-	)
+    fig, ax, p = lines(
+        spec.spectral_axis, spec.flux_axis;
+        axis = (;
+            xlabel = "Wavelength",
+            ylabel = "Flux density",
+            title = "CCM89 Dust Dereddening",
+        ),
+        label = "original",
+    )
 
-	lines!(ax, spec_dered.spectral_axis, spec_dered.flux_axis; label = "dereddened")
+    lines!(ax, spec_dered.spectral_axis, spec_dered.flux_axis; label = "dereddened")
 
-	axislegend()
+    axislegend()
 
-	fig
+    fig
 end
 
 # ╔═╡ 8d6e0d8b-bbea-4144-bf22-9a94c38b33e6
@@ -287,29 +288,30 @@ Or in a loop for different temperatures:
 
 # ╔═╡ b742966f-a179-4a6a-93ed-fbabb3e3803e
 let
-	# Set up figure
-	fig = Figure()
-	ax = Axis(fig[1, 1];
-		yscale = log10,
-		yticks = LogTicks(LinearTicks(5)),
-		dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
-		xlabel = "Wavelength",
-		ylabel = "Flux density",
-		title  = "Blackbody Spectra",
-	)
-		
-	# Add plots
-	temps_bb = [30_000, 10_000, 5778.0, 3_000]u"K"
-	colors_bb = [:purple, :steelblue, :orange, :red]
-	
-	for (T, color) in zip(temps_bb, colors_bb)
-		B = blackbody(wav_bb, T).flux_axis
-		lines!(ax, wav_bb, B; color, label = string(T))
-	end
+    # Set up figure
+    fig = Figure()
+    ax = Axis(
+        fig[1, 1];
+        yscale = log10,
+        yticks = LogTicks(LinearTicks(5)),
+        dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
+        xlabel = "Wavelength",
+        ylabel = "Flux density",
+        title = "Blackbody Spectra",
+    )
 
-	axislegend()
+    # Add plots
+    temps_bb = [30_000, 10_000, 5778.0, 3_000]u"K"
+    colors_bb = [:purple, :steelblue, :orange, :red]
 
-	fig
+    for (T, color) in zip(temps_bb, colors_bb)
+        B = blackbody(wav_bb, T).flux_axis
+        lines!(ax, wav_bb, B; color, label = string(T))
+    end
+
+    axislegend()
+
+    fig
 end
 
 # ╔═╡ 5b3a311f-ad28-44cf-bd9a-53bc8f6842b9
@@ -329,32 +331,33 @@ cosmo = cosmology()
 
 # ╔═╡ 15601673-c10d-48aa-98c7-5fd389f35aa3
 function F_obs(λ_obs, z; T = 5778.0u"K", cosmo = cosmo)
-	λ_rest = λ_obs * inv(1 + z)
-	d_L = luminosity_dist(cosmo, z)
-	return L(λ_rest, T) / ((1 + z) * 4 * π * d_L^2)
+    λ_rest = λ_obs * inv(1 + z)
+    d_L = luminosity_dist(cosmo, z)
+    return L(λ_rest, T) / ((1 + z) * 4 * π * d_L^2)
 end
 
 # ╔═╡ cbf45b3f-8adf-4a40-bfc1-f73a4596e113
 let
-	fig = Figure()
-		
-	ax = Axis(fig[1, 1];
-		yticks = LinearTicks(5),
-		dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
-		xlabel = "Wavelength (observed)",
-		ylabel = "Flux density",
-		title  = "Cosmological Surface-Brightness Dimming",
-	)
+    fig = Figure()
 
-	redshifts = [0.4 => :black, 0.5 => :blue, 1.0 => :green, 2.0 => :red]
-	for (z, color) in redshifts
-		wav_obs = wav_bb * (1 + z)
-		lines!(ax, wav_obs, F_obs(wav_obs, z); label = "z = $(z)", color)
-	end
-	
-	axislegend(; position = :rt)
-	
-	fig
+    ax = Axis(
+        fig[1, 1];
+        yticks = LinearTicks(5),
+        dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
+        xlabel = "Wavelength (observed)",
+        ylabel = "Flux density",
+        title = "Cosmological Surface-Brightness Dimming",
+    )
+
+    redshifts = [0.4 => :black, 0.5 => :blue, 1.0 => :green, 2.0 => :red]
+    for (z, color) in redshifts
+        wav_obs = wav_bb * (1 + z)
+        lines!(ax, wav_obs, F_obs(wav_obs, z); label = "z = $(z)", color)
+    end
+
+    axislegend(; position = :rt)
+
+    fig
 end
 
 # ╔═╡ aeba92bf-15de-425a-8f7e-b2ea0518756c
@@ -367,7 +370,7 @@ TableOfContents(; depth = 4)
 
 # ╔═╡ d97007f0-5c6c-4644-bc2d-e035c9d851ac
 function frontmatter()
-	path = split(@__FILE__, "#==#") |> first |> string
+    path = split(@__FILE__, "#==#") |> first |> string
     prefix = "#> "
     is_fm = startswith(prefix)
     block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
@@ -380,9 +383,9 @@ title(_fm) = _fm["title"]
 
 # ╔═╡ 2aa83581-6911-4fdc-b19e-95196c4651e0
 function authors(_fm)
-	names = [d["name"] for d in _fm["author"]]
-	body = join(names, ", ")
-	return md"_Authors: $(body)_"
+    names = [d["name"] for d in _fm["author"]]
+    body = join(names, ", ")
+    return md"_Authors: $(body)_"
 end
 
 # ╔═╡ 48a43023-5a00-4f93-bf97-fdf534f04e65
@@ -396,21 +399,21 @@ end
 
 # ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
 begin
-	_fm = frontmatter()
-	
-	md"""
-	# $(title(_fm))
-	
-	$(authors(_fm))
-	
-	!!! tip "Learning goals"
-		Goals here.
-	
-	$(keywords(_fm))
-	
-	!!! warning "Companion content"
-		Content here.
-	"""
+    _fm = frontmatter()
+
+    md"""
+    # $(title(_fm))
+
+    $(authors(_fm))
+
+    !!! tip "Learning goals"
+    	Goals here.
+
+    $(keywords(_fm))
+
+    !!! warning "Companion content"
+    	Content here.
+    """
 end
 
 # ╔═╡ Cell order:
