@@ -366,16 +366,13 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
-TableOfContents(; depth = 4)
-
 # ╔═╡ d97007f0-5c6c-4644-bc2d-e035c9d851ac
 function frontmatter()
     path = split(@__FILE__, "#==#") |> first |> string
-    prefix = "#> "
+    prefix = "#>"
     is_fm = startswith(prefix)
     block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    toml = TOML.parse(join((chopprefix(chopprefix(l, prefix), " ") for l in block), "\n"))
     return toml["frontmatter"]
 end
 
@@ -416,6 +413,9 @@ begin
     	Content here.
     """
 end
+
+# ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
+TableOfContents(; depth = 4)
 
 # ╔═╡ Cell order:
 # ╟─4ca2f579-4240-40b4-a07c-29896c3684b4
