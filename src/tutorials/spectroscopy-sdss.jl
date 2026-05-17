@@ -217,6 +217,7 @@ hdus[1].cards["RA"], hdus[1].cards["DEC"]
 gal = convert(GalCoords, eq)
 
 # ╔═╡ e58714fd-8432-43c2-be11-8c9a22e2de85
+# Allow downloading the dustmaps needed below
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
 # ╔═╡ d42d14f8-0e3a-46d0-b04f-c7e735591aee
