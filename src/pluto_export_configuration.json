@@ -26,6 +26,11 @@
             "title": "Dust",
             "description": "Extinction and attenuation curves.",
             "tags": ["dust"]
+        },
+        {
+            "title": "Spectroscopy",
+            "description": "Spectroscopy.",
+            "tags": ["spectroscopy"]
         }
     ]
 }
