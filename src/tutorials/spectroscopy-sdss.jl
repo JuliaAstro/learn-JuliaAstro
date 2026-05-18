@@ -2,13 +2,13 @@
 # v0.20.25
 
 #> [frontmatter]
-#> layout = "layout.jlhtml"
 #> image = "/assets/spec-SDSS.png"
+#> layout = "layout.jlhtml"
 #> title = "Spectroscopy with SDSS"
 #> tags = ["spectroscopy", "FITS", "units", "dust exctinction", "cosmology", "plots", "SDSS"]
 #> date = "2026-05-16"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
-#> 
+#>
 #>     [[frontmatter.author]]
 #>     name = "Aditya Kumar Pandey"
 #>     [[frontmatter.author]]
@@ -410,24 +410,24 @@ end
 
 # ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
 begin
-	_fm = frontmatter()
-	
-	md"""
-	# $(title(_fm))
-	
-	$(authors(_fm))
-		
-	!!! tip "Learning goals"
-		Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
-	
-	$(keywords(_fm))
-	
-	!!! warning "Companion content"
-		- JuliaAstro > FITS tables
-		- JuliaAstro > Unit handling
-		- JuliaAstro > Dust extinction
-		- JuliaAstro > Cosmological redshift and age
-	"""
+    _fm = frontmatter()
+
+    md"""
+    # $(title(_fm))
+
+    $(authors(_fm))
+    	
+    !!! tip "Learning goals"
+    	Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
+
+    $(keywords(_fm))
+
+    !!! warning "Companion content"
+    	- JuliaAstro > FITS tables
+    	- JuliaAstro > Unit handling
+    	- JuliaAstro > Dust extinction
+    	- JuliaAstro > Cosmological redshift and age
+    """
 end
 
 # ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
