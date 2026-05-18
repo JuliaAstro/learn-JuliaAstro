@@ -3,11 +3,12 @@
 
 #> [frontmatter]
 #> layout = "layout.jlhtml"
+#> image = "/assets/spec-SDSS.png"
 #> title = "Spectroscopy with SDSS"
-#> tags = ["spectroscopy", "SDSS", "units", "dust exctinction", "cosmology", "plots"]
+#> tags = ["spectroscopy", "FITS", "units", "dust exctinction", "cosmology", "plots", "SDSS"]
 #> date = "2026-05-16"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
-#>
+#> 
 #>     [[frontmatter.author]]
 #>     name = "Aditya Kumar Pandey"
 #>     [[frontmatter.author]]
@@ -78,7 +79,6 @@ begin
 
     using TOML: TOML
     using PlutoUI
-    using Test: @test
 end
 
 # ╔═╡ 29945a91-d0c5-470b-81e4-99329e874ee0
@@ -105,7 +105,7 @@ md"""
 
 # ╔═╡ e35fd5df-e01e-43af-99cf-546ca8c8f342
 md"""
-## Part 1: Loading a real SDSS spectrum
+## 1. Loading a real SDSS spectrum
 
 We use a publicly available spectrum from SDSS DR14 -- a galaxy on plate 1323, MJD 52797, fiber 12. The FITS file stores flux in units of 10⁻¹⁷ erg s⁻¹ cm⁻² Å⁻¹ and an `ivar` (inverse-variance) column that encodes real per-pixel measurement uncertainties:
 """
@@ -149,6 +149,9 @@ end
 md"""
 We then can use Makie.jl to plot this spectrum directly:
 
+!!! note
+	We zoom in around the Hα line to better display the uncertainty band in the plot.
+
 !!! todo
 	Upstream a SpectrumBase.jl recipe
 """
@@ -177,7 +180,7 @@ end
 
 # ╔═╡ 366d72e2-8f5f-4b8a-986b-467f662aaf5b
 md"""
-## Part 2: Physical unit conversions
+## 2. Physical unit conversions
 
 [`Unitful.jl`](https://painterqubits.github.io/Unitful.jl/stable/) also makes it easy to convert between wavelength, frequency, and energy representations:
 """
@@ -196,9 +199,9 @@ uconvert(u"erg", H_alpha, Spectral())
 
 # ╔═╡ eae70e1e-7182-4257-aaa0-4b8f88c901ce
 md"""
-## Part 3: Dust extinction and dereddening
+## 3. Dust extinction and dereddening
 
-We can use DustExctinction.jl to deredden our spectrum.
+We can use DustExctinction.jl to deredden our spectrum:
 """
 
 # ╔═╡ 43fad909-2733-48db-8c0b-cefd532ed267
@@ -217,7 +220,6 @@ hdus[1].cards["RA"], hdus[1].cards["DEC"]
 gal = convert(GalCoords, eq)
 
 # ╔═╡ e58714fd-8432-43c2-be11-8c9a22e2de85
-# Allow downloading the dustmaps needed below
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
 # ╔═╡ d42d14f8-0e3a-46d0-b04f-c7e735591aee
@@ -253,13 +255,21 @@ end
 
 # ╔═╡ 8d6e0d8b-bbea-4144-bf22-9a94c38b33e6
 md"""
-## Part 4: Blackbody spectra and stellar luminosity density
+## 4. Blackbody spectra and stellar luminosity density
 
-`blackbody` returns spectral radiance ``B(\lambda, T)``. The stellar luminosity density is:
+The `blackbody` function returns spectral radiance ``B(\lambda, T)``. The stellar luminosity density is:
 
 ```math
 L_\lambda(\lambda, T) = 4\pi^2 R^2 B(\lambda, T)
 ```
+"""
+
+# ╔═╡ 84052581-f53d-4bed-9776-1ee31d7c38fe
+L(λ, T; R = u"Rsun") = 4 * π^2 * R^2 * blackbody(λ, T).flux_axis
+
+# ╔═╡ eeae9cac-01cb-45ce-801a-dcb7c7c7a87e
+md"""
+For solar values, this corresponds to:
 """
 
 # ╔═╡ 07baa347-0ac7-43e6-ab67-4e99c3774f65
@@ -270,9 +280,6 @@ spec_solar = blackbody(wav_bb, 5778.0u"K")
 
 # ╔═╡ 97bf0849-d92e-47cb-914a-6f9a1d02ce94
 B_solar = spec_solar.flux_axis
-
-# ╔═╡ 84052581-f53d-4bed-9776-1ee31d7c38fe
-L(λ, T; R = u"Rsun") = 4 * π^2 * R^2 * blackbody(λ, T).flux_axis
 
 # ╔═╡ 3d996ca3-26c6-4ebe-896e-c6b0378ae85c
 L_solar = L(wav_bb, 5778.0u"K")
@@ -285,7 +292,7 @@ maximum(L_solar) |> u"erg/s/Å"
 
 # ╔═╡ 4147f9f6-df33-4ac1-b31f-17dab96c951f
 md"""
-Or in a loop for different temperatures:
+Below are the corresponding spectral radiances for a range of stellar types:
 """
 
 # ╔═╡ b742966f-a179-4a6a-93ed-fbabb3e3803e
@@ -318,9 +325,9 @@ end
 
 # ╔═╡ 5b3a311f-ad28-44cf-bd9a-53bc8f6842b9
 md"""
-## Part 5: Cosmological redshift and surface-brightness dimming
+## 5. Cosmological redshift and surface-brightness dimming
 
-For a source at redshift ``z``, the observed flux density is:
+Finally, for a source at redshift ``z``, the observed flux density is:
 
 ```math
 F_\lambda^\text{obs}(\lambda_\text{obs}, z) =
@@ -337,6 +344,11 @@ function F_obs(λ_obs, z; T = 5778.0u"K", cosmo = cosmo)
     d_L = luminosity_dist(cosmo, z)
     return L(λ_rest, T) / ((1 + z) * 4 * π * d_L^2)
 end
+
+# ╔═╡ 7063013d-bac7-4d6c-b511-f741e0a8fe4c
+md"""
+Below are the observed flux densities at different redshifts:
+"""
 
 # ╔═╡ cbf45b3f-8adf-4a40-bfc1-f73a4596e113
 let
@@ -398,21 +410,24 @@ end
 
 # ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
 begin
-    _fm = frontmatter()
-
-    md"""
-    # $(title(_fm))
-
-    $(authors(_fm))
-
-    !!! tip "Learning goals"
-    	Goals here.
-
-    $(keywords(_fm))
-
-    !!! warning "Companion content"
-    	Content here.
-    """
+	_fm = frontmatter()
+	
+	md"""
+	# $(title(_fm))
+	
+	$(authors(_fm))
+		
+	!!! tip "Learning goals"
+		Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
+	
+	$(keywords(_fm))
+	
+	!!! warning "Companion content"
+		- JuliaAstro > FITS tables
+		- JuliaAstro > Unit handling
+		- JuliaAstro > Dust extinction
+		- JuliaAstro > Cosmological redshift and age
+	"""
 end
 
 # ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
@@ -448,11 +463,12 @@ TableOfContents(; depth = 4)
 # ╠═9866a403-9374-42db-8beb-57e9673e71b8
 # ╠═9e824cb8-ff28-40e0-be4f-36e579fae709
 # ╟─8d6e0d8b-bbea-4144-bf22-9a94c38b33e6
+# ╠═84052581-f53d-4bed-9776-1ee31d7c38fe
+# ╟─eeae9cac-01cb-45ce-801a-dcb7c7c7a87e
 # ╠═07baa347-0ac7-43e6-ab67-4e99c3774f65
 # ╠═57f114fb-3098-47d0-bb95-3e0f9fe41790
 # ╠═97bf0849-d92e-47cb-914a-6f9a1d02ce94
 # ╠═3d996ca3-26c6-4ebe-896e-c6b0378ae85c
-# ╠═84052581-f53d-4bed-9776-1ee31d7c38fe
 # ╠═48a59ba2-73bc-42dd-bec4-7be6b2aaff90
 # ╠═b2ac804d-2ebd-42e7-8625-99a91e0458f6
 # ╟─4147f9f6-df33-4ac1-b31f-17dab96c951f
@@ -460,6 +476,7 @@ TableOfContents(; depth = 4)
 # ╟─5b3a311f-ad28-44cf-bd9a-53bc8f6842b9
 # ╠═61bfc289-e129-4bca-b9ec-36e39d91c151
 # ╠═15601673-c10d-48aa-98c7-5fd389f35aa3
+# ╟─7063013d-bac7-4d6c-b511-f741e0a8fe4c
 # ╠═cbf45b3f-8adf-4a40-bfc1-f73a4596e113
 # ╟─aeba92bf-15de-425a-8f7e-b2ea0518756c
 # ╟─d97007f0-5c6c-4644-bc2d-e035c9d851ac
