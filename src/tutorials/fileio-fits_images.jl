@@ -75,7 +75,7 @@ end
 # ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
 md"""
 !!! note
-	We use the mutating version of `@rsubset` (note the exclamation mark above) because we do not need to preserve the original `DataFrame`, `df_evt`, in this case. For more on mutating functions, see [this section](https://docs.julialang.org/en/v1/manual/variables/#man-assignment-expressions) of the Julia manual.
+    We use the mutating version of `@rsubset` (note the exclamation mark above) because we do not need to preserve the original `DataFrame`, `df_evt`, in this case. For more on mutating functions, see [this section](https://docs.julialang.org/en/v1/manual/variables/#man-assignment-expressions) of the Julia manual.
 
 We next look at a few different ways that we can visualize the 2D histogram that we roughly previewed in the previous tutorial; from explicit (less convenient) to implicit (more convenient).
 """
@@ -88,7 +88,7 @@ md"""
 
 [^1]: This package currently uses [FITSIO.jl](https://juliaastro.org/FITSIO/), a convenience wrapper around a second wrapper, [CFITSIO.jl](http://juliaastro.org/CFITSIO/), which wraps the [CFITSIO C library](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html) for FITS file I/O. Currently, FITSIO.jl cannot handle opening tables containing BitArray data.
 
-	On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
+On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
 """
 
 # ╔═╡ c04d7668-32ff-4131-8796-007d1637f56f
@@ -119,7 +119,7 @@ md"""
 We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs of this notebook for all available options.
 
 !!! tip
-	Try passing your own AbstractArray to `imview`. This function converts an array of numbers to an array of `ColorTypes` (i.e., RGB values) for visualizing our arrays in full color. For more on this, see the [Arrays, Numbers, and Colors](https://juliaimages.org/latest/tutorials/arrays_colors/#page_arrays_colors) section of the JuliaImages documentation.
+    Try passing your own AbstractArray to `imview`. This function converts an array of numbers to an array of `ColorTypes` (i.e., RGB values) for visualizing our arrays in full color. For more on this, see the [Arrays, Numbers, and Colors](https://juliaimages.org/latest/tutorials/arrays_colors/#page_arrays_colors) section of the JuliaImages documentation.
 """
 
 # ╔═╡ d031ddf9-ee84-46b2-b387-1ec99a2ca79b
@@ -161,7 +161,7 @@ end
 # ╔═╡ 74f155a2-fe8a-404f-b0c6-7a4f2724c408
 md"""
 !!! tip
-	Try adjusting the plot options above, or try adding your own! See the [Getting started](https://docs.makie.org/stable/tutorials/getting-started) section of the Makie.jl documentation for a comprehensive tutorial.
+    Try adjusting the plot options above, or try adding your own! See the [Getting started](https://docs.makie.org/stable/tutorials/getting-started) section of the Makie.jl documentation for a comprehensive tutorial.
 
 You may notice that there are still a few things missing from our plot that would be nice to have by default, e.g., labeled axes and a formatted colorbar. We will show an ergonomic way to do this next.
 """
@@ -198,7 +198,7 @@ Here, we reproduce the previous plot above, but now with the desired axes labeli
 Additionally, note that we are working directly with the DataFrame object `df_evt-main` now instead of needing to manually fit a histogram beforehand.
 
 !!! tip
-	See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
+    See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
 
 We now turn to working directly with FITS image data.
 """
@@ -238,7 +238,7 @@ md"""
 We see that our image is an $(size(img_data, 1)) × $(size(img_data, 2)) array of $(eltype(img_data)) data. This can be visualized in the same way as our previous heatmap example, which we will show next.
 
 !!! tip "Todo"
-	We use the `scale = false` keyword in our `fits` call to preserve the original data type specified in the `BITPIX` header card. For more, see <documentation coming soon>.
+    We use the `scale = false` keyword in our `fits` call to preserve the original data type specified in the `BITPIX` header card. For more, see <documentation coming soon>.
 """
 
 # ╔═╡ b3c6961a-b8a6-4597-aaf7-a97cae793670
@@ -373,19 +373,19 @@ end
 # ╔═╡ 215e0183-adfa-4da0-80d7-108894f73f23
 md"""
 !!! tip
-	This is just an alternative syntax to array comprehensions. We could have just as easily done:
+    This is just an alternative syntax to array comprehensions. We could have just as easily done:
 
-	```julia
-	[
-		@sprintf(
-			"http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits",
-			i
-		)
-		for i in 1:5
-	]
-	```
+    ```julia
+    [
+        @sprintf(
+            "http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits",
+            i
+        )
+        for i in 1:5
+    ]
+    ```
 
-	See [this section of the Julia manual](https://docs.julialang.org/en/v1/manual/functions/#Do-Block-Syntax-for-Function-Arguments) for more on do-block syntax.
+    See [this section of the Julia manual](https://docs.julialang.org/en/v1/manual/functions/#Do-Block-Syntax-for-Function-Arguments) for more on do-block syntax.
 """
 
 # ╔═╡ 4dc4074e-b3d3-4deb-a657-8a7847a8c156
@@ -459,14 +459,14 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.
 _Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
 
 !!! tip "Learning goals"
-	- Customize a 2D histogram with image data.
-	- Stack several images into a single image (Todo).
-	- Write image data to a FITS file (Todo).
+    - Customize a 2D histogram with image data.
+    - Stack several images into a single image (Todo).
+    - Write image data to a FITS file (Todo).
 
 $(keywords())
 
 !!! warning "Companion content"
-	[learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
+    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

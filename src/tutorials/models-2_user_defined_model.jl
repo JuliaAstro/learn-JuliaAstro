@@ -90,7 +90,7 @@ So go ahead, put these numbers in the website and click on Plot to visualize the
 We will download the spectrum by hand from their website.
 
 !!! todo
-	Add SDSS data querying functionality, maybe in VirtualObservatory.jl. Could possibly pull some functionality from the old [SDSS.jl package](https://github.com/kbarbary/SDSS.jl) too.
+    Add SDSS data querying functionality, maybe in VirtualObservatory.jl. Could possibly pull some functionality from the old [SDSS.jl package](https://github.com/kbarbary/SDSS.jl) too.
 """
 
 # ╔═╡ ea94f687-01d6-4b6d-b436-eafa14f933c0
@@ -124,11 +124,11 @@ flux = spectrum[:COADD].data["flux"] * us"erg/cm^2/s/Å"
 # ╔═╡ c3e3d957-92f5-4e51-a266-d557689a5d0a
 md"""
 !!! note "A note on units"
-	To find the units for flux and wavelength, we look in `spectrum[:COADD].cards`.
+    To find the units for flux and wavelength, we look in `spectrum[:COADD].cards`.
 
-	**flux:** FITS standard requires that the header keyword `bunit` or `BUNIT` contains the physical units of the array values. That's where we'll find the flux units.
+    **flux:** FITS standard requires that the header keyword `bunit` or `BUNIT` contains the physical units of the array values. That's where we'll find the flux units.
 
-	**wavelength:** Different sources will define wavelength information differently, so we need to check the documentation. For example, this [SDSS tutorial](https://www.sdss.org/dr12/tutorials/quicklook/#python) tells us what header keyword to look at:
+    **wavelength:** Different sources will define wavelength information differently, so we need to check the documentation. For example, this [SDSS tutorial](https://www.sdss.org/dr12/tutorials/quicklook/#python) tells us what header keyword to look at:
 
 """
 
@@ -323,16 +323,16 @@ This notebook is modified from <https://learn.astropy.org/tutorials/2_user-defin
 _Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Douglas_
 
 !!! tip "Learning goals"
-	- Define a new model
-	- Identify cases were a user-defined model could be useful
-	- Define models in two different ways:
-	  - Compound models
-	  - Custom models
+    - Define a new model
+    - Identify cases were a user-defined model could be useful
+    - Define models in two different ways:
+      - Compound models
+      - Custom models
 
 $(keywords())
 
 !!! warning "Companion content"
-	[learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/models-1_linear_fitting/)
+    [learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/models-1_linear_fitting/)
 """
 
 # ╔═╡ Cell order:

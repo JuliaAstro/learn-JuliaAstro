@@ -69,14 +69,14 @@ md"""
 # Working with ASDF files
 
 !!! tip "Learning goals"
-	- Goal 1
-	- Goal 2
-	- Goal 3
+    - Goal 1
+    - Goal 2
+    - Goal 3
 
 $(keywords())
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

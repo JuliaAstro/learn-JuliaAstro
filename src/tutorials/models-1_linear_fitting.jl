@@ -141,15 +141,15 @@ end
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
 !!! tip
-	Themese can also be set globally with:
+    Themese can also be set globally with:
 
-	```julia
-	using CairoMakie
+    ```julia
+    using CairoMakie
 
-	set_theme!(<theme>)
-	```
+    set_theme!(<theme>)
+    ```
 
-	See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on theming, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
+    See [this section](https://docs.makie.org/stable/explanations/theming/themes) of the Makie.jl documentation for more on theming, and [this tutorial](https://aog.makie.org/stable/tutorials/intro-i) for more on getting started with AoG.
 """
 
 # ╔═╡ 6ef287bb-7b3f-4fbc-aa24-2b317a22b6f9
@@ -159,8 +159,8 @@ Much better! Besides some minor styling instructions given from our end, the ent
 ```julia
 # Linear model
 layer_model = layer_scatter *
-	mapping(weights = :Ks_err) *
-	linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+    mapping(weights = :Ks_err) *
+    linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
 ```
 
 We'll next take a look under the hood to see how these calculations were performed.
@@ -169,7 +169,7 @@ We'll next take a look under the hood to see how these calculations were perform
 # ╔═╡ 4e69c1de-6cf0-448b-8b95-5b6c54795820
 md"""
 !!! note
-	For more on different statistical weightings used in the Julia ecosystem, see [this section](https://juliastats.org/StatsBase.jl/stable/weights/#AnalyticWeights) of the StatsBase.jl documentation.
+    For more on different statistical weightings used in the Julia ecosystem, see [this section](https://juliastats.org/StatsBase.jl/stable/weights/#AnalyticWeights) of the StatsBase.jl documentation.
 """
 
 # ╔═╡ 35f8675d-d8f0-47b0-83b6-156bb75d373d
@@ -180,8 +180,8 @@ At its core, we are essentially solving the following [linear algebra equation](
 
 ```math
 \mathbf{
-	\left( X^\textsf{T} W X \right) \boldsymbol{\hat\beta} =
-	X^\textsf{T} W y\
+    \left( X^\textsf{T} W X \right) \boldsymbol{\hat\beta} =
+    X^\textsf{T} W y\
 }\ ,
 ```
 
@@ -224,7 +224,7 @@ end;
 # ╔═╡ 19df3403-ef9d-4b07-8b14-3b10056475e8
 md"""
 !!! todo
-	Current workaround for <https://github.com/JuliaStats/GLM.jl/issues/260>
+    Current workaround for <https://github.com/JuliaStats/GLM.jl/issues/260>
 """
 
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
@@ -233,13 +233,13 @@ fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(inv.(df_glm
 # ╔═╡ 816426f9-0511-4dde-9ec4-7c9ccb212a45
 md"""
 !!! note
-	See the [GLM.jl documentation](https://juliastats.org/GLM.jl/stable/) for more.
+    See the [GLM.jl documentation](https://juliastats.org/GLM.jl/stable/) for more.
 """
 
 # ╔═╡ 480d8ef0-42d7-4089-9da2-1543baa2d02b
 md"""
 !!! todo
-	Rename wts to weights once this is in: <https://github.com/JuliaStats/GLM.jl/pull/570>
+    Rename wts to weights once this is in: <https://github.com/JuliaStats/GLM.jl/pull/570>
 """
 
 # ╔═╡ 3b7eee06-f730-45d5-aae1-53b7731694d9
@@ -276,7 +276,7 @@ md"""
 For completeness, we also show how we might accomplish this with Optimization.jl:
 
 !!! note
-	This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For example, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
+    This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For example, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
 """
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
@@ -365,7 +365,7 @@ end
 # ╔═╡ 3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
 md"""
 !!! note
-	Note the repeated labeling, styling, and external statistical analysis that AoG saves us from needing to do by hand.
+    Note the repeated labeling, styling, and external statistical analysis that AoG saves us from needing to do by hand.
 """
 
 # ╔═╡ b2805e96-5cce-4200-842b-931187007a31
@@ -394,18 +394,18 @@ This notebook is modified from <https://learn.astropy.org/tutorials/1_models-qui
 _Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
 
 !!! tip "Learning goals"
-	- Use VirtualObservatory.jl to download data from Vizier.
-	- Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
-	- Learn common functions to fit.
-	- Generate a quick fit to data.
-	- Plot the model with the data.
-	- Compare different models and fitters.
+    - Use VirtualObservatory.jl to download data from Vizier.
+    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+    - Learn common functions to fit.
+    - Generate a quick fit to data.
+    - Plot the model with the data.
+    - Compare different models and fitters.
 
 $(keywords())
 
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

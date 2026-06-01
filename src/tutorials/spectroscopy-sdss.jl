@@ -150,10 +150,10 @@ md"""
 We then can use Makie.jl to plot this spectrum directly:
 
 !!! note
-	We zoom in around the Hα line to better display the uncertainty band in the plot.
+    We zoom in around the Hα line to better display the uncertainty band in the plot.
 
 !!! todo
-	Upstream a SpectrumBase.jl recipe
+    Upstream a SpectrumBase.jl recipe
 """
 
 # ╔═╡ 143e0860-0704-437e-b2d3-22f5298a9198
@@ -210,7 +210,7 @@ eq = ICRSCoords(deg2rad(178.90417), deg2rad(0.66278))
 # ╔═╡ c8529662-9746-4d0f-bef5-796c33d09ac5
 md"""
 !!! warning
-	Where did these coords come from? They don't seem to match from the header I think?
+    Where did these coords come from? They don't seem to match from the header I think?
 """
 
 # ╔═╡ 6e6972a6-1648-40e4-a1e6-beed98bbc93e
@@ -331,7 +331,7 @@ Finally, for a source at redshift ``z``, the observed flux density is:
 
 ```math
 F_\lambda^\text{obs}(\lambda_\text{obs}, z) =
-	\frac{L_\lambda(\lambda_\text{rest})}{(1 + z) 4\pi d_L^2(z)}
+    \frac{L_\lambda(\lambda_\text{rest})}{(1 + z) 4\pi d_L^2(z)}
 ```
 """
 
@@ -416,17 +416,17 @@ begin
     # $(title(_fm))
 
     $(authors(_fm))
-    	
+
     !!! tip "Learning goals"
-    	Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
+        Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
 
     $(keywords(_fm))
 
     !!! warning "Companion content"
-    	- JuliaAstro > FITS tables
-    	- JuliaAstro > Unit handling
-    	- JuliaAstro > Dust extinction
-    	- JuliaAstro > Cosmological redshift and age
+        - JuliaAstro > FITS tables
+        - JuliaAstro > Unit handling
+        - JuliaAstro > Dust extinction
+        - JuliaAstro > Cosmological redshift and age
     """
 end
 
