@@ -95,7 +95,7 @@ md"""
 # ╔═╡ ed46db90-9802-4615-928f-bcad4bd19804
 md"""
 !!! todo
-	Add DQ support to DustExtinction.jl
+    Add DQ support to DustExtinction.jl
 """
 
 # ╔═╡ 0250218a-6670-483f-8122-045ca65d28e4
@@ -143,7 +143,7 @@ md"""
 ### MAST IUE Spectrum
 
 !!! note
-	For more on querying MAST's TAP service, see: <https://mast.stsci.edu/vo-tap/>
+    For more on querying MAST's TAP service, see: <https://mast.stsci.edu/vo-tap/>
 """
 
 # ╔═╡ d57bbe7f-b21a-479a-8249-a96d6aac3e95
@@ -154,8 +154,8 @@ df_spectra = execute(
     FROM ivoa.ObsCore
     WHERE target_name = 'HD 147933'
     AND CONTAINS(
-    	POINT('ICRS', s_ra, s_dec),
-    	CIRCLE('ICRS', 246.396, -23.447, .00028)
+        POINT('ICRS', s_ra, s_dec),
+        CIRCLE('ICRS', 246.396, -23.447, .00028)
     ) = 1
     AND dataproduct_type = 'spectrum'
     """
@@ -199,7 +199,7 @@ io = decompress_gz_to_iobuffer(fpath)
 # ╔═╡ 216027cd-7737-4056-9abc-d71c899f7568
 md"""
 !!! todo
-	Move decompression bit to FITSFiles.jl? Does something like this already exist in Base somewhere?
+    Move decompression bit to FITSFiles.jl? Does something like this already exist in Base somewhere?
 """
 
 # ╔═╡ 904a9095-e2a2-4c3e-8070-719033a5c6b3
@@ -287,7 +287,7 @@ flux_U0_nu, flux_B0_nu, flux_V0_nu = (1.81e-23, 4.26e-23, 3.64e-23) .* u"W/m^2/H
 # ╔═╡ df87135d-59cb-4a2f-be9f-f76c4203c645
 md"""
 !!! note
-	More photometric definitions here: <https://ned.ipac.caltech.edu/help/photoband.lst>
+    More photometric definitions here: <https://ned.ipac.caltech.edu/help/photoband.lst>
 """
 
 # ╔═╡ 36f69f11-10d8-4d42-b587-2b885f497973
@@ -314,7 +314,7 @@ flux_phot = [
 # ╔═╡ 637830ec-1b5a-4eaa-bb76-55acd3b08985
 md"""
 !!! note
-	See [PhotometricFilters.jl](https://juliaastro.org/PhotometricFilters) for a comprehensive treatment of photometric filter curves.
+    See [PhotometricFilters.jl](https://juliaastro.org/PhotometricFilters) for a comprehensive treatment of photometric filter curves.
 """
 
 # ╔═╡ e59fa830-195f-45fe-bdc0-b4a2b23cd8c4
@@ -445,16 +445,16 @@ _Original authors: Kristen Larson, Lia Corrales, Stephanie T. Douglas, Kelle Cru
 _Original input from: Emir Karamehmetoglu, Pey Lian Lim, Karl Gordon, Kevin Covey_
 
 !!! tip "Learning goals"
-	- Investigate extinction curve shapes.
-	- Deredden spectral energy distributions and spectra.
-	- Calculate photometric extinction and reddening.
-	- Calculate synthetic photometry for a dust-reddened star. (todo)
-	- Convert from frequency to wavelength.
+    - Investigate extinction curve shapes.
+    - Deredden spectral energy distributions and spectra.
+    - Calculate photometric extinction and reddening.
+    - Calculate synthetic photometry for a dust-reddened star. (todo)
+    - Convert from frequency to wavelength.
 
 $(keywords())
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ Cell order:

@@ -68,10 +68,10 @@ hdus = fits(event_filename)
 # ╔═╡ a577f6a1-00e4-4fa1-9030-a14ca1ebefc6
 """
 !!! note
-	For convenience, FITS files opened from a local directory, e.g., `$(event_filename)`, are automatically closed for us.
+    For convenience, FITS files opened from a local directory, e.g., `$(event_filename)`, are automatically closed for us.
 
 !!! todo
-	Include HDUNAME and/or EXTNAME column(s) in displayed `info`?
+    Include HDUNAME and/or EXTNAME column(s) in displayed `info`?
 """ |> Markdown.parse
 
 # ╔═╡ 2a907d46-51d5-4232-a737-6d19aab073c4
@@ -85,33 +85,33 @@ hdus[2].data |> keys
 # ╔═╡ fe27a708-66d3-4f91-abe1-ce0135d04879
 md"""
 !!! todo
-	Define a function for this? e.g.,
+    Define a function for this? e.g.,
 
-	```julia
-	function FITSFiles.names(hdu::FITSFiles.HDU{FITSFiles.Bintable})
+    ```julia
+    function FITSFiles.names(hdu::FITSFiles.HDU{FITSFiles.Bintable})
 
-		<parse hdu.cards for TTYPEN, TFORMN, TUNITN, etc.>
+        <parse hdu.cards for TTYPEN, TFORMN, TUNITN, etc.>
 
-		return (
-			(name = "", format = "", ...), # col1
-			(name = "", format = "", unit = "") # col2
-			...
-			(name = "", format = "", coord_type = "") # colN
-		)
-	end
-	```
+        return (
+            (name = "", format = "", ...), # col1
+            (name = "", format = "", unit = "") # col2
+            ...
+            (name = "", format = "", coord_type = "") # colN
+        )
+    end
+    ```
 
-	Analogous to hdu.columns in astropy:
+    Analogous to hdu.columns in astropy:
 
-	```
-	ColDefs(
-		name = 'time'; format = '1D'; unit = 's'
-		name = 'ccd_id'; format = '1I'
-		name = 'node_id'; format = '1I'
-		name = 'expno'; format = '1J'
-		...
-	)
-	```
+    ```
+    ColDefs(
+        name = 'time'; format = '1D'; unit = 's'
+        name = 'ccd_id'; format = '1I'
+        name = 'node_id'; format = '1I'
+        name = 'expno'; format = '1J'
+        ...
+    )
+    ```
 """
 
 # ╔═╡ 2497c869-17e4-4f5f-9534-30beab70a8ad
@@ -125,7 +125,7 @@ df_evt = DataFrame(hdus[2].data)
 # ╔═╡ 8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
 md"""
 !!! note
-	For people coming from other languages, this [comparison page](https://dataframes.juliadata.org/stable/man/comparisons/#Comparisons) in the DataFrames.jl documentation may be helpful.
+    For people coming from other languages, this [comparison page](https://dataframes.juliadata.org/stable/man/comparisons/#Comparisons) in the DataFrames.jl documentation may be helpful.
 
 While it's possible to access FITS tables directly from the `.data` attribute, wrapping it in a `DataFrame` tends to make a variety of common tasks more convenient; for example, subsetting and directly plotting data, as we will show next.
 """
@@ -143,7 +143,7 @@ plot(df_evt; x = :energy, kind = :histogram, nbinsx = 80)
 # ╔═╡ b07413d3-7c29-4f9d-8be6-7bc5118e186d
 md"""
 !!! tip
-	We are using the small [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) package for easy interactivity in this notebook format. For publication quality plots with a wide range of analysis and customizations, see the modern [Makie.jl](https://makie.org) plotting package, which powers the [AlgebraOfGraphics.jl](https://aog.makie.org/stable/) framework for visualizing structured data. We will show examples of its use in our [Working with FITS images](/tutorials/fits-images/) tutorial.
+    We are using the small [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) package for easy interactivity in this notebook format. For publication quality plots with a wide range of analysis and customizations, see the modern [Makie.jl](https://makie.org) plotting package, which powers the [AlgebraOfGraphics.jl](https://aog.makie.org/stable/) framework for visualizing structured data. We will show examples of its use in our [Working with FITS images](/tutorials/fits-images/) tutorial.
 """
 
 # ╔═╡ 66629892-ce42-44a9-9a36-6582545bda8e
@@ -159,9 +159,9 @@ df_evt_main = @rsubset df_evt :ccd_id ∈ 0:3
 # ╔═╡ 831e74cd-fc5f-4e8b-862b-898cd7262596
 md"""
 !!! note
-	We use the `@rsubset` convenience macro exported from DataFramesMeta.jl to select the desired rows from our table, in this case the rows where the `ccd_id` are equal to either 0, 1, 2, or 3. For more on working with `DataFrames` and using other convenience macros, see the [DataFrames.jl](https://dataframes.juliadata.org/) and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/) documentation.
+    We use the `@rsubset` convenience macro exported from DataFramesMeta.jl to select the desired rows from our table, in this case the rows where the `ccd_id` are equal to either 0, 1, 2, or 3. For more on working with `DataFrames` and using other convenience macros, see the [DataFrames.jl](https://dataframes.juliadata.org/) and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/) documentation.
 
-	In particular, people coming from other languages may find this [short comparison table](https://juliadata.org/DataFramesMeta.jl/stable/#Comparison-with-dplyr-and-LINQ) of convenience macros in the DataFramesMeta.jl documentation helpful.
+    In particular, people coming from other languages may find this [short comparison table](https://juliadata.org/DataFramesMeta.jl/stable/#Comparison-with-dplyr-and-LINQ) of convenience macros in the DataFramesMeta.jl documentation helpful.
 """
 
 # ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
@@ -207,14 +207,14 @@ This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.
 _Original authors: Lia Corrales, Kris Stern_
 
 !!! tip "Learning goals"
-	- Download a FITS table file from a URL.
-	- Open a FITS table file and view table contents.
-	- Make a 2D histogram with the table data.
+    - Download a FITS table file from a URL.
+    - Open a FITS table file and view table contents.
+    - Make a 2D histogram with the table data.
 
 $(keywords())
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

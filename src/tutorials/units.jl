@@ -117,7 +117,7 @@ Reff_U |> U.u"km"
 # ╔═╡ 984fcb2e-049b-4b35-a4b6-5c8c686921a3
 md"""
 !!! note "Symbolic units"
-	Note the use of `us""` for DynamicQuantities.jl, which is required for working with [symbolic units](https://juliaphysics.github.io/DynamicQuantities.jl/stable/symbolic_units/). Will will leverage this later in the notebook to make working with angles more convenient.
+    Note the use of `us""` for DynamicQuantities.jl, which is required for working with [symbolic units](https://juliaphysics.github.io/DynamicQuantities.jl/stable/symbolic_units/). Will will leverage this later in the notebook to make working with angles more convenient.
 """
 
 # ╔═╡ c5b4f340-c774-4f09-af4c-f326afce5de3
@@ -202,17 +202,17 @@ let
     md"""
     !!! warn "Exercise"
 
-    	Use Kepler's law in the form given below to determine the (circular) orbital speed of the Earth around the Sun in km/s:
+        Use Kepler's law in the form given below to determine the (circular) orbital speed of the Earth around the Sun in km/s:
 
-    	```math
-    	v = \sqrt{\frac{G M_⊙}{r}}
-    	```
+        ```math
+        v = \sqrt{\frac{G M_⊙}{r}}
+        ```
 
-    	There's a much easier way to figure out the velocity of the Earth using just two units or quantities. Do that and then compare to the Kepler's law answer (the easiest way is probably to compute the percentage difference, if any).
+        There's a much easier way to figure out the velocity of the Earth using just two units or quantities. Do that and then compare to the Kepler's law answer (the easiest way is probably to compute the percentage difference, if any).
 
-    	$(sol)
+        $(sol)
 
-    	Completely optional, but a good way to convince ourselves of the value of DynamicQuantities.jl: Do the above calculations by hand. Look up all the appropriate conversion factors and use paper-and-pencil / basic approaches for keeping track of them all. Using Julia as a basic calculator is also fine. Which one took longer?
+        Completely optional, but a good way to convince ourselves of the value of DynamicQuantities.jl: Do the above calculations by hand. Look up all the appropriate conversion factors and use paper-and-pencil / basic approaches for keeping track of them all. Using Julia as a basic calculator is also fine. Which one took longer?
     """
 end
 
@@ -299,7 +299,7 @@ end
 # ╔═╡ e86d6cf7-2274-403a-b1db-017973f33fb7
 md"""
 !!! note
-	The units of the exponential are dimensionless, so we multiplied the data cube by ``\mathrm{K}`` to get brightness temperature units. As an aside for experts, we're setting up our artificial cube on the main-beam temperature scale ``\left(T_\text{MB}\right)``, which is the closest we can normally get to the actual brightness temperature of our source.
+    The units of the exponential are dimensionless, so we multiplied the data cube by ``\mathrm{K}`` to get brightness temperature units. As an aside for experts, we're setting up our artificial cube on the main-beam temperature scale ``\left(T_\text{MB}\right)``, which is the closest we can normally get to the actual brightness temperature of our source.
 """
 
 # ╔═╡ 1f6a0d6c-832b-474d-8fbf-a9de6e821d80
@@ -342,19 +342,19 @@ end
 # ╔═╡ 4d4794fb-804d-4b4a-8c32-a32d88e43e30
 md"""
 !!! todo
-	Improve `Base.sum` support for DQ. Discussion here: <https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/76#issuecomment-3614719247>
+    Improve `Base.sum` support for DQ. Discussion here: <https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/76#issuecomment-3614719247>
 
-	This works too, but is more verbose:
-	
-	```julia
-	sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
-	```
+    This works too, but is more verbose:
+
+    ```julia
+    sum(A, dims = 3; init = zero(first(A)))[:, :, begin]
+    ```
 """
 
 # ╔═╡ 1fa8010d-9a5d-4297-9665-9fa8795ef5f7
 md"""
 !!! note
-	Radio astronomers use a rather odd set of units ``[\mathrm{K\, km/s}]`` for integrated intensity (that is, summing all the emission from a line over velocity).
+    Radio astronomers use a rather odd set of units ``[\mathrm{K\, km/s}]`` for integrated intensity (that is, summing all the emission from a line over velocity).
 """
 
 # ╔═╡ f2b222ec-0783-487e-9c52-835976a555b6
@@ -406,7 +406,7 @@ where ``T_\text{B}`` is the brightness temperature, and the constants ``C`` and 
 ```math
 \begin{align*}
 C &= 3.0 \times {10}^{14}\ \mathrm{K^{-1}\, cm^{-2}\, km^{-1}\, s}
-	\left(\frac{\nu}{\nu_{13}}\right)^2 \frac{A_{13}}{A} \\
+    \left(\frac{\nu}{\nu_{13}}\right)^2 \frac{A_{13}}{A} \\
 B &= \frac{h\nu}{k_\text{B} T}
 \end{align*}
 ```
@@ -435,7 +435,7 @@ B &= \frac{h\nu}{k_\text{B} T}
 # ╔═╡ 0af912a5-18ad-4974-a0b5-c1f66c8fa37a
 md"""
 !!! note
-	DynamicQuantities.jl does not have similar unit eqivalence functionality at this time because it is cheap to just roll our own conversions since the physical constants needed are already included in the package. For this reason, we just compute the ``c / λ`` relation directly.
+    DynamicQuantities.jl does not have similar unit eqivalence functionality at this time because it is cheap to just roll our own conversions since the physical constants needed are already included in the package. For this reason, we just compute the ``c / λ`` relation directly.
 """
 
 # ╔═╡ 3a24f4aa-b074-4beb-b77d-6778e2fe580a
@@ -471,20 +471,20 @@ NCO_U = CC_U * intcloud_U / (1 - exp(-B_U))
 # ╔═╡ 25598fcd-761d-40b8-95ac-8b68a00026da
 md"""
 !!! note ""
-	**Peak CO Column density (DQ):** $(maximum(NCO_DQ))
+    **Peak CO Column density (DQ):** $(maximum(NCO_DQ))
 """
 
 # ╔═╡ 336f8626-7b0c-459d-bedb-281d010fcbd2
 md"""
 !!! note ""
-	**Peak CO Column density (U):** $(maximum(NCO_U))
+    **Peak CO Column density (U):** $(maximum(NCO_U))
 """
 
 # ╔═╡ eba2f06f-ebe9-492d-81d2-1cc4fccd5b0a
 md"""
 ### ``\mathrm{CO}`` to Total Mass
 
-We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}_2``, the quantity we are actually trying to infer. Using the (known/assumed) ``\mathrm{H}_2 / \mathrm{CO}`` ratio: 
+We are using ``\mathrm{CO}`` as a tracer for the much more numerous ``\mathrm{H}_2``, the quantity we are actually trying to infer. Using the (known/assumed) ``\mathrm{H}_2 / \mathrm{CO}`` ratio:
 """
 
 # ╔═╡ de22c778-1529-4177-85e6-a0178f437a8c
@@ -499,13 +499,13 @@ NH₂_U = NCO_U * H₂_CO_ratio
 # ╔═╡ 1e8ec5c5-3d41-44a7-8dfa-81d981750d9e
 md"""
 !!! note ""
-	**Peak ``\mathrm{H}_2`` column density (DQ):** $(maximum(NH₂_DQ))
+    **Peak ``\mathrm{H}_2`` column density (DQ):** $(maximum(NH₂_DQ))
 """
 
 # ╔═╡ dd22bc93-28bf-412e-a52b-d4332475daa2
 md"""
 !!! note ""
-	**Peak ``\mathrm{H}_2`` column density (U):** $(maximum(NH₂_U))
+    **Peak ``\mathrm{H}_2`` column density (U):** $(maximum(NH₂_U))
 """
 
 # ╔═╡ 522d88d6-5f60-401b-8786-0236c0859eda
@@ -541,7 +541,7 @@ end
 # ╔═╡ 9c0862d0-8028-4ef4-a867-18c7932dad91
 md"""
 !!! tip
-	To treat angles as physical units instead of as dimensionless, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [DimensionfulAngles.jl](https://github.com/cmichelenstrofer/DimensionfulAngles.jl).
+    To treat angles as physical units instead of as dimensionless, see [this relevant section](https://juliaphysics.github.io/DynamicQuantities.jl/stable/examples/#3.-Using-dimensional-angles) in the DynamicQuantities.jl documentation, and this extension package for Unitful.jl: [DimensionfulAngles.jl](https://github.com/cmichelenstrofer/DimensionfulAngles.jl).
 """
 
 # ╔═╡ 88966b7e-b261-45a6-9f12-6b74f24c03e4
@@ -553,9 +553,9 @@ M_cloud_U = sum(ρ_U * Δa_U) |> U.u"Msun"
 # ╔═╡ 802f5cad-a0c0-4426-94f2-426f89dea7e1
 md"""
 !!! tip "Exercises"
-	The astro material was pretty heavy on that one, so let's focus on some associated statistics using DynamicQuantities.jl's array capabililities. Compute the median and mean of the data with the `mean` and `median` functions. Why are their values so different?
+    The astro material was pretty heavy on that one, so let's focus on some associated statistics using DynamicQuantities.jl's array capabililities. Compute the median and mean of the data with the `mean` and `median` functions. Why are their values so different?
 
-	Similarly, compute the standard deviation and variance. Do they have the units you expect?
+    Similarly, compute the standard deviation and variance. Do they have the units you expect?
 """
 
 # ╔═╡ 2eed0bc8-2306-42bb-9803-33ae131021e6
@@ -625,9 +625,9 @@ The funding agency is impressed at the resolution you achieved, and your instrum
 # ╔═╡ 0c05c385-67bd-4078-8fe2-34a37a13b312
 md"""
 !!! note
-	**DynamicQuantities.jl:** Note the use of `us""` instead of `u""`, both supplied by DynamicQuantities.jl, to achieve this behavior.
+    **DynamicQuantities.jl:** Note the use of `us""` instead of `u""`, both supplied by DynamicQuantities.jl, to achieve this behavior.
 
-	**Unitful.jl:** Note the use of `ᵃ` supplied by DimensionfulAngles.jl instead of the base angle units provided by Unitful.jl to achieve this behavior.
+    **Unitful.jl:** Note the use of `ᵃ` supplied by DimensionfulAngles.jl instead of the base angle units provided by Unitful.jl to achieve this behavior.
 """
 
 # ╔═╡ 7d4f9a02-81a7-4bdc-a22d-3435192f9f15
@@ -643,9 +643,9 @@ let
 
     md"""
     !!! tip "Exercises"
-    	Write a function that computes the Keplerian velocity you worked out in section 1 (using `Quantity` input and outputs, of course), but allowing for an arbitrary mass and orbital radius. Try it with some reasonable numbers for satellites orbiting the Earth, a moon of Jupiter, or an extrasolar planet. Feel free to use wikipedia or similar for the masses and distances.
+        Write a function that computes the Keplerian velocity you worked out in section 1 (using `Quantity` input and outputs, of course), but allowing for an arbitrary mass and orbital radius. Try it with some reasonable numbers for satellites orbiting the Earth, a moon of Jupiter, or an extrasolar planet. Feel free to use wikipedia or similar for the masses and distances.
 
-    	$(sol)
+        $(sol)
     """
 end
 
@@ -724,19 +724,19 @@ md"""
 Now for the actual mass calculation. If a galaxy is pressure-supported (for example, an elliptical or dwarf spheroidal galaxy), its mass within the stellar extent can be estimated using a straightforward formula: ``M_{1/2} = 4σ^2 R_\text{eff}/G``. There are caveats to the use of this formula for science -- see [Wolf et al. 2010](http://ui.adsabs.harvard.edu/abs/2010MNRAS.406.1220W/abstract) for details.
 
 !!! note
-	Constants [are included in DQ](https://juliaphysics.github.io/DynamicQuantities.jl/stable/constants/):
-	
-	```julia
-	using DynamicQuantities: Constants as C_DQ
-	```
+    Constants [are included in DQ](https://juliaphysics.github.io/DynamicQuantities.jl/stable/constants/):
 
-	For demonstration purposes, we will actually be importing from `SymbolicConstants` instead. In practice, it is much more performant to work in the base SI system provided by `Constants`, and just convert to whatever units are desired in the end.
-	
-	For Unitful.jl, a separate package like [PhysicalConstants.jl for Unitful.jl](https://juliaphysics.github.io/PhysicalConstants.jl/stable/) is required:
-		
-	```julia
-	using PhysicalConstants: CODATA2018 as C_U
-	```
+    ```julia
+    using DynamicQuantities: Constants as C_DQ
+    ```
+
+    For demonstration purposes, we will actually be importing from `SymbolicConstants` instead. In practice, it is much more performant to work in the base SI system provided by `Constants`, and just convert to whatever units are desired in the end.
+
+    For Unitful.jl, a separate package like [PhysicalConstants.jl for Unitful.jl](https://juliaphysics.github.io/PhysicalConstants.jl/stable/) is required:
+
+    ```julia
+    using PhysicalConstants: CODATA2018 as C_U
+    ```
 """ |> side_by_side
 
 # ╔═╡ 0ab125c6-568b-414c-acaa-abcfebb559e2
@@ -828,7 +828,7 @@ Now we move on to calculate the constant ``B``. This is given by the ratio of ``
 # ╔═╡ a0b64ba9-cbec-404e-bf39-aee03ae407ae
 md"""
 !!! note
-	Note how DynamicQuantities.jl intelligently cancelled the units for us, while still keeping this as a `Quantity` object. For Unitful.jl, a conversion to `NoUnits` is needed. In practice, it is generally prefable to not worry about these intermediate units and just convert everything at the end.
+    Note how DynamicQuantities.jl intelligently cancelled the units for us, while still keeping this as a `Quantity` object. For Unitful.jl, a conversion to `NoUnits` is needed. In practice, it is generally prefable to not worry about these intermediate units and just convert everything at the end.
 """ |> side_by_side
 
 # ╔═╡ 6aff587f-be6f-4fd8-96df-9c12f3769f32
@@ -920,21 +920,21 @@ This notebook is modified from <https://learn.astropy.org/tutorials/quantities.h
 _Original authors: Ana Bonaca, Erik Tollerud, Jonathan Foster, Lia Corrales, Kris Stern, Stephanie T. Douglas_
 
 !!! tip "Learning goals"
-	- Estimate a hypothetical galaxy's mass with units
-	- Take advantage of constants in the various units packages
-	- Print formatted unit strings
-	- Plot objects with unit labels, using Makie.jl
-	- Do math with units
-	- Convert quantities
-	- Convert between wavelength and energy
-	- Write functions that take objects with units instead of plain arrays
-	- Make synthetic radio observations
-	- Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
+    - Estimate a hypothetical galaxy's mass with units
+    - Take advantage of constants in the various units packages
+    - Print formatted unit strings
+    - Plot objects with unit labels, using Makie.jl
+    - Do math with units
+    - Convert quantities
+    - Convert between wavelength and energy
+    - Write functions that take objects with units instead of plain arrays
+    - Make synthetic radio observations
+    - Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
 
 $(keywords())
 
 !!! warning "Companion content"
-	Content here.
+    Content here.
 """
 
 # ╔═╡ Cell order:
