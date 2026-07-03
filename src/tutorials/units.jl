@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.1
 
 #> [frontmatter]
 #> image = "/assets/units.png"
@@ -25,9 +25,9 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(;
-                url = "https://github.com/icweaver/Makie.jl",
+                url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
-                rev = "units-matrix",
+                rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
@@ -794,6 +794,9 @@ We're interested in the integrated intensity over all of the velocity channels, 
 # ╔═╡ 4ee79c7c-5c4e-457b-b713-103937e50355
 md"""
 We can plot the 2D quantity using Makie's `heatmap` function:
+
+!!! todo
+    Heatmap + colorbar + units support coming in <https://github.com/MakieOrg/Makie.jl/pull/5673> 
 """ |> side_by_side
 
 # ╔═╡ 3a3328d5-31de-4deb-bff7-d25c1fcbc4ef

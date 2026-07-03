@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.1
 
 #> [frontmatter]
 #> image = "/assets/dust-extinction.png"
@@ -25,9 +25,9 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(;
-                url = "https://github.com/icweaver/Makie.jl",
+                url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
-                rev = "units-matrix",
+                rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
@@ -39,10 +39,14 @@ begin
                 subdir = "ComputePipeline",
                 rev = "ff/breaking-0.25",
             ),
+            Pkg.PackageSpec(;
+                rev = "makie-v0.25",
+                url = "https://github.com/JuliaAstro/DustExtinction.jl",
+            ),
         ]
     )
 
-    Pkg.add(["TOML", "PlutoUI", "DustExtinction", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
+    Pkg.add(["TOML", "PlutoUI", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
 
     # Analysis
     using DustExtinction
