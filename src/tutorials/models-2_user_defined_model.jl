@@ -2,10 +2,10 @@
 # v0.20.25
 
 #> [frontmatter]
-#> title = "Modeling 2: Create a User Defined Model using astropy.modeling"
+#> title = "Modeling 2: Create a User Defined Model"
 #> layout = "layout.jlhtml"
 #> date = "2025-12-31"
-#> description = "TODO"
+#> description = "Explore more complex data-fitting techniques."
 #> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots"]
 
 using Markdown
