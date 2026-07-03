@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.1
 
 #> [frontmatter]
 #> image = "/assets/spec-SDSS.png"
@@ -31,9 +31,9 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(;
-                url = "https://github.com/icweaver/Makie.jl",
+                url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
-                rev = "units-matrix",
+                rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
@@ -52,10 +52,14 @@ begin
             Pkg.PackageSpec(;
                 url = "https://github.com/JuliaAstro/SpectrumBase.jl",
             ),
+            Pkg.PackageSpec(;
+                rev = "makie-v0.25",
+                url = "https://github.com/JuliaAstro/DustExtinction.jl",
+            ),
         ]
     )
 
-    Pkg.add(["TOML", "PlutoUI", "DustExtinction", "Cosmology", "SkyCoords", "FITSFiles", "Downloads", "Unitful", "UnitfulAstro", "UnitfulEquivalences", "MathTeXEngine", "DataInterpolations"])
+    Pkg.add(["TOML", "PlutoUI", "Cosmology", "SkyCoords", "FITSFiles", "Downloads", "Unitful", "UnitfulAstro", "UnitfulEquivalences", "MathTeXEngine", "DataInterpolations"])
 
     # Analysis
     using DustExtinction, Cosmology, SkyCoords, FITSFiles, SpectrumBase

@@ -1,0 +1,86 @@
+name: Update notebook package environments
+
+# Bumps the packages pinned *inside* each Pluto notebook (the embedded
+# PLUTO_MANIFEST_TOML_CONTENTS block), which Dependabot cannot see, and
+# opens a PR with the result. Dependabot still handles the top-level
+# Project.toml/Manifest.toml and GitHub Actions separately.
+#
+# Note: PRs opened by the default GITHUB_TOKEN do not trigger other
+# workflows, so the ExportNotebooks preview build won't run automatically.
+# Close and reopen the PR to kick off the preview build when needed.
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # Every Monday 04:00 UTC
+  workflow_dispatch: # Allow manual runs from the Actions tab
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  update-notebooks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Push the update branch
+      pull-requests: write # Open the PR
+    steps:
+      - name: 📅 Checkout source
+        uses: actions/checkout@v6
+
+      - name: 🙌 Install Julia
+        uses: julia-actions/setup-julia@v3
+        with:
+          version: "1.12"
+
+      - name: ⏱ Cache .julia
+        uses: actions/cache@v5
+        with:
+          path: ~/.julia
+          key: ${{ runner.os }}-dotjulia-update-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: ${{ runner.os }}-dotjulia-update-v1-
+
+      - name: 🙌 Install dependencies
+        shell: julia --project {0}
+        run: import Pkg; Pkg.instantiate()
+
+      - name: ⬆️ Update embedded notebook environments
+        shell: julia --project {0}
+        run: |
+          import Pluto
+
+          notebooks = filter(readdir("src/tutorials"; join = true)) do path
+              endswith(path, ".jl") &&
+                  occursin("PLUTO_MANIFEST_TOML_CONTENTS", read(path, String))
+          end
+
+          failed = String[]
+          for nb in notebooks
+              @info "Updating $nb"
+              try
+                  Pluto.update_notebook_environment(nb; backup = false)
+              catch err
+                  @error "Failed to update $nb" exception = (err, catch_backtrace())
+                  push!(failed, nb)
+              end
+          end
+
+          isempty(failed) || @warn "Some notebooks failed to update" failed
+        env:
+          JULIA_PKG_SERVER: ""
+
+      - name: 📬 Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/notebook-environments
+          delete-branch: true
+          commit-message: "chore: Update Pluto notebook package environments"
+          title: "chore: Update Pluto notebook package environments"
+          body: |
+            Automated update of the packages pinned inside each Pluto notebook
+            (`PLUTO_MANIFEST_TOML_CONTENTS`) via `Pluto.update_notebook_environment`.
+
+            Dependabot can't reach these embedded manifests, so this workflow
+            handles them. Review the export/preview build before merging.
+          labels: dependencies

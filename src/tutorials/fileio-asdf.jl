@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.1
 
 #> [frontmatter]
 #> image = "https://roman-docs.stsci.edu/_/0A8064E70182A738F6DB006B4CF16B4C/1763466662461/assets/img/roman-logo-white.png"
@@ -15,7 +15,7 @@ using InteractiveUtils
 
 # ╔═╡ 959c66f6-d8df-11f0-8c7e-1150993431da
 begin
-    using ASDF2: load_file
+    using ASDF: load, save
     using Downloads: download
 end
 
@@ -30,7 +30,10 @@ end
 md"""
 ## Summary
 
-Summary here.
+We will show how to use the Julia implementation of the [ASDF spec](https://www.asdf-format.org/en/latest/overview.html) to load and manipulate ASDF files.
+
+!!! note
+    For more examples, see the [ASDF.jl documentation](juliaastro.org/ASDF/stable/).
 """
 
 # ╔═╡ 0bd0cd34-8cc9-4edb-abd3-d9539c4972cd
@@ -38,14 +41,38 @@ md"""
 ### Packages 📦
 """
 
+# ╔═╡ 031f2756-f239-40aa-98f3-9718e6c493f0
+md"""
+## Load
+"""
+
 # ╔═╡ 3711d189-47f3-44d5-bf5d-d0886bb93ed1
-url = "https://github.com/JuliaAstro/ASDF2.jl/blob/main/test/blue_upchan_gain.00000000.asdf?raw=true"
+url = "https://github.com/JuliaAstro/ASDF.jl/blob/main/test/data/asdf-1.6.0/scalars.asdf?raw=true"
 
 # ╔═╡ 81007f0c-85d1-462d-b753-1d4619a6c9ae
 fname = download(url)
 
 # ╔═╡ b69dd6af-448e-4a71-aad2-3c2053c45843
-asdf = (load_file ∘ download)(url)
+af = (load ∘ download)(url)
+
+# ╔═╡ 95dbe901-b4d4-4226-8087-8300639753b8
+md"""
+## Modify
+"""
+
+# ╔═╡ c1718f79-9bcc-4e90-ba37-80c8f4545d33
+af["char"] = 'c'
+
+# ╔═╡ 90f502cc-bef1-40bb-8730-bf0c4bf9d3df
+af
+
+# ╔═╡ 8331ac41-8508-42a0-8ee9-7d1d665afd0d
+md"""
+## Save
+"""
+
+# ╔═╡ 786d762f-074e-4f84-88ec-784ca2b9f12e
+save("my-file.asdf", af)
 
 # ╔═╡ 209b4d0d-7222-43b8-9a50-736f60ba5dad
 md"""
@@ -69,27 +96,28 @@ md"""
 # Working with ASDF files
 
 !!! tip "Learning goals"
-    - Goal 1
-    - Goal 2
-    - Goal 3
+    - Load a simple ASDF file
+    - Edit its contents
+    - Save modified data to a new file
 
 $(keywords())
 
 !!! warning "Companion content"
-    Content here.
+    - <https://learn.juliaastro.org/tutorials/fileio-fits_tables/>
+    - <https://learn.juliaastro.org/tutorials/fileio-fits_images/>
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-ASDF2 = "da470b1c-b0a8-4533-b4d1-e613846a4bd7"
+ASDF = "686f71d1-807d-59a4-a860-28280ea06d7b"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-ASDF2 = "~0.1.3"
+ASDF = "~2.0.0"
 Pluto = "~0.20.25"
 PlutoUI = "~0.7.80"
 """
@@ -100,13 +128,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "43cfc6e4fdd59e016437c6db423b89f937001459"
+project_hash = "e04641f1b71e8fdcc45a54abb19c102dd28f04cc"
 
-[[deps.ASDF2]]
-deps = ["BlockArrays", "Blosc", "CodecBzip2", "CodecLz4", "CodecZlib", "MD5", "StridedViews", "YAML"]
-git-tree-sha1 = "50213986cad6383199f7a9daef4e69344d5d7614"
-uuid = "da470b1c-b0a8-4533-b4d1-e613846a4bd7"
-version = "0.1.3"
+[[deps.ASDF]]
+deps = ["AbstractTrees", "ChunkCodecLibBlosc", "ChunkCodecLibBzip2", "ChunkCodecLibLz4", "ChunkCodecLibZlib", "ChunkCodecLibZstd", "CodecXz", "FileIO", "MD5", "OrderedCollections", "PkgVersion", "StridedViews", "YAML"]
+git-tree-sha1 = "07152ab5cc7dc8a0c6f568d550dad9a882e1bd14"
+uuid = "686f71d1-807d-59a4-a860-28280ea06d7b"
+version = "2.0.0"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -114,21 +142,14 @@ git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
 version = "1.3.2"
 
+[[deps.AbstractTrees]]
+git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.5"
+
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
-
-[[deps.ArrayLayouts]]
-deps = ["FillArrays", "LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "e0b47732a192dd59b9d079a06d04235e2f833963"
-uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
-version = "1.12.2"
-
-    [deps.ArrayLayouts.extensions]
-    ArrayLayoutsSparseArraysExt = "SparseArrays"
-
-    [deps.ArrayLayouts.weakdeps]
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -143,26 +164,6 @@ git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
 version = "0.1.9"
 
-[[deps.BlockArrays]]
-deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra"]
-git-tree-sha1 = "0f606a9894e2bcda541ceb82a91a13c5d450ed97"
-uuid = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
-version = "1.9.3"
-
-    [deps.BlockArrays.extensions]
-    BlockArraysAdaptExt = "Adapt"
-    BlockArraysBandedMatricesExt = "BandedMatrices"
-
-    [deps.BlockArrays.weakdeps]
-    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-    BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
-
-[[deps.Blosc]]
-deps = ["Blosc_jll"]
-git-tree-sha1 = "310b77648d38c223d947ff3f50f511d08690b8d5"
-uuid = "a74b3585-a348-5f62-a45c-50e91977d574"
-version = "0.7.3"
-
 [[deps.Blosc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Lz4_jll", "Zlib_jll", "Zstd_jll"]
 git-tree-sha1 = "535c80f1c0847a4c967ea945fca21becc9de1522"
@@ -175,17 +176,46 @@ git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.9+0"
 
-[[deps.CodecBzip2]]
-deps = ["Bzip2_jll", "TranscodingStreams"]
-git-tree-sha1 = "84990fa864b7f2b4901901ca12736e45ee79068c"
-uuid = "523fee87-0ab8-5b00-afb7-3ecf72e48cfd"
-version = "0.8.5"
+[[deps.ChunkCodecCore]]
+git-tree-sha1 = "1a3ad7e16a321667698a19e77362b35a1e94c544"
+uuid = "0b6fb165-00bc-4d37-ab8b-79f91016dbe1"
+version = "1.0.1"
 
-[[deps.CodecLz4]]
-deps = ["Lz4_jll", "TranscodingStreams"]
-git-tree-sha1 = "d58afcd2833601636b48ee8cbeb2edcb086522c2"
-uuid = "5ba52731-8f18-5e0d-9241-30f10d1ec561"
-version = "0.4.6"
+[[deps.ChunkCodecLibBlosc]]
+deps = ["Blosc_jll", "ChunkCodecCore"]
+git-tree-sha1 = "1b6b4c4f0ba15063b42849ee7b8c1658572ec651"
+uuid = "c6a955be-ab7f-4fbb-b38f-caf93db6b928"
+version = "0.3.1"
+
+[[deps.ChunkCodecLibBzip2]]
+deps = ["Bzip2_jll", "ChunkCodecCore"]
+git-tree-sha1 = "73594a612fc24d40d0fdaa5dae69bc96bb455709"
+uuid = "2b723af9-f480-4e8d-a1e4-4a9f5a906122"
+version = "1.0.0"
+
+[[deps.ChunkCodecLibLz4]]
+deps = ["ChunkCodecCore", "Lz4_jll"]
+git-tree-sha1 = "0a4d7695ef98ab714efe5aef26fc35c3b0b4c1ee"
+uuid = "7e9cc85e-5614-42a3-ad86-b78f920b38a5"
+version = "1.0.0"
+
+[[deps.ChunkCodecLibZlib]]
+deps = ["ChunkCodecCore", "Zlib_jll"]
+git-tree-sha1 = "cee8104904c53d39eb94fd06cbe60cb5acde7177"
+uuid = "4c0bbee4-addc-4d73-81a0-b6caacae83c8"
+version = "1.0.0"
+
+[[deps.ChunkCodecLibZstd]]
+deps = ["ChunkCodecCore", "Zstd_jll"]
+git-tree-sha1 = "34d9873079e4cb3d0c62926a225136824677073f"
+uuid = "55437552-ac27-4d47-9aa3-63184e8fd398"
+version = "1.0.0"
+
+[[deps.CodecXz]]
+deps = ["TranscodingStreams", "XZ_jll"]
+git-tree-sha1 = "47cee2085962dad41ca9ec811e37694d7445531f"
+uuid = "ba30903b-d9e8-5048-a5ec-d1f5b0d4b47b"
+version = "0.7.4"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -271,25 +301,19 @@ git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
 uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
 version = "0.10.14"
 
+[[deps.FileIO]]
+deps = ["Pkg", "Requires", "UUIDs"]
+git-tree-sha1 = "8e9c059d6857607253e837730dbf780b6b151acd"
+uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+version = "1.19.0"
+weakdeps = ["HTTP"]
+
+    [deps.FileIO.extensions]
+    HTTPExt = "HTTP"
+
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 version = "1.11.0"
-
-[[deps.FillArrays]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "5bfcd42851cf2f1b303f51525a54dc5e98d408a3"
-uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.15.0"
-
-    [deps.FillArrays.extensions]
-    FillArraysPDMatsExt = "PDMats"
-    FillArraysSparseArraysExt = "SparseArrays"
-    FillArraysStatisticsExt = "Statistics"
-
-    [deps.FillArrays.weakdeps]
-    PDMats = "90014a1f-27ba-587c-ab20-58faa44d9150"
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -487,15 +511,6 @@ git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
-[[deps.PackageExtensionCompat]]
-git-tree-sha1 = "fb28e33b8a95c4cee25ce296c817d89cc2e53518"
-uuid = "65ce6f38-6b18-4e1d-a461-8949797d7930"
-version = "1.0.2"
-
-    [deps.PackageExtensionCompat.weakdeps]
-    Requires = "ae029012-a4dd-5104-9daa-d747884805df"
-    TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -504,6 +519,12 @@ weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
     REPLExt = "REPL"
+
+[[deps.PkgVersion]]
+deps = ["Pkg"]
+git-tree-sha1 = "f9501cc0430a26bc3d156ae1b5b0c1b47af4d6da"
+uuid = "eebad327-c553-4316-9ea0-9fa01ccd7688"
+version = "0.3.3"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
@@ -572,6 +593,12 @@ git-tree-sha1 = "ffdaf70d81cf6ff22c2b6e733c900c3321cab864"
 uuid = "05181044-ff0b-4ac5-8273-598c1e38db00"
 version = "1.0.1"
 
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "62389eeff14780bfe55195b7204c0d8738436d64"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.1"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
@@ -595,25 +622,6 @@ version = "1.2.0"
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 version = "1.11.0"
 
-[[deps.StaticArrays]]
-deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "b8693004b385c842357406e3af647701fe783f98"
-uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.15"
-
-    [deps.StaticArrays.extensions]
-    StaticArraysChainRulesCoreExt = "ChainRulesCore"
-    StaticArraysStatisticsExt = "Statistics"
-
-    [deps.StaticArrays.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-
-[[deps.StaticArraysCore]]
-git-tree-sha1 = "6ab403037779dae8c514bad259f32a447262455a"
-uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-version = "1.4.4"
-
 [[deps.Statistics]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "ae3bb1eb3bba077cd276bc5cfc337cc65c3075c0"
@@ -627,17 +635,24 @@ version = "1.11.1"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.StridedViews]]
-deps = ["LinearAlgebra", "PackageExtensionCompat"]
-git-tree-sha1 = "425158c52aa58d42593be6861befadf8b2541e9b"
+deps = ["LinearAlgebra", "PrecompileTools"]
+git-tree-sha1 = "21dc3942c478661f72c527ff5d67baa98e555372"
 uuid = "4db3bf67-4bd7-4b4e-b153-31dc3fb37143"
-version = "0.4.1"
+version = "0.5.2"
 
     [deps.StridedViews.extensions]
-    StridedViewsCUDAExt = "CUDA"
+    StridedViewsAMDGPUExt = "AMDGPU"
+    StridedViewsAdaptExt = "Adapt"
+    StridedViewsCUDACoreExt = "CUDACore"
+    StridedViewsJLArraysExt = "JLArrays"
     StridedViewsPtrArraysExt = "PtrArrays"
 
     [deps.StridedViews.weakdeps]
-    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+    CUDACore = "bd0ed864-bdfe-4181-a5ed-ce625a5fdea2"
+    JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
+    Metal = "dde4c033-4e86-420c-a63e-0dd931031962"
     PtrArrays = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
 
 [[deps.StringEncodings]]
@@ -701,6 +716,12 @@ version = "1.11.0"
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 version = "1.11.0"
 
+[[deps.XZ_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "b29c22e245d092b8b4e8d3c09ad7baa586d9f573"
+uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
+version = "5.8.3+0"
+
 [[deps.YAML]]
 deps = ["Base64", "Dates", "Printf", "StringEncodings"]
 git-tree-sha1 = "a1c0c7585346251353cddede21f180b96388c403"
@@ -739,9 +760,15 @@ version = "17.7.0+0"
 # ╟─3a4c5c6c-00eb-4f73-be50-81848e5b5e0e
 # ╟─0bd0cd34-8cc9-4edb-abd3-d9539c4972cd
 # ╠═959c66f6-d8df-11f0-8c7e-1150993431da
+# ╟─031f2756-f239-40aa-98f3-9718e6c493f0
 # ╠═3711d189-47f3-44d5-bf5d-d0886bb93ed1
 # ╠═81007f0c-85d1-462d-b753-1d4619a6c9ae
 # ╠═b69dd6af-448e-4a71-aad2-3c2053c45843
+# ╟─95dbe901-b4d4-4226-8087-8300639753b8
+# ╠═c1718f79-9bcc-4e90-ba37-80c8f4545d33
+# ╠═90f502cc-bef1-40bb-8730-bf0c4bf9d3df
+# ╟─8331ac41-8508-42a0-8ee9-7d1d665afd0d
+# ╠═786d762f-074e-4f84-88ec-784ca2b9f12e
 # ╟─209b4d0d-7222-43b8-9a50-736f60ba5dad
 # ╠═1007d00d-16de-497d-b584-9154af0ca155
 # ╟─5dbb58fd-a635-424c-9ddf-6ac833b971bb
