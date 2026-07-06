@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.2
 
 #> [frontmatter]
 #> image = "/assets/dust-extinction.png"
