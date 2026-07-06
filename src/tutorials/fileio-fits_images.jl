@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.2
 
 #> [frontmatter]
 #> image = "/assets/fits-images.png"
@@ -12,37 +12,6 @@
 
 using Markdown
 using InteractiveUtils
-
-# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
-md"""
-# Working with FITS images
-
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
-
-_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
-
-!!! tip "Learning goals"
-    - Customize a 2D histogram with image data.
-    - Stack several images into a single image (Todo).
-    - Write image data to a FITS file (Todo).
-
-$(keywords())
-
-!!! warning "Companion content"
-    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
-"""
-
-# ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
-md"""
-## Summary
-
-Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
-"""
-
-# ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
-md"""
-### Packages 📦
-"""
 
 # ╔═╡ 61c0bf34-302b-4732-a44d-4c2da611eb74
 begin
@@ -62,6 +31,25 @@ begin
     # Makie + AlgebraOfGraphics example
     using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
 end
+
+# ╔═╡ 7d07caf5-e203-4152-8bb9-c1f396c4f80c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
+
+# ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
+md"""
+## Summary
+
+Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
+"""
+
+# ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
+md"""
+### Packages 📦
+"""
 
 # ╔═╡ f87da6ab-c718-47c3-bedc-78cd025b40e6
 md"""
@@ -462,12 +450,24 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ 7d07caf5-e203-4152-8bb9-c1f396c4f80c
-begin
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
-    using Test: @test
-end
+# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
+md"""
+# Working with FITS images
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
+
+_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
+
+!!! tip "Learning goals"
+    - Customize a 2D histogram with image data.
+    - Stack several images into a single image (Todo).
+    - Write image data to a FITS file (Todo).
+
+$(keywords())
+
+!!! warning "Companion content"
+    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

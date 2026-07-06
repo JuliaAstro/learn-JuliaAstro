@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.2
 
 #> [frontmatter]
 #> image = "/assets/fits-table.png"
@@ -13,24 +13,20 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
-md"""
-# Working with FITS tables
+# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
+begin
+    using Downloads: download
+    using FITSFiles: fits, info
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
+end
 
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
-
-_Original authors: Lia Corrales, Kris Stern_
-
-!!! tip "Learning goals"
-    - Download a FITS table file from a URL.
-    - Open a FITS table file and view table contents.
-    - Make a 2D histogram with the table data.
-
-$(keywords())
-
-!!! warning "Companion content"
-    Content here.
-"""
+# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
 # ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 md"""
@@ -43,14 +39,6 @@ This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLan
 md"""
 ## Packages 📦
 """
-
-# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
-begin
-    using Downloads: download
-    using FITSFiles: fits, info
-    using DataFramesMeta: DataFrame, @rsubset
-    using PlutoPlotly: Layout, plot, attr
-end
 
 # ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
 md"""
@@ -210,12 +198,24 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
-begin
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
-    using Test: @test
-end
+# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
+md"""
+# Working with FITS tables
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
+
+_Original authors: Lia Corrales, Kris Stern_
+
+!!! tip "Learning goals"
+    - Download a FITS table file from a URL.
+    - Open a FITS table file and view table contents.
+    - Make a 2D histogram with the table data.
+
+$(keywords())
+
+!!! warning "Companion content"
+    Content here.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
