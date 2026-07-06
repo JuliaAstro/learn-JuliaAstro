@@ -13,20 +13,24 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
-begin
-    using Downloads: download
-    using FITSFiles: fits, info
-    using DataFramesMeta: DataFrame, @rsubset
-    using PlutoPlotly: Layout, plot, attr
-end
+# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
+md"""
+# Working with FITS tables
 
-# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
-begin
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
-    using Test: @test
-end
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
+
+_Original authors: Lia Corrales, Kris Stern_
+
+!!! tip "Learning goals"
+    - Download a FITS table file from a URL.
+    - Open a FITS table file and view table contents.
+    - Make a 2D histogram with the table data.
+
+$(keywords())
+
+!!! warning "Companion content"
+    Content here.
+"""
 
 # ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 md"""
@@ -39,6 +43,14 @@ This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLan
 md"""
 ## Packages 📦
 """
+
+# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
+begin
+    using Downloads: download
+    using FITSFiles: fits, info
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
+end
 
 # ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
 md"""
@@ -198,24 +210,12 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
-md"""
-# Working with FITS tables
-
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
-
-_Original authors: Lia Corrales, Kris Stern_
-
-!!! tip "Learning goals"
-    - Download a FITS table file from a URL.
-    - Open a FITS table file and view table contents.
-    - Make a 2D histogram with the table data.
-
-$(keywords())
-
-!!! warning "Companion content"
-    Content here.
-"""
+# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -757,15 +757,17 @@ version = "1.5.2"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "624de6279ab7d94fc9f672f0068107eb6619732c"
+git-tree-sha1 = "ebf455bb866ee6737030e3d3816bb6a0683c4325"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.3.2"
+version = "3.4.0"
 
     [deps.PrettyTables.extensions]
+    PrettyTablesExcelExt = "XLSX"
     PrettyTablesTypstryExt = "Typstry"
 
     [deps.PrettyTables.weakdeps]
     Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
+    XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [[deps.Printf]]
 deps = ["Unicode"]

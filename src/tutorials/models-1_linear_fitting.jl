@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.1
 
 #> [frontmatter]
 #> image = "/assets/linear-model-fitting.png"
@@ -11,6 +11,41 @@
 
 using Markdown
 using InteractiveUtils
+
+# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
+md"""
+# Modeling 1: Make a quick linear model fit
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+    - Use VirtualObservatory.jl to download data from Vizier.
+    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+    - Learn common functions to fit.
+    - Generate a quick fit to data.
+    - Plot the model with the data.
+    - Compare different models and fitters.
+
+$(keywords())
+
+
+!!! warning "Companion content"
+    Content here.
+"""
+
+# ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
+md"""
+## Summary
+
+In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
+"""
+
+# ╔═╡ a68daf19-dae6-4442-8234-d6636ef931c7
+md"""
+### Packages 📦
+"""
 
 # ╔═╡ b944163c-02c4-4ace-a866-ae6e6f7115ef
 begin
@@ -31,25 +66,6 @@ begin
     using MathTeXEngine: set_texfont_family!, FontFamily
     set_texfont_family!(FontFamily("TeXGyreHeros"))
 end
-
-# ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
-begin
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
-    using Test: @test
-end
-
-# ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
-md"""
-## Summary
-
-In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
-"""
-
-# ╔═╡ a68daf19-dae6-4442-8234-d6636ef931c7
-md"""
-### Packages 📦
-"""
 
 # ╔═╡ 6096dc80-a434-4f1a-9af5-40fbbf897d05
 md"""
@@ -385,28 +401,12 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
-md"""
-# Modeling 1: Make a quick linear model fit
-
-This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
-
-_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
-
-!!! tip "Learning goals"
-    - Use VirtualObservatory.jl to download data from Vizier.
-    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
-    - Learn common functions to fit.
-    - Generate a quick fit to data.
-    - Plot the model with the data.
-    - Compare different models and fitters.
-
-$(keywords())
-
-
-!!! warning "Companion content"
-    Content here.
-"""
+# ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
