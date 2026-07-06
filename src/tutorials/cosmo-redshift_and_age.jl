@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.2
 
 #> [frontmatter]
 #> image = "/assets/redshift-and-age.png"
