@@ -231,7 +231,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.2"
-Pluto = "~1.0.1"
+Pluto = "~1.0.2"
 PlutoPlotly = "~0.6.6"
 PlutoUI = "~0.7.83"
 """
@@ -242,7 +242,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "1a590f10f1490a37de01d40a87956444e94a09c4"
+project_hash = "94db6ab8bbf5c3e9a6739a335ab5a1cd992e4ba8"
 
 [[deps.AbstractPlutoDingetjes]]
 git-tree-sha1 = "6c3913f4e9bdf6ba3c08041a446fb1332716cbc2"
@@ -702,9 +702,9 @@ version = "0.8.23"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "03cd5666d17c3658cc6d6fc1591b8d146282a733"
+git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
 uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.1"
+version = "1.0.2"
 
 [[deps.PlutoDependencyExplorer]]
 deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]

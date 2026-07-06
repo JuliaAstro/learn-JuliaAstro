@@ -493,7 +493,7 @@ AstroImages = "~0.5.1"
 CairoMakie = "~0.15.12"
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.2"
-Pluto = "~1.0.1"
+Pluto = "~1.0.2"
 PlutoUI = "~0.7.83"
 StatsBase = "~0.34.12"
 """
@@ -504,7 +504,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "a9674a64e2bd19363aab860de31c57271cf22403"
+project_hash = "4440bb132ec696fd1be8e7849869ee574d7c4fe5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1485,9 +1485,9 @@ version = "4.1.0+0"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "eb62a3deb62fc6d8822c0c4bef73e4412419c5d8"
+git-tree-sha1 = "3ac157462e1e800777cc97d0eafd1bdb5356a470"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
-version = "18.1.8+0"
+version = "21.1.8+0"
 
 [[deps.LRUCache]]
 git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
@@ -1874,9 +1874,9 @@ version = "1.4.4"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "03cd5666d17c3658cc6d6fc1591b8d146282a733"
+git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
 uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.1"
+version = "1.0.2"
 
 [[deps.PlutoDependencyExplorer]]
 deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
