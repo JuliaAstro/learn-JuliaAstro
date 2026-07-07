@@ -33,98 +33,106 @@ using Pluto: frontmatter
 # ╔═╡ d502528d-1b8b-46c0-9e46-5d3196cd3656
 md"""
 ## Summary
-In the previous tutorial in this series, we showed how astronomical coordinates in the ICRS or equatorial coordinate system can be represented in Julia using the SkyCoords.jl package ([docs](https://juliaastro.org/SkyCoords/)). There are many other coordinate systems that are commonly used in astronomical research. For example, the Galactic coordinate system is often used in radio astronomy and Galactic science, the "horizontal" or altitude-azimuth frame is often used for observatory-specific observation planning, and Ecliptic coordinates are often used for solar system science or space mission footprints. All of these coordinate frames (and others!) are supported by astropy.coordinates. As we will see below, the SkyCoord object is designed to make transforming between these systems a straightforward task.
+In the previous tutorial in this series, we showed how astronomical coordinates in the ICRS or equatorial coordinate system can be represented in Julia using the SkyCoords.jl package ([docs](https://juliaastro.org/SkyCoords/)). There are many other coordinate systems that are commonly used in astronomical research. For example, the Galactic coordinate system is often used in radio astronomy and Galactic science, the "horizontal" or altitude-azimuth frame is often used for observatory-specific observation planning, and Ecliptic coordinates are often used for solar system science or space mission footprints. All of these coordinate frames (and others!) are supported by SkyCoords.jl. As we will see below, subtypes of the `AbstractSkyCoords` supertype in SkyCoords.jl are designed to make transforming between these systems a straightforward task.
 
 In this tutorial, we will explore how the SkyCoords.jl package can be used to transform astronomical coordinates between different coordinate systems or frames.
+
+!!! todo
+    Create Part 1 of this tutorial series.
 """
 
 # ╔═╡ f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
 md"""
 ## Imports
-"""
 
-# ╔═╡ 69f47065-a1ef-42fb-b39a-b7775817a446
-md"""
 We start by importing some general packages that we will need below:
 """
 
 # ╔═╡ 13b7b907-1005-4bce-9b0c-1787a8867f84
 md"""
 ## Key Concepts: Component Formats, Representations, and Frames
-"""
 
-# ╔═╡ acc42f40-a819-4de9-a847-cd0165d77c33
-md"""
 Usage of the term "coordinates" is overloaded in astronomy and is often used interchangeably when referring to data formats (e.g., sexagesimal vs. decimal), representations (e.g., Cartesian vs. spherical), and frames (e.g., equatorial vs. galactic). In SkyCoords.jl, we have tried to formalize these three concepts and have made them a core part of the way we interact with objects in this package. Here we will give an overview of these different concepts as we build up to demonstrating how to transform between different astronomical reference frames or systems.
 """
 
 # ╔═╡ cc989039-910a-4956-b725-cbe9592e0e22
 md"""
-## Coordinate Component Formats
-"""
+### 1. Coordinate Component Formats
 
-# ╔═╡ 0c5d31b3-f078-44e4-ba2b-f3ff2d29dfc8
-md"""
-In our previous tutorial, we showed that it is possible to pass in coordinate component data to the `SkyCoord` initializer as strings or as `Quantity` objects in a variety of formats and units. We also saw that the coordinate components of `SkyCoord` objects can be re-formatted. For example, we can change the coordinate format by changing the component units, or converting the data to a string:
+In our previous tutorial, we showed that it is possible to pass in coordinate component data to our `AbstractSkyCoords` subtype as strings or as unitful objects in a variety of formats and units with AstroAngles.jl ([docs](https://juliaastro.org/AstroAngles/stable/)). We also saw that the coordinate components of these objects can be re-formatted. For example, we can change the coordinate format by changing the component units, or converting the data to a string:
 """
 
 # ╔═╡ aed06f42-4f0b-4b08-bb48-c120d129e54f
 c = ICRSCoords(15.9932°, -10.52351344°)
 
-# ╔═╡ 9f10d283-c587-4937-92b5-3c65c36b26d3
-c.ra
-
 # ╔═╡ 4d41090a-5774-451a-9d0b-846bcb3048e2
-c.ra |> deg2ha # hour angle
-
-# ╔═╡ c91781ef-30d7-4856-90b7-0160ed863407
-uconvert(°, c.ra |> deg2ha)
+c.ra |> rad2ha # Hour angle
 
 # ╔═╡ 1ff0b6f3-7748-4a79-b59d-645f8d68bb0b
-format_angle(rad2hms(c.ra), delim = ["h", "m", "s"])
+format_angle(rad2hms(c.ra); delim = ["h", "m", "s"])
 
 # ╔═╡ 104d045a-31fb-468a-80a3-d708c0b17085
-format_angle(rad2dms(c.dec), delim = ["d", "m", "s"])
+format_angle(rad2dms(c.dec); delim = ["d", "m", "s"])
+
+# ╔═╡ 11cc01df-b5a0-4deb-ae86-d1ae7d0f9e25
+format_angle(rad2dms(c.dec))
+
+# ╔═╡ 712fd752-8b85-43f9-a305-9f2e3ac23a2d
+md"""
+!!! todo
+    - Fix duplicate hyphen bug
+    - Zero pad `whole` and  `minutes` portion of `format_angle` return
+    - Maybe add a convenience function for `format_angle(::AbstractSkyCoords; kwargs...)`
+"""
 
 # ╔═╡ ceeca820-5bea-48dd-8fb3-884e0516650b
 md"""
-See the previous tutorial [Astronomical Coordinates 1 - Getting Started](https://learn.astropy.org/tutorials/1-Coordinates-Intro) for more examples of this.
+See the previous tutorial for more examples. See the documentation of [Printf.jl](https://docs.julialang.org/en/v1/stdlib/Printf/) and [Format.jl](https://github.com/JuliaString/Format.jl) for more fine-grain string formatting.
 """
 
 # ╔═╡ 23e5a876-506f-4283-98b6-17b2af055850
 md"""
-## Coordinate Representations
+### 2. Coordinate Representations
+
+In the previous tutorial, we only worked with coordinate data in spherical representations (longitude/latitude), but SkyCoords.jl also supports other coordinate representations like Cartesian and cylindrical. To retrieve the coordinate data in a different representation, we can use the associated function. For example, to convert into Cartesian coordinates, we can use the `cartesian` function:
 """
 
-# ╔═╡ 21f62f6f-0a0b-40cf-af3d-0dc0403b73d0
+# ╔═╡ dfc16a40-f501-4a76-b014-0721e0f1b7e4
 md"""
-In the previous tutorial, we only worked with coordinate data in spherical representations (longitude/latitude), but astropy.coordinates also supports other coordinate representations like Cartesian, cylindrical, etc. To retrieve the coordinate data in a different representation, we can use the associated function. For example, to convert into Cartesian coordinates, we can use the `cartesian` function:
+!!! todo
+    - Implement cylindrical coords?
+    - Document `cartesian` and `spherical` [#84](https://github.com/JuliaAstro/SkyCoords.jl/issues/84)
+    - Add `distance` kwarg to `AbstractSkyCoords` constructors
 """
 
-# ╔═╡ b59a82f8-3dd3-43f8-b49d-1eef2639e60d
-cartesian(c)
-
-# ╔═╡ 3243a586-3178-45fa-97f0-6c1117172817
-spherical(c)
+# ╔═╡ 5781172f-cb7b-4337-b2aa-40d7206cbafa
+md"""
+In the `AbstractSkyCoords` object `c` that we defined earlier, we only specified sky positions (i.e., no distance data), so the units of the Cartesian components that are returned above are dimensionless and are interpreted as being on the surface of the (dimensionless) unit sphere. If we instead pass in a distance to the constructor using the `distance` keyword argument, we get the 3D position with positional units. For example:
+"""
 
 # ╔═╡ cb25c15e-af7f-4987-9939-8b0d56dd1ca6
 # c2 = ICRSCoords(ra = 15.9932°, dec = -10.52351344°, distance = 127.4pc)
 
-# ╔═╡ 822075b4-b6ab-4819-a6aa-6837bacfaeeb
+# ╔═╡ ff03249b-5d0f-44fe-8205-0e0a24170937
+cartesian(c).vec * 127.4 * pc # Current workaround
+
+# ╔═╡ 3a13ae4f-714e-408d-993f-c3a0859496dc
 md"""
-And now, to associate a distance with the Cartesian coordinate, we can simply multiply by a distance measure since all sky coordinates exist on a unit sphere.
+Or, we could represent this data with cylindrical components:
 """
 
-# ╔═╡ ff03249b-5d0f-44fe-8205-0e0a24170937
-cartesian(c).vec * 127.4
+# ╔═╡ e6868fd1-9bcf-4f8a-81ca-c5df66bc5e1d
+# Implement cylindrical(c2)
 
-# ╔═╡ 5fc6a948-28c5-46f1-8886-25a3915de14e
+# ╔═╡ 722812b9-4984-4f26-b193-786a42242cf9
 md"""
-## Transforming Between Coordinate Frames
+To summarize, using `cartesian`/`spherical`/`cylindrical` is a convenient way to retrieve your coordinate data in a different representation.
 """
 
 # ╔═╡ 15e4f7a3-4bef-4f15-ab65-f81180651d96
 md"""
+### 3. Transforming Between Coordinate Frames
+
 The third key concept to keep in mind when thinking about astronomical coordinate data is the reference frame or coordinate system that the data are in. In the previous tutorial, and so far here, we have worked with the default frame assumed by `SkyCoord`: the International Celestial Reference System (ICRS; [some important definitions and context about the ICRS is given here](https://arxiv.org/abs/astro-ph/0602086)). The ICRS is the fundamental coordinate system used in most modern astronomical contexts and is generally what people mean when they refer to “equatorial” or “J2000” or “RA/Dec” coordinates (but there are some important caveats if you are working with older data). As noted above, however, there are many other coordinate systems used in different astronomical, solar, or solar system contexts.
 """
 
@@ -388,7 +396,7 @@ This notebook is modified from <https://learn.astropy.org/tutorials/2_Coordinate
 _Original authors: Adrian Price-Whelan, Saima Siddiqui, Zihao Chen, Luthien Liu_
 
 !!! tip "Learning Goals"
-    - Introduce key concepts in sky coordinates: coordinate component formats, representations, and frames
+    - Introduce key concepts in SkyCoords.jl: coordinate component formats, representations, and frames
     - Demonstrate how to work with coordinate representations, for example, to change from Cartesian to Cylindrical coordinates
     - Introduce coordinate frame transformations and demonstrate transforming from ICRS coordinates to Galactic and Altitude-Azimuth coordinates
 
@@ -2512,28 +2520,25 @@ version = "4.1.0+0"
 # ╔═╡ Cell order:
 # ╟─dd98b24e-610e-11ef-1180-ef02be7d7cac
 # ╟─d502528d-1b8b-46c0-9e46-5d3196cd3656
-# ╟─f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
-# ╟─69f47065-a1ef-42fb-b39a-b7775817a446
+# ╠═f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
 # ╠═6f72fec9-eaf8-4831-8f59-49c4cc153f02
 # ╟─13b7b907-1005-4bce-9b0c-1787a8867f84
-# ╟─acc42f40-a819-4de9-a847-cd0165d77c33
 # ╟─cc989039-910a-4956-b725-cbe9592e0e22
-# ╟─0c5d31b3-f078-44e4-ba2b-f3ff2d29dfc8
 # ╠═aed06f42-4f0b-4b08-bb48-c120d129e54f
-# ╠═9f10d283-c587-4937-92b5-3c65c36b26d3
 # ╠═4d41090a-5774-451a-9d0b-846bcb3048e2
-# ╠═c91781ef-30d7-4856-90b7-0160ed863407
 # ╠═1ff0b6f3-7748-4a79-b59d-645f8d68bb0b
 # ╠═104d045a-31fb-468a-80a3-d708c0b17085
+# ╠═11cc01df-b5a0-4deb-ae86-d1ae7d0f9e25
+# ╟─712fd752-8b85-43f9-a305-9f2e3ac23a2d
 # ╟─ceeca820-5bea-48dd-8fb3-884e0516650b
 # ╟─23e5a876-506f-4283-98b6-17b2af055850
-# ╟─21f62f6f-0a0b-40cf-af3d-0dc0403b73d0
-# ╠═b59a82f8-3dd3-43f8-b49d-1eef2639e60d
-# ╠═3243a586-3178-45fa-97f0-6c1117172817
+# ╟─dfc16a40-f501-4a76-b014-0721e0f1b7e4
+# ╟─5781172f-cb7b-4337-b2aa-40d7206cbafa
 # ╠═cb25c15e-af7f-4987-9939-8b0d56dd1ca6
-# ╟─822075b4-b6ab-4819-a6aa-6837bacfaeeb
 # ╠═ff03249b-5d0f-44fe-8205-0e0a24170937
-# ╟─5fc6a948-28c5-46f1-8886-25a3915de14e
+# ╟─3a13ae4f-714e-408d-993f-c3a0859496dc
+# ╠═e6868fd1-9bcf-4f8a-81ca-c5df66bc5e1d
+# ╟─722812b9-4984-4f26-b193-786a42242cf9
 # ╟─15e4f7a3-4bef-4f15-ab65-f81180651d96
 # ╟─8ecb354c-a435-40e4-bedf-82abe524d593
 # ╠═30830709-e3ef-4ba6-8372-f8c922a9f0aa
