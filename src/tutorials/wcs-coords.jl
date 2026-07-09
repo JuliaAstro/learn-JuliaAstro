@@ -53,7 +53,9 @@ end
 md"""
 ## Summary
 
-This tutorial series aims to show how the content of Chapter 1 of "An Introduction to Modern Astrophysics" by Carroll and Ostlie can be applied to real life astrophysics research situations, using tools in the JuliaAstro ecosystem. We will introduce two different approaches to building a `FITSWCS.WCSTransform` object, which contains meta-data that (in this case) defines a mapping between image coordinates and sky coordinates. The FITSWCS.jl package conforms to the standards of the FITS World Coordinate System (WCS) used extensively by the astronomy research community. We will created a 2D WCS for an image of the iconic the Helix nebula (a planetary nebula) and display an image of the nebula with sky coordinates (here, equatorial, ICRS RA and Dec.) labeled. Finally, we will over-plot a scale bar on the Helix nebula image using WCS to give the reader a sense of the angular size of the image.
+This tutorial series aims to show how the content of Chapter 1 of "An Introduction to Modern Astrophysics" by Carroll and Ostlie can be applied to real life astrophysics research situations, using tools in the JuliaAstro ecosystem. We will introduce two different approaches to building a `FITSWCS.WCSTransform` object, which contains meta-data that (in this case) defines a mapping between image coordinates and sky coordinates.
+
+The FITSWCS.jl package conforms to the standards of the FITS World Coordinate System (WCS) used extensively by the astronomy research community. We will created a 2D WCS for an image of the iconic the Helix nebula (a planetary nebula) and display an image of the nebula with sky coordinates (here, equatorial, ICRS RA and Dec.) labeled. Finally, we will over-plot a scale bar on the Helix nebula image using WCS to give the reader a sense of the angular size of the image.
 """
 
 # ╔═╡ c6e9643c-7b8e-4de8-bcf0-baf9a51910f2
@@ -169,9 +171,6 @@ img = let
     f = download("https://github.com/astropy/astropy-data/raw/6d92878d18e970ce6497b70a9253f65c925978bf/tutorials/celestial-coords1/tailored_dss.22.29.38.50-20.50.13_60arcmin.fits")
     load(f)
 end
-
-# ╔═╡ 8310d27c-910d-476b-87f7-590aa82498c2
-AstroImages.wcsfromheader(img)
 
 # ╔═╡ 1fd4e3ce-412a-4bd2-b649-f35f090bfa60
 md"""
@@ -315,7 +314,6 @@ $(keywords())
 
 # ╔═╡ Cell order:
 # ╟─bb93ae12-1f64-474d-9762-a4c9813ab801
-# ╠═8310d27c-910d-476b-87f7-590aa82498c2
 # ╟─fa245c6e-9a32-4600-b579-6a42c0f0fc3a
 # ╟─c6e9643c-7b8e-4de8-bcf0-baf9a51910f2
 # ╠═b7045a18-7aa0-11f1-a432-3f9f2d689dd8
