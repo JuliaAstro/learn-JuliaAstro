@@ -32,6 +32,9 @@ begin
     set_texfont_family!(FontFamily("TeXGyreHeros"))
 end
 
+# ╔═╡ 727a8e8f-a1cf-4c0d-909c-a351d132b8ea
+using GLM: fweights
+
 # ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
 begin
     using Pluto: frontmatter
@@ -59,7 +62,7 @@ We are going to start with a linear fit to real data. The data comes from the pa
 """
 
 # ╔═╡ 002fa353-906a-4e3c-bd8e-12d681417240
-catalog = VizierCatalog("J/A+A/605/A100") |> table |> DataFrame |> dropmissing
+catalog = VizierCatalog("J/A+A/605/A100"; unitful = false) |> table |> DataFrame |> dropmissing
 
 # ╔═╡ b406eba1-cac7-4d19-854d-f2b2c0eda33f
 names(catalog) # List all columns names
@@ -109,8 +112,13 @@ Let's apply these requirements, and also update the styling of our plot a bit:
 
 # ╔═╡ 1d61727f-b373-4394-b486-79eb63a71f37
 with_theme(Theme(aog_theme())) do
+    # Analytic (inverse-variance) weights, normalized to sum to n so the
+    # confidence band uses the true sample size rather than Σw
+    w = inv.(df.Ks_err .^ 2)
+    df_w = @transform df :weights = w .* (length(w) / sum(w))
+
     # Common data
-    layer_scatter = data(df) * mapping(
+    layer_scatter = data(df_w) * mapping(
         :log_P => L"\mathbf{\log_{10}(\text{Period [days]})}",
         :Ks => "Ks [mag]",
     )
@@ -120,8 +128,8 @@ with_theme(Theme(aog_theme())) do
 
     # Linear model
     layer_model = layer_scatter *
-        mapping(weights = :Ks_err) *
-        linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+        mapping(weights = :weights) *
+        linear(; weighttype = :aweights)
 
     # Combined layers
     layer_data = layer_scatter + layer_errorbars
@@ -140,6 +148,9 @@ end
 
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
+!!! warning
+    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release.
+
 !!! tip
     Themese can also be set globally with:
 
@@ -157,10 +168,14 @@ md"""
 Much better! Besides some minor styling instructions given from our end, the entirety of the statistical analysis was handled by this small, but powerful, bit of code:
 
 ```julia
+# Analytic (inverse-variance) weights, normalized to sum to n
+w = inv.(df.Ks_err .^ 2)
+df_w = @transform df :weights = w .* (length(w) / sum(w))
+
 # Linear model
 layer_model = layer_scatter *
-    mapping(weights = :Ks_err) *
-    linear(; weightkind = aweights, weighttransform = x -> inv.(x .^ 2))
+    mapping(weights = :weights) *
+    linear(; weighttype = :aweights)
 ```
 
 We'll next take a look under the hood to see how these calculations were performed.
@@ -228,7 +243,10 @@ md"""
 """
 
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
-fit_glm = glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(inv.(df_glm.Ks_err .^ 2)))
+fit_glm = let w = inv.(df_glm.Ks_err .^ 2)
+    # Normalize the inverse-variance weights to sum to n (same as the AoG cell)
+    glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(w .* (length(w) / sum(w))))
+end
 
 # ╔═╡ 816426f9-0511-4dde-9ec4-7c9ccb212a45
 md"""
@@ -258,8 +276,11 @@ md"""
 and we now have associated uncertainty information from `fit_glm` that we can use to estimate our confidence intervals using `GLM.predict`:
 """
 
+# ╔═╡ 851acc22-bf1e-409e-8037-c5c37022fa63
+eachcol(df_glm[!, [:log_P]]) |> collect
+
 # ╔═╡ 07193622-e18b-474d-ab54-95cc09cf3bfc
-Ks_pred, Ks_lower, Ks_upper = predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence)
+Ks_pred, Ks_lower, Ks_upper = eachcol(predict(fit_glm, df_glm[!, [:log_P]]; interval = :confidence))
 
 # ╔═╡ d03883f3-b488-4176-bb5f-d69dcb9fad77
 md"""
@@ -425,18 +446,21 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 VirtualObservatory = "d7ce213e-d3b9-4ed1-b00e-1146b7ac83e0"
 
+[sources]
+AlgebraOfGraphics = {rev = "glm", url = "https://github.com/icweaver/AlgebraOfGraphics.jl"}
+
 [compat]
 AlgebraOfGraphics = "~0.13.0"
-CairoMakie = "~0.15.12"
+CairoMakie = "~0.15.13"
 DataFramesMeta = "~0.15.6"
 GLM = "~1.9.5"
 MathTeXEngine = "~0.6.9"
-Optimization = "~5.6.2"
+Optimization = "~5.6.3"
 OptimizationOptimJL = "~0.4.15"
-Pluto = "~1.0.2"
+Pluto = "~1.0.3"
 PlutoUI = "~0.7.83"
 StatsBase = "~0.34.12"
-VirtualObservatory = "~0.1.14"
+VirtualObservatory = "~0.1.18"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -445,7 +469,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "1c024924ce5915b6ad6427b25e83077c3a1ae96a"
+project_hash = "909a2c82204e2535ad7dc6625be02a248b271170"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "d9aaef7c63466eee4de23b4d9dad03629df54bea"
@@ -509,9 +533,9 @@ version = "0.1.45"
 
 [[deps.AccessorsExtra]]
 deps = ["Accessors", "CompositionsBase", "ConstructionBase", "DataPipes", "InverseFunctions", "LinearAlgebra", "Reexport"]
-git-tree-sha1 = "dc6f06e908b29d4d3a095573bb591d7391a20b18"
+git-tree-sha1 = "5c6d50ec5b3a3fc2e87d0ce26b934fb87ec4d41b"
 uuid = "33016aad-b69d-45be-9359-82a41f556fd4"
-version = "0.1.101"
+version = "0.1.102"
 
     [deps.AccessorsExtra.extensions]
     ColorTypesExt = "ColorTypes"
@@ -574,7 +598,9 @@ version = "1.2.0"
 
 [[deps.AlgebraOfGraphics]]
 deps = ["Accessors", "Colors", "DataAPI", "Dates", "Dictionaries", "FileIO", "GLM", "GeoInterface", "GeometryBasics", "GridLayoutBase", "Isoband", "KernelDensity", "Loess", "Makie", "NaturalSort", "PlotUtils", "PolygonOps", "PooledArrays", "PrecompileTools", "RelocatableFolders", "StatsBase", "StructArrays", "Tables"]
-git-tree-sha1 = "46736ae99433e1489e009a564326adee46467bdd"
+git-tree-sha1 = "c129e49a71c83e4c9d7ad61d25152db424286b05"
+repo-rev = "glm"
+repo-url = "https://github.com/icweaver/AlgebraOfGraphics.jl"
 uuid = "cbdf2221-f076-402e-a563-3d30da359d67"
 version = "0.13.0"
 
@@ -728,9 +754,9 @@ version = "1.1.1"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "80b2770813b42f80235ea57f4333de8ff3e1c342"
+git-tree-sha1 = "47142129b1777e21da58cff265050b10d8560588"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.15.12"
+version = "0.15.13"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -912,9 +938,9 @@ uuid = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 version = "0.15.6"
 
 [[deps.DataPipes]]
-git-tree-sha1 = "29077a8d5c093f4e0988e92c0d76f56c4c581900"
+git-tree-sha1 = "3fb39158bc35c984cac5edb1ff55daa88a4b5074"
 uuid = "02685ad9-2d12-40c3-9f73-c6aeda6a7ff5"
-version = "0.3.18"
+version = "0.3.19"
 
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
@@ -929,18 +955,20 @@ version = "1.0.0"
 
 [[deps.DateFormats]]
 deps = ["Dates", "Reexport"]
-git-tree-sha1 = "0db2087eb44ab2c626be60f78172d2c1796d9af0"
+git-tree-sha1 = "a73965314cb45f0ac9cc617267cb3f1d4f617742"
 uuid = "44557152-fe0a-4de1-8405-416d90313ce6"
-version = "0.1.19"
+version = "0.1.20"
 
     [deps.DateFormats.extensions]
     AccessorsExt = "Accessors"
+    IntervalSetsExt = "IntervalSets"
     InverseFunctionsExt = "InverseFunctions"
     StatisticsExt = "Statistics"
     TimeZonesExt = "TimeZones"
 
     [deps.DateFormats.weakdeps]
     Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
+    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
     Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
     TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
@@ -964,9 +992,9 @@ version = "0.4.6"
 
 [[deps.DifferentiationInterface]]
 deps = ["ADTypes", "LinearAlgebra"]
-git-tree-sha1 = "2147a95a217cc8a78ec96ee03581adf129468e49"
+git-tree-sha1 = "2348cf722e74ef177e165986c765b61217f7433a"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
-version = "0.7.18"
+version = "0.7.19"
 
     [deps.DifferentiationInterface.extensions]
     DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
@@ -1084,9 +1112,9 @@ version = "0.1.11"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "c307cd83373868391f3ac30b41530bc5d5d05d08"
+git-tree-sha1 = "e6c4a6407a949e79a9d3f249bf49e6987c80e01f"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.8.1+0"
+version = "2.8.2+0"
 
 [[deps.ExprTools]]
 git-tree-sha1 = "27415f162e6028e81c72b82ef756bf321213b6ec"
@@ -1508,9 +1536,9 @@ version = "0.16.3"
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm", "CoreMath", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
-git-tree-sha1 = "921d7e91687e15a2c7c269c226960491fc041832"
+git-tree-sha1 = "c3ee408ae340565f41699e3a3fa1053698c7626e"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "1.0.9"
+version = "1.0.10"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticArblibExt = "Arblib"
@@ -1723,9 +1751,9 @@ version = "2.42.0+0"
 
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
-git-tree-sha1 = "f04133fe05eff1667d2054c53d59f9122383fe05"
+git-tree-sha1 = "aebd334d06cee9f24cea70bd19a39749daf73881"
 uuid = "89763e89-9b03-5906-acba-b20f662cd828"
-version = "4.7.2+0"
+version = "4.7.3+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1788,9 +1816,9 @@ version = "0.5.16"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "ComputePipeline", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "PNGFiles", "Packing", "Pkg", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "efe001e1ee81b8eee0fe7da5a4328fcbbfd6b3aa"
+git-tree-sha1 = "f2c8715d05bf10f9d4dc354e69dee30b6be53239"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.24.12"
+version = "0.24.13"
 
     [deps.Makie.extensions]
     MakieDynamicQuantitiesExt = "DynamicQuantities"
@@ -1918,9 +1946,9 @@ version = "1.3.6+0"
 
 [[deps.OpenBLASConsistentFPCSR_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3287ec88df50429a934ebc6cf14606215e27b987"
+git-tree-sha1 = "dafdaa3ff15f20ff703d909d3a6f574a5b0586f3"
 uuid = "6cdc7f73-28fd-5e50-80fb-958a8875b1af"
-version = "0.3.33+0"
+version = "0.3.33+1"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1975,15 +2003,15 @@ version = "2.2.1"
 
 [[deps.Optimization]]
 deps = ["ADTypes", "ArrayInterface", "ConsoleProgressMonitor", "DocStringExtensions", "LinearAlgebra", "Logging", "LoggingExtras", "OptimizationBase", "Printf", "Reexport", "SciMLBase", "SparseArrays", "TerminalLoggers"]
-git-tree-sha1 = "cadc8ea8006e2939b8f3c49ef9be05f156cd0f61"
+git-tree-sha1 = "efa4238d006704bf4cdce062e0a88b1fa28b1fed"
 uuid = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
-version = "5.6.2"
+version = "5.6.3"
 
 [[deps.OptimizationBase]]
-deps = ["ADTypes", "ArrayInterface", "DifferentiationInterface", "DocStringExtensions", "FastClosures", "LinearAlgebra", "PDMats", "PrecompileTools", "Reexport", "SciMLBase", "SciMLLogging", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "SymbolicIndexingInterface"]
-git-tree-sha1 = "d3648efb5471853842d284ecd8ec59f4aad9efad"
+deps = ["ADTypes", "ArrayInterface", "DifferentiationInterface", "DocStringExtensions", "FastClosures", "LinearAlgebra", "PrecompileTools", "Reexport", "SciMLBase", "SciMLLogging", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "SymbolicIndexingInterface"]
+git-tree-sha1 = "cabb18f751e69b3f5ae9a68cce2d06ed636c6d60"
 uuid = "bca83a33-5cc9-4baa-983d-23429ab6bcbb"
-version = "5.1.4"
+version = "5.2.0"
 
     [deps.OptimizationBase.extensions]
     OptimizationChainRulesCoreExt = "ChainRulesCore"
@@ -2100,9 +2128,9 @@ version = "1.4.4"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
+git-tree-sha1 = "fe7515cf6ddb62e738d924e4ca2dddaa60ff80ba"
 uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.2"
+version = "1.0.3"
 
 [[deps.PlutoDependencyExplorer]]
 deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
@@ -2339,9 +2367,9 @@ version = "0.5.1+0"
 
 [[deps.Roots]]
 deps = ["Accessors", "CommonSolve", "Printf"]
-git-tree-sha1 = "ed45bcc7cf3c8887595b973f2b1efbe91dcc50ec"
+git-tree-sha1 = "46d2af536e1afe8f04cf31a59298adadf96e99e6"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "3.0.1"
+version = "3.0.2"
 
     [deps.Roots.extensions]
     RootsChainRulesCoreExt = "ChainRulesCore"
@@ -2382,15 +2410,16 @@ version = "3.7.2"
 
 [[deps.SQLCollections]]
 deps = ["AccessorsExtra", "DBInterface", "DataPipes", "Dictionaries", "FunSQL", "Printf", "StructArrays", "Tables"]
-git-tree-sha1 = "8f9c299ac524f61701fdfdd146a20e339cdea85b"
+git-tree-sha1 = "d9287ec6123bf8f5bedde2d653baa97940dc6e30"
 uuid = "3934435e-e6e6-4fea-a5c0-3a716143d619"
-version = "0.1.14"
+version = "0.1.18"
 
     [deps.SQLCollections.extensions]
     DataManipulationExt = "DataManipulation"
     DatesExt = "Dates"
     DuckDBExt = "DuckDB"
     FlexiGroupsExt = "FlexiGroups"
+    FlexiJoinsExt = "FlexiJoins"
     FlexiMapsExt = "FlexiMaps"
     IntervalSetsExt = "IntervalSets"
     SQLiteExt = "SQLite"
@@ -2401,6 +2430,7 @@ version = "0.1.14"
     Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
     DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
     FlexiGroups = "1e56b746-2900-429a-8028-5ec1f00612ec"
+    FlexiJoins = "e37f2e79-19fa-4eb7-8510-b63b51fe0a37"
     FlexiMaps = "6394faf6-06db-4fa8-b750-35ccc60383f7"
     IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
     SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
@@ -2408,21 +2438,21 @@ version = "0.1.14"
 
 [[deps.SQLite]]
 deps = ["DBInterface", "Random", "SQLite_jll", "Serialization", "Tables", "WeakRefStrings"]
-git-tree-sha1 = "38b82dbc52b7db40bea182688c7a1103d06948a4"
+git-tree-sha1 = "e06c74d1b23a4180c3f79a718235c8a15c165849"
 uuid = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
-version = "1.6.1"
+version = "1.8.1"
 
 [[deps.SQLite_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "9a325057cdb9b066f1f96dc77218df60fe3007cb"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll", "dlfcn_win32_jll"]
+git-tree-sha1 = "324744e40b84e6dc2cfaa4122ce969a083c40a6f"
 uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
-version = "3.48.0+0"
+version = "3.53.2+0"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "Accessors", "Adapt", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "PreallocationTools", "PrecompileTools", "Preferences", "Printf", "Random", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLLogging", "SciMLOperators", "SciMLPublic", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface"]
-git-tree-sha1 = "a4a3caa5612dcd4ff0925a98b3820654c663cd9c"
+git-tree-sha1 = "199471538ab02e0c279758b1395c62aef9443f50"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "3.31.0"
+version = "3.32.0"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"
@@ -2706,9 +2736,9 @@ uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
 version = "0.4.4"
 
 [[deps.StringViews]]
-git-tree-sha1 = "2f11ed108d0b2a8d64cc069a868c3017714bea64"
+git-tree-sha1 = "f2dcb92855b31ad92fe8f079d4f75ac57c93e4b8"
 uuid = "354b36f9-a18e-4713-926e-db85100087ba"
-version = "1.3.6"
+version = "1.3.7"
 
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
@@ -2885,30 +2915,46 @@ version = "1.28.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.UnitfulAngles]]
+deps = ["Dates", "Unitful"]
+git-tree-sha1 = "79875b1f2e4bf918f0702a5980816955066d9ae2"
+uuid = "6fb2a4bd-7999-5318-a3b2-8ad61056cd98"
+version = "0.7.2"
+
+[[deps.UnitfulAstro]]
+deps = ["Unitful", "UnitfulAngles"]
+git-tree-sha1 = "fbe44a0ade62ae5ed0240ad314dfdd5482b90b40"
+uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
+version = "1.2.2"
+
 [[deps.UnsafeArrays]]
-git-tree-sha1 = "efcbb6828697ffffc245a9de7300552535abe005"
+git-tree-sha1 = "c63023bd84f46f9df786c90180d4f79dbfdafa2a"
 uuid = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
-version = "1.0.8"
+version = "1.0.9"
 
 [[deps.VOTables]]
-deps = ["AccessorsExtra", "AstroAngles", "Base64", "DataAPI", "DataPipes", "DateFormats", "Dates", "Dictionaries", "EzXML", "MetadataArrays", "Mmap", "PrecompileTools", "StringViews", "StructArrays", "Tables", "UnsafeArrays"]
-git-tree-sha1 = "6bb2ee7cb7673da330dca5d1815598097bf65e3b"
+deps = ["AccessorsExtra", "AstroAngles", "Base64", "DataAPI", "DataPipes", "DateFormats", "Dates", "Dictionaries", "EzXML", "Logging", "MetadataArrays", "PrecompileTools", "StringViews", "StructArrays", "Tables", "Unitful", "UnsafeArrays", "VOUnits"]
+git-tree-sha1 = "d83431e73ca20b938c2092884b121938280b0d4c"
 uuid = "3abbdab7-df67-4801-8590-8effec53f469"
-version = "0.1.23"
+version = "0.1.31"
 
     [deps.VOTables.extensions]
     DictArraysExt = "DictArrays"
-    UnitfulExt = "Unitful"
 
     [deps.VOTables.weakdeps]
     DictArrays = "e9958f2c-b184-4647-9c5a-224a61f6a14b"
-    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[[deps.VOUnits]]
+deps = ["Unitful", "UnitfulAngles", "UnitfulAstro"]
+git-tree-sha1 = "614507b3e39856b31cdb67b26867cbca8b41ab93"
+uuid = "a1e4a1a0-2026-0228-0017-f00a75000000"
+version = "0.1.0"
 
 [[deps.VirtualObservatory]]
 deps = ["AccessorsExtra", "CSV", "CURL_jll", "DBInterface", "DataAPI", "DataPipes", "FlexiMaps", "HTTP", "SQLCollections", "SQLite", "Scratch", "StructArrays", "Tables", "URIs", "VOTables"]
-git-tree-sha1 = "c51ad8c80e96f7d8395111789299d4b46c4b4f8a"
+git-tree-sha1 = "95223e40d5668acec907ae6d925c21f208687fbf"
 uuid = "d7ce213e-d3b9-4ed1-b00e-1146b7ac83e0"
-version = "0.1.14"
+version = "0.1.18"
 
     [deps.VirtualObservatory.extensions]
     DictArraysExt = ["DictArrays"]
@@ -2944,9 +2990,9 @@ version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
-git-tree-sha1 = "5c959b708667b34cb758e8d7c6f8e69b94c32deb"
+git-tree-sha1 = "3f3315d89fc954a28f5b471bce698ed6e27481be"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.15.1+0"
+version = "2.15.3+0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3018,6 +3064,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "446b23e73536f84e8037f5dce465e92275f6a308"
 uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
 version = "1.5.7+1"
+
+[[deps.dlfcn_win32_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "e141d67ffe550eadfb5af1bdbdaf138031e4805f"
+uuid = "c4b69c83-5512-53e3-94e6-de98773c479f"
+version = "1.4.2+0"
 
 [[deps.isoband_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -3135,12 +3187,14 @@ version = "4.1.0+0"
 # ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
 # ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
 # ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
+# ╠═727a8e8f-a1cf-4c0d-909c-a351d132b8ea
 # ╟─816426f9-0511-4dde-9ec4-7c9ccb212a45
 # ╟─480d8ef0-42d7-4089-9da2-1543baa2d02b
 # ╟─3b7eee06-f730-45d5-aae1-53b7731694d9
 # ╠═8c44bde9-c64a-41c2-8b47-e98d40b3cf42
 # ╠═0c73d53c-8b6e-4b13-a253-27046c1bd741
 # ╟─8641e496-b5f8-4c21-b456-77f14771d0b1
+# ╠═851acc22-bf1e-409e-8037-c5c37022fa63
 # ╠═07193622-e18b-474d-ab54-95cc09cf3bfc
 # ╟─d03883f3-b488-4176-bb5f-d69dcb9fad77
 # ╠═7d4b3251-1ce1-43a6-933f-928dd3bf281a
