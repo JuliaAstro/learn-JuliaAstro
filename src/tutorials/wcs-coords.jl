@@ -2,11 +2,12 @@
 # v1.0.2
 
 #> [frontmatter]
+#> order = 2
 #> title = "Working with Celestial Coordinates in WCS 1"
 #> layout = "layout.jlhtml"
 #> date = "2026-07-08"
 #> description = "Work with images containing WCS information."
-#> tags = ["wcs", "coordinates", "file I/O", "plotting"]
+#> tags = ["wcs", "coordinates", "units", "file I/O", "plotting"]
 
 using Markdown
 using InteractiveUtils
@@ -21,18 +22,17 @@ begin
         [
             Pkg.PackageSpec(; name = "FITSFiles", version = "0.2"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSWCS.jl"),
-            Pkg.PackageSpec(; name = "WCS"),
-            Pkg.PackageSpec(; name = "FITSIO"),
+            Pkg.PackageSpec(;
+                rev = "fitsfiles",
+                url = "https://github.com/JuliaAstro/AstroImages.jl",
+            ),
             Pkg.PackageSpec(; name = "Plots"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "TOML"),
-            Pkg.PackageSpec(; rev = "fitswcs", url = "https://github.com/JuliaAstro/AstroImages.jl"),
         ]
     )
 
-    using FITSFiles, FITSWCS, AstroImages
-    using WCS: WCS as C_WCS
-    using FITSIO: FITSIO as C_FITSIO
+    using AstroImages, FITSWCS
     using Downloads: download
     using Plots
 
@@ -48,9 +48,6 @@ begin
     using TOML: TOML
     using PlutoUI: TableOfContents, details
 end
-
-# ╔═╡ 8310d27c-910d-476b-87f7-590aa82498c2
-WCSTransform
 
 # ╔═╡ fa245c6e-9a32-4600-b579-6a42c0f0fc3a
 md"""
@@ -173,6 +170,9 @@ img = let
     load(f)
 end
 
+# ╔═╡ 8310d27c-910d-476b-87f7-590aa82498c2
+AstroImages.wcsfromheader(img)
+
 # ╔═╡ 1fd4e3ce-412a-4bd2-b649-f35f090bfa60
 md"""
 !!! note
@@ -190,12 +190,6 @@ h = header(img)
 # ╔═╡ 7bae002b-d32f-4c36-a83c-020b530f7431
 md"""
 Please note that the original header (as downloaded from the DSS) violates the FITS WCS standards (because it includes both CDELTn keywords and a matrix of CD values; including deprecated PC-matrix keywords). The header has been cleaned up to conform to the existing standards.
-"""
-
-# ╔═╡ 8c596262-9b7b-4402-9450-6c3989d95865
-md"""
-!!! todo
-	Replace FITSIO.jl with FITSFiles.jl used internally in AstroImages.jl
 """
 
 # ╔═╡ 5448300e-1726-4fa4-a390-df5cac27549f
@@ -342,7 +336,6 @@ $(keywords())
 # ╟─f4b32c4e-f289-4ee0-bde3-44dbb0387e32
 # ╠═91d60255-18d6-47f7-8f66-09b9cd397602
 # ╟─7bae002b-d32f-4c36-a83c-020b530f7431
-# ╟─8c596262-9b7b-4402-9450-6c3989d95865
 # ╟─5448300e-1726-4fa4-a390-df5cac27549f
 # ╠═afa923fe-7023-43b4-9c10-bc8c2d21acc1
 # ╟─8df60e64-fa50-4bf7-8eb5-4563ad15b016

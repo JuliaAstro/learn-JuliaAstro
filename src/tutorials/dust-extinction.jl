@@ -3,7 +3,7 @@
 
 #> [frontmatter]
 #> image = "/assets/dust-extinction.png"
-#> order = 3
+#> order = 4
 #> title = "Dust extinction"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-25"
