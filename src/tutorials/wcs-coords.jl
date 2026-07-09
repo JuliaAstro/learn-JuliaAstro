@@ -25,6 +25,7 @@ begin
             Pkg.PackageSpec(; name = "FITSIO"),
             Pkg.PackageSpec(; name = "Plots"),
             Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; rev = "fitswcs", url = "https://github.com/JuliaAstro/AstroImages.jl"),
         ]
     )
@@ -35,6 +36,8 @@ begin
     using Downloads: download
     using Plots
 
+    AstroImages.set_cmap!(:cividis)
+
     deps_ready = true
 end;
 
@@ -42,9 +45,12 @@ end;
 begin
     deps_ready
 
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
+    using TOML: TOML
+    using PlutoUI: TableOfContents, details
 end
+
+# ╔═╡ 8310d27c-910d-476b-87f7-590aa82498c2
+WCSTransform
 
 # ╔═╡ fa245c6e-9a32-4600-b579-6a42c0f0fc3a
 md"""
@@ -214,11 +220,11 @@ md"""
 md"""
 ### Step 3: Plot the Helix nebula with sky coordinate axes (RA and Dec)
 
-The image data, image, is a 2D array of values, and by itself contains no information about the sky coordinates of the pixels. So, if we plotted the image by itself, the plot axes would show pixel values:
+The image data, `img`, is an `AstroImages.AstroImage`, containing WCS information within its header that can automatically be plotted along with its bundled 2D image data:
 """
 
 # ╔═╡ c167fb7f-5ab6-4b32-a2c5-beeefa1ae2c8
-implot(img; colormap = :cividis, gridcolor = :cyan)
+implot(img; gridcolor = :coral)
 
 # ╔═╡ 5a3f62b9-0d39-46f5-b763-49244c13d4f0
 md"""
@@ -234,6 +240,8 @@ md"""
 
     fig
 	```
+
+    and add a recipe that replaces `implot`.
 """
 
 # ╔═╡ 656bf1f9-eaee-46a4-9f44-422a384a19ee
@@ -272,6 +280,15 @@ md"""
 # ╔═╡ eee39591-e860-4c91-bed4-e05e5dfaf0de
 TableOfContents()
 
+# ╔═╡ a8cb2e7a-790b-4896-b49a-e9fa6b98bffa
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
+
 # ╔═╡ b18be7a0-a053-4d56-8713-3eb473044ac2
 function keywords(kind = "note", title = "Keywords")
     nb_path = split(@__FILE__, "#==#") |> first |> string
@@ -304,6 +321,7 @@ $(keywords())
 
 # ╔═╡ Cell order:
 # ╟─bb93ae12-1f64-474d-9762-a4c9813ab801
+# ╠═8310d27c-910d-476b-87f7-590aa82498c2
 # ╟─fa245c6e-9a32-4600-b579-6a42c0f0fc3a
 # ╟─c6e9643c-7b8e-4de8-bcf0-baf9a51910f2
 # ╠═b7045a18-7aa0-11f1-a432-3f9f2d689dd8
@@ -338,4 +356,5 @@ $(keywords())
 # ╟─1321b8db-291c-4ebf-a5d0-ac254629e950
 # ╠═eee39591-e860-4c91-bed4-e05e5dfaf0de
 # ╟─b18be7a0-a053-4d56-8713-3eb473044ac2
+# ╟─a8cb2e7a-790b-4896-b49a-e9fa6b98bffa
 # ╠═4d5ec068-f75d-459e-97c6-12f2ebdc337c
