@@ -3,7 +3,7 @@
 
 #> [frontmatter]
 #> image = "/assets/redshift-and-age.png"
-#> order = 2
+#> order = 3
 #> title = "Cosmological redshift and age"
 #> layout = "layout.jlhtml"
 #> date = "2025-11-21"
