@@ -1,21 +1,28 @@
 <!DOCTYPE html><html lang="en">
 <head>
 
-<title>Search results</title>
-<meta property='og:title' content='Search results'>
+<title>Working with Celestial Coordinates in WCS 1</title>
+<meta name="description" content='Work with images containing WCS information.'>
+<meta property="og:article:tag" content='wcs'>
+<meta property="og:article:tag" content='coordinates'>
+<meta property="og:article:tag" content='units'>
+<meta property="og:article:tag" content='file I/O'>
+<meta property="og:article:tag" content='plotting'>
+<meta property='og:title' content='Working with Celestial Coordinates in WCS 1'>
 <meta property='og:type' content='article'>
+<meta property='og:description' content='Work with images containing WCS information.'>
 
 
-<link rel="root" href=".." />
-<link rel="icon" href="../assets/favicon.ico" />
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="root" href="../.." />
+<link rel="icon" href="../../assets/favicon.ico" />
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="../assets/styles/layout.css" type="text/css" />
-<script src="../assets/scripts/sidebar.js" type="module" defer></script>
+<link rel="stylesheet" href="../../assets/styles/layout.css" type="text/css" />
+<script src="../../assets/scripts/sidebar.js" type="module" defer></script>
 
-<link rel="pp-search-data" href="../pp_search_data.json" />
+<link rel="pp-search-data" href="../../pp_search_data.json" />
 <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" integrity="sha256-DFDZACuFeAqEKv/7Vnu1Tt5ALa58bcWZegGGFNgET8g=" crossorigin="anonymous" defer></script>
-<script src="../assets/scripts/search.js" type="module" defer></script>
+<script src="../../assets/scripts/search.js" type="module" defer></script>
 
 <script type="importmap">{"imports":{"aVc6E":"./firebase-firestore.7f842f36.js","bEDS4":"./firebase-app.b603aaa4.js"}}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/editor.ca0dbe6e.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/editor.a7d04aac.css"><script type="module" src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/frontend.4541b03a.js"></script>
     <meta name="viewport" content="width=device-width">
@@ -78,11 +85,11 @@ window.pluto_recording_audio_url = undefined;
         <nav id="pages-sidebar" style="height: 100vh; overflow-y: auto; top: 0px;">
         <div>
         <ul>
-            <li class="pluto_home_link"><a class="pluto_home_link" href='..'><img src="../assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
+            <li class="pluto_home_link"><a class="pluto_home_link" href='../..'><img src="../../assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
         </li>
                 <li>
             <div class="search-bar">
-                <form action="../search" method="GET">
+                <form action="../../search" method="GET">
                     <input type="search" name="q" placeholder="Search..." style="width: 100%">
                 </form>
             </div>
@@ -90,37 +97,37 @@ window.pluto_recording_audio_url = undefined;
         <li>
 <h3>FILE I/O</h3>
 <ul>
-<li class=''><a href='../tutorials/fileio-fits_tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='../tutorials/fileio-fits_images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class=''><a href='../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../tutorials/fileio-asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
+<li class=''><a href='../../tutorials/fileio-fits_tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='../../tutorials/fileio-fits_images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class='active'><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/fileio-asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
 </ul>
 </li>
 <li>
 <h3>UNITS</h3>
 <ul>
-<li class=''><a href='../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class='active'><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 <li>
 <h3>MODELS</h3>
 <ul>
-<li class=''><a href='../tutorials/models-1_linear_fitting/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='../tutorials/models-2_user_defined_model/' title='Explore more complex data-fitting techniques.'>Modeling 2: Create a User Defined Model</a></li>
+<li class=''><a href='../../tutorials/models-1_linear_fitting/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='../../tutorials/models-2_user_defined_model/' title='Explore more complex data-fitting techniques.'>Modeling 2: Create a User Defined Model</a></li>
 </ul>
 </li>
 <li>
 <h3>COSMOLOGY</h3>
 <ul>
-<li class=''><a href='../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/cosmo-redshift_and_age/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 <li>
 <h3>DUST</h3>
 <ul>
-<li class=''><a href='../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
+<li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
 </ul>
 </li>
 <li>
 <h3>SPECTROSCOPY</h3>
 <ul>
-<li class=''><a href='../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 
@@ -128,26 +135,7 @@ window.pluto_recording_audio_url = undefined;
         </div>
         </nav>
         <div id="pages-content">
-        <!-- You need the raw HTML block here! Otherwise the HTML output from the page will be parsed a second time as CommonMark, which can lead to weird issues. -->
-<div class="pages-markdown">
-<main>
-<script type="module" defer>window.init_search();</script>
-<div>
-</div>
-<h1>Search</h1>
-<div class="search-bar big">
-    <form action="../search" method="GET">
-        <input type="search" name="q" placeholder="Search..." style="width: 100%">
-        <input type=submit>
-    </form>
-</div>
-<h2>Results</h2>
-<div id="search-results">
-Loading...
-</div>
-
-</main>
-</div>
+        <pluto-editor statefile='../../generated_assets/wcs-coords_3128032c.plutostate' notebookfile='../../generated_assets/wcs-coords_3128032c.plutostate' disable-ui=''></pluto-editor>
 
         </div>
     </div>
