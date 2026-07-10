@@ -17,12 +17,19 @@ begin
     using CSV
     using DataFramesMeta
     using CairoMakie, GeoMakie
-    using Unitful, UnitfulAstro
-    using Unitful: °
-    using UnitfulAstro: pc
+    using DynamicQuantities
+    # using Unitful, UnitfulAstro
+    # using Unitful: °
+    # using UnitfulAstro: pc
     using SkyCoords
     using AstroAngles
 end
+
+# ╔═╡ 4ce723e4-570b-45be-80db-956df0cf1ce6
+using DynamicQuantities.Units: °
+
+# ╔═╡ b97799f4-93f3-4775-8a61-f3a460a38228
+using DynamicQuantities.Constants: pc
 
 # ╔═╡ c39e7de7-142a-4972-b1b7-980151f23749
 using PlutoUI: TableOfContents
@@ -52,7 +59,7 @@ We start by importing some general packages that we will need below:
 md"""
 ## Key Concepts: Component Formats, Representations, and Frames
 
-Usage of the term "coordinates" is overloaded in astronomy and is often used interchangeably when referring to data formats (e.g., sexagesimal vs. decimal), representations (e.g., Cartesian vs. spherical), and frames (e.g., equatorial vs. galactic). In SkyCoords.jl, we have tried to formalize these three concepts and have made them a core part of the way we interact with objects in this package. Here we will give an overview of these different concepts as we build up to demonstrating how to transform between different astronomical reference frames or systems.
+Usage of the term "coordinates" is overloaded in astronomy and is often used interchangeably when referring to i) data formats (e.g., sexagesimal vs. decimal), ii) representations (e.g., Cartesian vs. spherical), and iii) frames (e.g., equatorial vs. galactic). In SkyCoords.jl, we have tried to formalize these three concepts and have made them a core part of the way we interact with objects in this package. Here we will give an overview of these different concepts as we build up to demonstrating how to transform between different astronomical reference frames or systems.
 """
 
 # ╔═╡ cc989039-910a-4956-b725-cbe9592e0e22
@@ -75,7 +82,7 @@ format_angle(rad2hms(c.ra); delim = ["h", "m", "s"])
 format_angle(rad2dms(c.dec); delim = ["d", "m", "s"])
 
 # ╔═╡ 11cc01df-b5a0-4deb-ae86-d1ae7d0f9e25
-format_angle(rad2dms(c.dec))
+format_angle(rad2dms(c.dec); digits = 5)
 
 # ╔═╡ 712fd752-8b85-43f9-a305-9f2e3ac23a2d
 md"""
@@ -95,13 +102,8 @@ md"""
 In the previous tutorial, we only worked with coordinate data in spherical representations (longitude/latitude), but SkyCoords.jl also supports other coordinate representations like Cartesian and cylindrical. To retrieve the coordinate data in a different representation, we can use the associated function. For example, to convert into Cartesian coordinates, we can use the `cartesian` function:
 """
 
-# ╔═╡ dfc16a40-f501-4a76-b014-0721e0f1b7e4
-md"""
-!!! todo
-    - Implement cylindrical coords?
-    - Document `cartesian` and `spherical` [#84](https://github.com/JuliaAstro/SkyCoords.jl/issues/84)
-    - Add `distance` kwarg to `AbstractSkyCoords` constructors
-"""
+# ╔═╡ eed3c3ed-8326-423f-8d4d-b72b73b56e9d
+cartesian(c)
 
 # ╔═╡ 5781172f-cb7b-4337-b2aa-40d7206cbafa
 md"""
@@ -112,7 +114,10 @@ In the `AbstractSkyCoords` object `c` that we defined earlier, we only specified
 # c2 = ICRSCoords(ra = 15.9932°, dec = -10.52351344°, distance = 127.4pc)
 
 # ╔═╡ ff03249b-5d0f-44fe-8205-0e0a24170937
-cartesian(c).vec * 127.4 * pc # Current workaround
+c2 = cartesian(c).vec * 127.4 .* pc # Current workaround
+
+# ╔═╡ 2457add6-4c77-42e2-a2bb-ba9a3a3a3000
+c2 .|> us"Constants.pc"
 
 # ╔═╡ 3a13ae4f-714e-408d-993f-c3a0859496dc
 md"""
@@ -125,6 +130,14 @@ Or, we could represent this data with cylindrical components:
 # ╔═╡ 722812b9-4984-4f26-b193-786a42242cf9
 md"""
 To summarize, using `cartesian`/`spherical`/`cylindrical` is a convenient way to retrieve your coordinate data in a different representation.
+"""
+
+# ╔═╡ dfc16a40-f501-4a76-b014-0721e0f1b7e4
+md"""
+!!! todo
+    - Implement cylindrical coords
+    - Document `cartesian` and `spherical` [#84](https://github.com/JuliaAstro/SkyCoords.jl/issues/84)
+    - Add `distance` kwarg to `AbstractSkyCoords` constructors
 """
 
 # ╔═╡ 92ae5f5b-1a81-44d9-b4b6-14f53e2a5817
@@ -143,7 +156,7 @@ Some other common coordinate systems are defined as a rotation away from the ICR
 filename = Downloads.download("https://raw.githubusercontent.com/astropy-learn/tutorial--astropy-coordinates/02ce4ab85a818dc8a6244e1a4285eea92e5649c7/Cantat-Gaudin-open-clusters.ecsv", "Cantat-Gaudin-open-clusters.ecsv")
 
 # ╔═╡ 7653593c-531b-4749-a2dc-91078faa11f3
-table = CSV.read(filename, DataFrame; comment = "#")
+tbl = CSV.read(filename, DataFrame; comment = "#")
 
 # ╔═╡ f031ba93-4ab8-4b26-acb9-3c9c162a3a8b
 md"""
@@ -151,7 +164,18 @@ We next create a vector of `ICRSCoords` to represent the positions of all of the
 """
 
 # ╔═╡ 75ca894d-df36-4b8e-a41c-c83eeaa6de2b
-open_cluster_c = ICRSCoords.(table.ra * °, table.dec * °)
+open_cluster_c = ICRSCoords.(tbl.ra * °, tbl.dec * °)
+
+# ╔═╡ 82dc476a-d1b8-45c2-a104-ca650f5f1c75
+length(open_cluster_c)
+
+# ╔═╡ 703baf6d-19c2-4fee-89a3-f1e5e5e43967
+md"""
+Here are the first few coordinate entries:
+"""
+
+# ╔═╡ e000650c-fdc2-4dfc-8d1e-cc92fde93a4f
+open_cluster_c[begin:4]
 
 # ╔═╡ 2e96000f-d39a-4052-92ec-a76f5de67ddd
 md"""
@@ -196,7 +220,7 @@ with_theme(fontsize = 12) do
 
     plt = scatter!(
         ax, rad2deg.(open_cluster_c);
-        color = table.distance,
+        color = tbl.distance,
     )
 
     Colorbar(
@@ -246,16 +270,13 @@ md"""
 Comparing this to the original `ICRCoords`, note that the names of the longitude and latitude components have changed from `ra` to `l` and from `dec` to `b`, per convention. We can therefore access the new Galactic longitude/latitude data using these new attribute names:
 """
 
-# ╔═╡ 35f4174f-cac1-4d80-b34b-ed90f65e1cc3
-open_cluster_gal[5]
-
 # ╔═╡ 468384b2-725e-4a93-9a8c-aacaa5a1bbc1
-map(open_cluster_gal[begin:3]) do c
+map(open_cluster_gal[begin:4]) do c
     format_angle(rad2dms(c.l); delim = ["°", "′", "″"])
 end
 
 # ╔═╡ ac07f24c-ba3b-4fa0-a26d-4cd743a7a079
-map(open_cluster_gal[begin:3]) do c
+map(open_cluster_gal[begin:4]) do c
     format_angle(rad2dms(c.b); delim = ["°", "′", "″"])
 end
 
@@ -298,7 +319,7 @@ with_theme(fontsize = 12) do
 
     plt = scatter!(
         ax, rad2deg.(open_cluster_gal);
-        color = table.distance,
+        color = tbl.distance,
     )
 
     Colorbar(
@@ -507,27 +528,26 @@ CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
 Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 SkyCoords = "fc659fc5-75a3-5475-a2ea-3da92c065361"
-Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 
 [sources]
-AstroAngles = {rev = "patch-docs", url = "https://github.com/JuliaAstro/AstroAngles.jl"}
+DynamicQuantities = {rev = "astroangles", url = "https://github.com/icweaver/DynamicQuantities.jl"}
+SkyCoords = {url = "https://github.com/JuliaAstro/SkyCoords.jl"}
 
 [compat]
 AstroAngles = "~0.2.1"
 CSV = "~0.10.16"
-CairoMakie = "~0.15.12"
+CairoMakie = "~0.15.13"
 DataFramesMeta = "~0.15.6"
+DynamicQuantities = "~1.13.0"
 GeoMakie = "~0.7.16"
-Pluto = "~1.0.2"
+Pluto = "~1.0.3"
 PlutoUI = "~0.7.83"
-SkyCoords = "~1.7.0"
-Unitful = "~1.28.0"
-UnitfulAstro = "~1.2.2"
+SkyCoords = "~1.7.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -536,7 +556,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "f2338c22416ec7ae4bc52b8c872d687c1cb94f1c"
+project_hash = "e8f16fbd11117d700b7e374aec1f2d18fda59b6b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -620,9 +640,7 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
 [[deps.AstroAngles]]
-git-tree-sha1 = "46ec80c3a911978984bf88b64946704e45c11d42"
-repo-rev = "patch-docs"
-repo-url = "https://github.com/JuliaAstro/AstroAngles.jl"
+git-tree-sha1 = "0bba398f11ac3ea137902fcb424faae156d3fa42"
 uuid = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 version = "0.2.1"
 
@@ -699,9 +717,9 @@ version = "1.1.1"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "80b2770813b42f80235ea57f4333de8ff3e1c342"
+git-tree-sha1 = "47142129b1777e21da58cff265050b10d8560588"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.15.12"
+version = "0.15.13"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -899,6 +917,20 @@ git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 version = "1.6.6"
 
+[[deps.DispatchDoctor]]
+deps = ["MacroTools", "Preferences"]
+git-tree-sha1 = "42cd00edaac86f941815fe557c1d01e11913e07c"
+uuid = "8d63f2c5-f18a-4cf2-ba9d-b3f60fc568c8"
+version = "0.4.28"
+
+    [deps.DispatchDoctor.extensions]
+    DispatchDoctorChainRulesCoreExt = "ChainRulesCore"
+    DispatchDoctorEnzymeCoreExt = "EnzymeCore"
+
+    [deps.DispatchDoctor.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -932,6 +964,30 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.7.0"
 
+[[deps.DynamicQuantities]]
+deps = ["DispatchDoctor", "PrecompileTools", "TestItems", "Tricks"]
+git-tree-sha1 = "1bb3a30dcdea0e3f8497c18d30b81ec71bb2790f"
+repo-rev = "astroangles"
+repo-url = "https://github.com/icweaver/DynamicQuantities.jl"
+uuid = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
+version = "1.13.0"
+
+    [deps.DynamicQuantities.extensions]
+    DynamicQuantitiesLinearAlgebraExt = "LinearAlgebra"
+    DynamicQuantitiesMeasurementsExt = "Measurements"
+    DynamicQuantitiesRecursiveArrayToolsExt = "RecursiveArrayTools"
+    DynamicQuantitiesSciMLBaseExt = "SciMLBase"
+    DynamicQuantitiesScientificTypesExt = "ScientificTypes"
+    DynamicQuantitiesUnitfulExt = "Unitful"
+
+    [deps.DynamicQuantities.weakdeps]
+    LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+    SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+    ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
 [[deps.EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e3290f2d49e661fbd94046d7e3726ffcb2d41053"
@@ -957,9 +1013,9 @@ version = "0.1.11"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "c307cd83373868391f3ac30b41530bc5d5d05d08"
+git-tree-sha1 = "e6c4a6407a949e79a9d3f249bf49e6987c80e01f"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.8.1+0"
+version = "2.8.2+0"
 
 [[deps.ExpressionExplorer]]
 git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
@@ -1344,9 +1400,9 @@ version = "0.16.3"
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm", "CoreMath", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
-git-tree-sha1 = "921d7e91687e15a2c7c269c226960491fc041832"
+git-tree-sha1 = "c3ee408ae340565f41699e3a3fa1053698c7626e"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "1.0.9"
+version = "1.0.10"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticArblibExt = "Arblib"
@@ -1569,9 +1625,9 @@ version = "2.42.0+0"
 
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
-git-tree-sha1 = "f04133fe05eff1667d2054c53d59f9122383fe05"
+git-tree-sha1 = "aebd334d06cee9f24cea70bd19a39749daf73881"
 uuid = "89763e89-9b03-5906-acba-b20f662cd828"
-version = "4.7.2+0"
+version = "4.7.3+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1622,15 +1678,13 @@ version = "0.5.16"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "ComputePipeline", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "PNGFiles", "Packing", "Pkg", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "efe001e1ee81b8eee0fe7da5a4328fcbbfd6b3aa"
+git-tree-sha1 = "f2c8715d05bf10f9d4dc354e69dee30b6be53239"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.24.12"
+version = "0.24.13"
+weakdeps = ["DynamicQuantities"]
 
     [deps.Makie.extensions]
     MakieDynamicQuantitiesExt = "DynamicQuantities"
-
-    [deps.Makie.weakdeps]
-    DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 
 [[deps.Malt]]
 deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
@@ -1742,9 +1796,9 @@ version = "1.3.6+0"
 
 [[deps.OpenBLASConsistentFPCSR_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3287ec88df50429a934ebc6cf14606215e27b987"
+git-tree-sha1 = "dafdaa3ff15f20ff703d909d3a6f574a5b0586f3"
 uuid = "6cdc7f73-28fd-5e50-80fb-958a8875b1af"
-version = "0.3.33+0"
+version = "0.3.33+1"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1876,9 +1930,9 @@ version = "1.4.4"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
+git-tree-sha1 = "fe7515cf6ddb62e738d924e4ca2dddaa60ff80ba"
 uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.2"
+version = "1.0.3"
 
 [[deps.PlutoDependencyExplorer]]
 deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
@@ -2054,9 +2108,9 @@ version = "0.5.1+0"
 
 [[deps.Roots]]
 deps = ["Accessors", "CommonSolve", "Printf"]
-git-tree-sha1 = "ed45bcc7cf3c8887595b973f2b1efbe91dcc50ec"
+git-tree-sha1 = "46d2af536e1afe8f04cf31a59298adadf96e99e6"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "3.0.1"
+version = "3.0.2"
 
     [deps.Roots.extensions]
     RootsChainRulesCoreExt = "ChainRulesCore"
@@ -2159,18 +2213,22 @@ version = "0.1.5"
 
 [[deps.SkyCoords]]
 deps = ["ConstructionBase", "LinearAlgebra", "Rotations", "StaticArrays"]
-git-tree-sha1 = "a3411c6dc0bddec83ce7786e77ebed47989a9d99"
+git-tree-sha1 = "30065a52717d6a17780c69db9033002d1fef7621"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaAstro/SkyCoords.jl"
 uuid = "fc659fc5-75a3-5475-a2ea-3da92c065361"
-version = "1.7.0"
+version = "1.7.1"
 
     [deps.SkyCoords.extensions]
     AccessorsExt = "Accessors"
+    DynamicQuantitiesExt = "DynamicQuantities"
     MakieExt = "Makie"
     NearestNeighborsExt = "NearestNeighbors"
     UnitfulExt = "Unitful"
 
     [deps.SkyCoords.weakdeps]
     Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
+    DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
@@ -2373,6 +2431,11 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 version = "1.11.0"
 
+[[deps.TestItems]]
+git-tree-sha1 = "42fd9023fef18b9b78c8343a4e2f3813ffbcefcb"
+uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
+version = "1.0.0"
+
 [[deps.TiffImages]]
 deps = ["CodecZstd", "ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "PrecompileTools", "ProgressMeter", "SIMD", "UUIDs"]
 git-tree-sha1 = "9ca5f1f2d42f80df4b8c9f6ab5a64f438bbd9976"
@@ -2436,18 +2499,6 @@ version = "1.28.0"
     Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[[deps.UnitfulAngles]]
-deps = ["Dates", "Unitful"]
-git-tree-sha1 = "79875b1f2e4bf918f0702a5980816955066d9ae2"
-uuid = "6fb2a4bd-7999-5318-a3b2-8ad61056cd98"
-version = "0.7.2"
-
-[[deps.UnitfulAstro]]
-deps = ["Unitful", "UnitfulAngles"]
-git-tree-sha1 = "fbe44a0ade62ae5ed0240ad314dfdd5482b90b40"
-uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
-version = "1.2.2"
 
 [[deps.WeakRefStrings]]
 deps = ["DataAPI", "InlineStrings", "Parsers"]
@@ -2644,6 +2695,8 @@ version = "4.1.0+0"
 # ╠═6f72fec9-eaf8-4831-8f59-49c4cc153f02
 # ╟─13b7b907-1005-4bce-9b0c-1787a8867f84
 # ╟─cc989039-910a-4956-b725-cbe9592e0e22
+# ╠═4ce723e4-570b-45be-80db-956df0cf1ce6
+# ╠═b97799f4-93f3-4775-8a61-f3a460a38228
 # ╠═aed06f42-4f0b-4b08-bb48-c120d129e54f
 # ╠═4d41090a-5774-451a-9d0b-846bcb3048e2
 # ╠═1ff0b6f3-7748-4a79-b59d-645f8d68bb0b
@@ -2652,19 +2705,24 @@ version = "4.1.0+0"
 # ╟─712fd752-8b85-43f9-a305-9f2e3ac23a2d
 # ╟─ceeca820-5bea-48dd-8fb3-884e0516650b
 # ╟─23e5a876-506f-4283-98b6-17b2af055850
-# ╟─dfc16a40-f501-4a76-b014-0721e0f1b7e4
+# ╠═eed3c3ed-8326-423f-8d4d-b72b73b56e9d
 # ╟─5781172f-cb7b-4337-b2aa-40d7206cbafa
 # ╠═cb25c15e-af7f-4987-9939-8b0d56dd1ca6
 # ╠═ff03249b-5d0f-44fe-8205-0e0a24170937
+# ╠═2457add6-4c77-42e2-a2bb-ba9a3a3a3000
 # ╟─3a13ae4f-714e-408d-993f-c3a0859496dc
 # ╠═e6868fd1-9bcf-4f8a-81ca-c5df66bc5e1d
 # ╟─722812b9-4984-4f26-b193-786a42242cf9
+# ╟─dfc16a40-f501-4a76-b014-0721e0f1b7e4
 # ╟─92ae5f5b-1a81-44d9-b4b6-14f53e2a5817
 # ╟─ba2d2e02-6541-401c-8746-5f7ec7bb230b
 # ╠═30830709-e3ef-4ba6-8372-f8c922a9f0aa
 # ╠═7653593c-531b-4749-a2dc-91078faa11f3
 # ╟─f031ba93-4ab8-4b26-acb9-3c9c162a3a8b
 # ╠═75ca894d-df36-4b8e-a41c-c83eeaa6de2b
+# ╠═82dc476a-d1b8-45c2-a104-ca650f5f1c75
+# ╠═703baf6d-19c2-4fee-89a3-f1e5e5e43967
+# ╠═e000650c-fdc2-4dfc-8d1e-cc92fde93a4f
 # ╟─2e96000f-d39a-4052-92ec-a76f5de67ddd
 # ╠═149ac51b-a571-4ab6-b213-decce18c06d1
 # ╠═397fb01b-5120-48ee-b295-6105a574a36a
@@ -2675,7 +2733,6 @@ version = "4.1.0+0"
 # ╠═70f3d3b6-be88-4e25-9dc9-f21e574f4222
 # ╟─43986706-9ab5-403f-8f8b-e51c112f3689
 # ╟─e361cc88-7c1a-46f2-baca-ac1d64fb1a35
-# ╠═35f4174f-cac1-4d80-b34b-ed90f65e1cc3
 # ╠═468384b2-725e-4a93-9a8c-aacaa5a1bbc1
 # ╠═ac07f24c-ba3b-4fa0-a26d-4cd743a7a079
 # ╟─ec546913-3da1-4604-ae59-ad8251656798
