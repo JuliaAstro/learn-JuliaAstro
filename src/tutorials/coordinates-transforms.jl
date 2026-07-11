@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
@@ -535,11 +535,12 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 SkyCoords = "fc659fc5-75a3-5475-a2ea-3da92c065361"
 
 [sources]
-DynamicQuantities = {rev = "astroangles", url = "https://github.com/icweaver/DynamicQuantities.jl"}
+AstroAngles = {url = "https://github.com/JuliaAstro/AstroAngles.jl"}
+DynamicQuantities = {url = "https://github.com/JuliaPhysics/DynamicQuantities.jl"}
 SkyCoords = {url = "https://github.com/JuliaAstro/SkyCoords.jl"}
 
 [compat]
-AstroAngles = "~0.2.1"
+AstroAngles = "~0.3.0"
 CSV = "~0.10.16"
 CairoMakie = "~0.15.13"
 DataFramesMeta = "~0.15.6"
@@ -556,7 +557,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "e8f16fbd11117d700b7e374aec1f2d18fda59b6b"
+project_hash = "2e3d1bddc31b13fe86b56b0195ee9f2fbb43d8e0"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -640,9 +641,11 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
 [[deps.AstroAngles]]
-git-tree-sha1 = "0bba398f11ac3ea137902fcb424faae156d3fa42"
+git-tree-sha1 = "d9641624649442b2f19ea8ef8cdb8c012cae0247"
+repo-rev = "main"
+repo-url = "https://github.com/JuliaAstro/AstroAngles.jl"
 uuid = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
-version = "0.2.1"
+version = "0.3.0"
 
 [[deps.Automa]]
 deps = ["PrecompileTools", "TranscodingStreams"]
@@ -793,9 +796,9 @@ uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.13.1"
 
 [[deps.CommonSolve]]
-git-tree-sha1 = "99ee296f88c12485402e37c2fd025f95ae097637"
+git-tree-sha1 = "0e2079d07d7cdebb948e00a1383b706f27dcbd2f"
 uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
-version = "0.2.9"
+version = "0.2.10"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -967,8 +970,8 @@ version = "1.7.0"
 [[deps.DynamicQuantities]]
 deps = ["DispatchDoctor", "PrecompileTools", "TestItems", "Tricks"]
 git-tree-sha1 = "1bb3a30dcdea0e3f8497c18d30b81ec71bb2790f"
-repo-rev = "astroangles"
-repo-url = "https://github.com/icweaver/DynamicQuantities.jl"
+repo-rev = "main"
+repo-url = "https://github.com/JuliaPhysics/DynamicQuantities.jl"
 uuid = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 version = "1.13.0"
 
@@ -1542,9 +1545,9 @@ version = "4.1.0+0"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3ac157462e1e800777cc97d0eafd1bdb5356a470"
+git-tree-sha1 = "b7970cef8ae1c990ba0c09cd8bdc1145e006632f"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
-version = "21.1.8+0"
+version = "22.1.7+0"
 
 [[deps.LRUCache]]
 git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
@@ -2108,9 +2111,9 @@ version = "0.5.1+0"
 
 [[deps.Roots]]
 deps = ["Accessors", "CommonSolve", "Printf"]
-git-tree-sha1 = "46d2af536e1afe8f04cf31a59298adadf96e99e6"
+git-tree-sha1 = "4ff67dc0de22331b65e1867e77285836b79bdc82"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "3.0.2"
+version = "3.0.3"
 
     [deps.Roots.extensions]
     RootsChainRulesCoreExt = "ChainRulesCore"
