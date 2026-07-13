@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/fits-table.png"
@@ -13,20 +13,24 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
-begin
-    using Downloads: download
-    using FITSFiles: fits, info
-    using DataFramesMeta: DataFrame, @rsubset
-    using PlutoPlotly: Layout, plot, attr
-end
+# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
+md"""
+# Working with FITS tables
 
-# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
-begin
-    using Pluto: frontmatter
-    using PlutoUI: TableOfContents
-    using Test: @test
-end
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
+
+_Original authors: Lia Corrales, Kris Stern_
+
+!!! tip "Learning goals"
+    - Download a FITS table file from a URL.
+    - Open a FITS table file and view table contents.
+    - Make a 2D histogram with the table data.
+
+$(keywords())
+
+!!! warning "Companion content"
+    Content here.
+"""
 
 # ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 md"""
@@ -39,6 +43,14 @@ This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLan
 md"""
 ## Packages 📦
 """
+
+# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
+begin
+    using Downloads: download
+    using FITSFiles: fits, info
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
+end
 
 # ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
 md"""
@@ -198,24 +210,12 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
-md"""
-# Working with FITS tables
-
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
-
-_Original authors: Lia Corrales, Kris Stern_
-
-!!! tip "Learning goals"
-    - Download a FITS table file from a URL.
-    - Open a FITS table file and view table contents.
-    - Make a 2D histogram with the table data.
-
-$(keywords())
-
-!!! warning "Companion content"
-    Content here.
-"""
+# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
+begin
+    using Pluto: frontmatter
+    using PlutoUI: TableOfContents
+    using Test: @test
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -231,7 +231,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.2"
-Pluto = "~1.0.2"
+Pluto = "~1.0.3"
 PlutoPlotly = "~0.6.6"
 PlutoUI = "~0.7.83"
 """
@@ -242,7 +242,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "94db6ab8bbf5c3e9a6739a335ab5a1cd992e4ba8"
+project_hash = "4dadb9fdc0e06a2612422d0010743be0d6482bfb"
 
 [[deps.AbstractPlutoDingetjes]]
 git-tree-sha1 = "6c3913f4e9bdf6ba3c08041a446fb1332716cbc2"
@@ -702,9 +702,9 @@ version = "0.8.23"
 
 [[deps.Pluto]]
 deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
+git-tree-sha1 = "fe7515cf6ddb62e738d924e4ca2dddaa60ff80ba"
 uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.2"
+version = "1.0.3"
 
 [[deps.PlutoDependencyExplorer]]
 deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
