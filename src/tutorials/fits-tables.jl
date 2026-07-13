@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/fits-table.png"
@@ -23,9 +23,10 @@ end
 
 # ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
 begin
-    using Pluto: frontmatter
+    deps_ready
+
+    using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
 # ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
@@ -188,6 +189,15 @@ md"""
 
 # ╔═╡ 14245719-d3a1-4d46-9fc4-d2ddba6a3d93
 TableOfContents(; depth = 4)
+
+# ╔═╡ 276ed544-a40f-4686-8acc-515592ed523a
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
 
 # ╔═╡ 9f14d02c-b104-478c-9a7a-9ae34893d8c6
 function keywords(kind = "note", title = "Keywords")
@@ -1043,6 +1053,7 @@ version = "17.7.0+0"
 # ╟─6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
 # ╟─1f60ce5a-e909-44f2-867a-02be8a1ba37c
 # ╠═14245719-d3a1-4d46-9fc4-d2ddba6a3d93
+# ╟─276ed544-a40f-4686-8acc-515592ed523a
 # ╟─9f14d02c-b104-478c-9a7a-9ae34893d8c6
 # ╠═4bba77e4-81ba-453f-9666-924cf566e02c
 # ╟─00000000-0000-0000-0000-000000000001
