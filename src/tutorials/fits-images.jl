@@ -82,7 +82,6 @@ begin
 
     using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
 # ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
@@ -118,15 +117,12 @@ Images taken with astronomical instruments called CCDs or "[charge-coupled devic
 img_file = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits");
 
 # ╔═╡ 3b813a3a-b24d-4801-bd1a-d7ac3106518b
-img = load(img_file)
+img = AstroImage(img_file; scale = false)
 
 # ╔═╡ d9881179-49b8-40af-8aa0-233d7bb1496c
 md"""
 !!! tip
      If you are in an interactive environment like VSCode, Jupyter, or Pluto (this tutorial), instead of a REPL, AstroImages are automatically rendered to images and displayed.
-
-!!! todo
-    Forward FITSFiles `fits` kwargs like `scale` from `AstroImages/load` to preserve the original data type specified in the `BITPIX` header card
 """
 
 # ╔═╡ a9ec676e-8d14-48af-b3ea-6482dce86832
@@ -144,7 +140,7 @@ eltype(img) # Data type of each pixel in our image
 header(img) # The stored header file
 
 # ╔═╡ fc3001ac-dd95-467a-9be8-a581d9fef628
-img.data # View the underlying data as a matrix
+img.data # Access the underlying matrix data
 
 # ╔═╡ a9548ae8-ab0e-42be-825d-8146b95196a2
 md"""
@@ -159,43 +155,40 @@ md"""
 We see that in addition to the first block holding our image data, we also have a second block containing table data. AstroImages.jl is specialized for image data, so for more information on accessing the table information, it is recommended to use the lower-level FITSFiles.jl package as shown in the first tutorial ([learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)).
 """
 
+# ╔═╡ 722db014-6b52-40d9-8183-3fc6bc067937
+md"""
+### `imview`
+
+Before producing a final image for publication, we can use the `imview` function provided by AstroImages.jl to apply different transformations to our image data, displayed directly in the notebook. This is what is called automatically when displaying AstroImage objects in this notebook. Try adjusting the different available options below to modify the image:
+"""
+
+# ╔═╡ 647115c6-856a-47a8-996d-29c9e2f2cde5
+imview(
+    img;
+    clims = Percent(99.5),
+    stretch = identity,
+    cmap = :magma,
+    contrast = 1.0,
+    bias = 0.5,
+)
+
+# ╔═╡ 8cd4bbda-c0d0-4694-ae9c-f3282d1ccc9c
+md"""
+See the [`imview`](https://juliaastro.org/AstroImages.jl/dev/api/#AstroImages.imview) documentation for more.
+"""
+
 # ╔═╡ b3c6961a-b8a6-4597-aaf7-a97cae793670
 md"""
-### Visualize
+### Getting basic statistics
 
-Since this is just plain array data instead of tabular / `DataFrame` data, we will use Makie.jl without the AlgebraOfGraphics.jl framework:
-"""
-
-# ╔═╡ 83af6865-8c5a-436c-825f-f57f5bec7ec3
-md"""
-Alternatively, we can load the fits array and visualize it directly with AstroImages.jl:
-"""
-
-# ╔═╡ 3158e659-3efa-4a64-a548-7076a3a03301
-md"""
-This does a few things for us out-of-the-box:
-
-* Loads the FITS file directly from the url
-* Selects the image HDU
-* Converts the image array of numbers to a ColorTypes array (i.e., automatically applies `imview`)
-* Stores the result as an `AstroImage`
-
-`AstroImage` objects behave much like regular arrays, which allows them to support the usual array indexing and `imview` options:
+`AstroImage` objects behave much like regular arrays, which allows them to support the usual array options and statistical computations:
 """
 
 # ╔═╡ 010ddf8b-7355-41cf-8d92-0d217e382978
-imview(img[1:10, 1:10])
-
-# ╔═╡ 23d0d42f-77e2-4b21-a350-f9f08eabbd22
-imview(img; cmap = :Greys)
-
-# ╔═╡ 0e6b6e0a-d538-4ccb-a284-c8cddabc17b6
-md"""
-And because the underlying data is just an array of numbers, we can perform the usual statistical measurements:
-"""
+img[1:10, 1:10]
 
 # ╔═╡ 22824a6b-9a68-4519-86af-2c5b60da5288
-extrema(img) # or minimum(img), maximum(img)
+extrema(img) # Or (minimum(img), maximum(img))
 
 # ╔═╡ 2f151bab-e310-46a2-b277-3082e880360b
 mean(img)
@@ -206,81 +199,57 @@ median(img)
 # ╔═╡ c3011e6e-6590-4b88-b3b3-a03c768a82c6
 std(img)
 
-# ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
-let
-    fig, ax, p = stephist(vec(img_data); bins = 50)
-    ax.xlabel = "Pixel value"
-    ax.ylabel = "Counts"
-    fig
-end
-
-# ╔═╡ 997258a0-39ca-4e5f-a143-f3bdbefd265f
+# ╔═╡ d0d4bea0-24d8-490d-850f-59aa6b760e3d
 md"""
-and access the raw underlying data anytime:
+### Plotting a histogram
+
+Let's flatten our image with `vec` next to take a look at its histogram:
 """
 
-# ╔═╡ 227ea834-faa9-4540-9e0b-b9c87cd19b45
-img.data
+# ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
+stephist(
+    vec(img);
+    bins = 50,
+    axis = (; xlabel = "Pixel value", ylabel = "Counts")
+)
 
 # ╔═╡ 5dd43020-71e9-47e7-9b57-295e57a98bce
 md"""
 ### Plotting with Makie.jl
 
-Makie.jl is a modern plotting ecosystem written in pure Julia. Its [set of backends](https://docs.makie.org/stable/explanations/backends/backends#What-is-a-backend) allows us to produce plots for a wide range of contexts. For this tutorial, we will use the CairoMakie.jl backend to produce publication-quality vector graphic plots.
+AstroImages.jl uses Makie.jl as its plotting backend, which we used directly to produce the histogram plot above. Makie.jl is a modern plotting ecosystem written in Julia. Its [set of backends](https://docs.makie.org/stable/explanations/backends/backends#What-is-a-backend) allows us to produce plots for a wide range of contexts. For this tutorial, we use the CairoMakie.jl backend to produce publication-quality vector graphic plots.
 
-To start, we will pass the histogram object `h` directly to Makie, which its `plot` command knows how to handle:
+Let's start with the highlevel plotting function `implotview` provided by `AstroImages`.jl:
 """
 
-# ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
-let
-    fig, ax, p = plot(
-        img;
-        colorrange = (1, 10_000),
-        colorscale = log10,
-        colormap = :cividis,
-    )
+# ╔═╡ cd852bfc-5996-4ac3-83f4-19457a9f0825
+implotview(img)
 
-    Colorbar(
-        fig[1, 2], p;
-        ticks = [1, 3, 6, 500, 10_000],
-        minorticksvisible = true,
-        minorticks = IntervalsBetween(9),
-    )
-
-    fig
-end
+# ╔═╡ 2dddbd57-e15d-47ad-ab5d-282cf970f75a
+md"""
+!!! note
+    See <https://juliaastro.org/AstroImages/stable/manual/dimensions-and-world-coordinates/> for more
+"""
 
 # ╔═╡ 9b1ec23d-e773-4893-83ba-c465fd510778
 md"""
-Lastly, `AstroImage` objects use the [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/) interface, which allows them to participate in extended plotting and array handling functionality:
+`AstroImage` objects use the [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/) interface, which allows them to participate in extended array handling and plotting functionality:
 """
-
-# ╔═╡ 7c3e5faf-6f80-4413-a72e-bfce5a59fe07
-plot(img; colormap = :greys) # Makie knows how to handle this automatically!
-
-# ╔═╡ 7a582e8c-03fb-406e-83ef-9b15920fb6ba
-md"""
-Here is another example where we add some additional customizations:
-"""
-
-# ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
-let
-    fig, ax, p = plot(
-        img;
-        colorscale = log10, # log scale the colors
-        colormap = :greys,
-        colorbar = (
-            ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
-            minorticksvisible = true,
-            minorticks = IntervalsBetween(9),
-        )
-    )
-
-    fig
-end
 
 # ╔═╡ 0e690360-cdb1-47c9-b637-b0184508ac03
 img[X = 500, Y = Near(500.1)] == img[500, 500]
+
+# ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
+fig, ax, p = plot(
+    img;
+    colorscale = log10, # log scale the colors
+    colormap = :greys,
+    colorbar = (
+        ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4], # Based on histogram
+        minorticksvisible = true,
+        minorticks = IntervalsBetween(9),
+    )
+)
 
 # ╔═╡ e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
 md"""
@@ -354,8 +323,8 @@ md"""
 The pixel values looks to be mostly around [2000, 3000] counts, so we set our colorbar limits there:
 """
 
-# ╔═╡ edb0adae-ccf7-43cd-8985-626020a3adcb
-plot(img_stacked; colorrange = (2.0e3, 3.0e3), colormap = :magma)
+# ╔═╡ 1be1886c-122f-4ebf-bcbf-0bd197aadd98
+implotview(img_stacked; clims = (2.0e3, 3.0e3))
 
 # ╔═╡ eccd1973-1082-4fb6-920c-0039ddf5482a
 md"""
@@ -434,26 +403,23 @@ $(keywords())
 # ╟─a9548ae8-ab0e-42be-825d-8146b95196a2
 # ╠═4cb7062f-4d86-4ac6-884e-cd7546ef5b90
 # ╟─ee2c3044-9c44-4a49-a0c8-2ff77ee5a83d
+# ╟─722db014-6b52-40d9-8183-3fc6bc067937
+# ╠═647115c6-856a-47a8-996d-29c9e2f2cde5
+# ╟─8cd4bbda-c0d0-4694-ae9c-f3282d1ccc9c
 # ╟─b3c6961a-b8a6-4597-aaf7-a97cae793670
-# ╟─83af6865-8c5a-436c-825f-f57f5bec7ec3
-# ╟─3158e659-3efa-4a64-a548-7076a3a03301
 # ╠═010ddf8b-7355-41cf-8d92-0d217e382978
-# ╠═23d0d42f-77e2-4b21-a350-f9f08eabbd22
-# ╟─0e6b6e0a-d538-4ccb-a284-c8cddabc17b6
 # ╠═22824a6b-9a68-4519-86af-2c5b60da5288
 # ╠═2f151bab-e310-46a2-b277-3082e880360b
 # ╠═45b56d0c-71b7-4151-95b5-bcd67239f40d
 # ╠═c3011e6e-6590-4b88-b3b3-a03c768a82c6
+# ╟─d0d4bea0-24d8-490d-850f-59aa6b760e3d
 # ╠═0fa6d28a-4608-444b-ae2c-5845ec8a21b1
-# ╟─997258a0-39ca-4e5f-a143-f3bdbefd265f
-# ╠═227ea834-faa9-4540-9e0b-b9c87cd19b45
 # ╟─5dd43020-71e9-47e7-9b57-295e57a98bce
-# ╠═02eaf214-7238-45b3-9674-c1b7f1b7d10e
+# ╠═cd852bfc-5996-4ac3-83f4-19457a9f0825
+# ╟─2dddbd57-e15d-47ad-ab5d-282cf970f75a
 # ╟─9b1ec23d-e773-4893-83ba-c465fd510778
-# ╠═7c3e5faf-6f80-4413-a72e-bfce5a59fe07
-# ╟─7a582e8c-03fb-406e-83ef-9b15920fb6ba
-# ╠═6500f709-d767-44dd-911f-20fb29740671
 # ╠═0e690360-cdb1-47c9-b637-b0184508ac03
+# ╠═6500f709-d767-44dd-911f-20fb29740671
 # ╟─e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
 # ╟─5fb6d8fa-d890-45c5-afa3-944e96bc818e
 # ╟─4e9d0b96-358d-4baa-8ea9-7eb5aeff36f8
@@ -465,7 +431,7 @@ $(keywords())
 # ╟─134e86e5-995e-432c-87a5-bf6a496fe7f6
 # ╠═9c5450c2-807f-438d-a907-d78090a631ab
 # ╟─21bd0738-97cb-499d-ad8d-b6301c6a0bdc
-# ╠═edb0adae-ccf7-43cd-8985-626020a3adcb
+# ╠═1be1886c-122f-4ebf-bcbf-0bd197aadd98
 # ╟─eccd1973-1082-4fb6-920c-0039ddf5482a
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
 # ╠═89e8f2a6-9d3b-44b8-8805-91daa24124c3
