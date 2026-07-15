@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/units.png"
@@ -15,52 +15,63 @@ using InteractiveUtils
 
 # ╔═╡ fd88a6c1-0abe-4a5a-9414-bb15730c9d18
 begin
-    using Pkg: Pkg
+    # Can remove this block after Makie v0.25 is merged:
+    # https://github.com/MakieOrg/Makie.jl/pull/5673
+    import Pkg
     Pkg.activate(; temp = true)
-
-    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-    # is upstreamed
-
-    # Data viz
     Pkg.add(
         [
+            Pkg.PackageSpec(; name = "Downloads"),
+            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "HypertextLiteral"),
+            Pkg.PackageSpec(; name = "StatsBase"),
+            Pkg.PackageSpec(; name = "Distributions"),
+            Pkg.PackageSpec(; name = "Random"),
+            Pkg.PackageSpec(; name = "Unitful"),
+            Pkg.PackageSpec(; name = "UnitfulAstro"),
+            Pkg.PackageSpec(; name = "DimensionfulAngles"),
+            Pkg.PackageSpec(; name = "PhysicalConstants"),
+            Pkg.PackageSpec(; name = "UnitfulEquivalences"),
+            Pkg.PackageSpec(; name = "MathTeXEngine"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
-                rev = "ff/breaking-0.25",
+                rev = "ff/color-dim-converts",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "CairoMakie",
-                rev = "ff/breaking-0.25",
+                rev = "ff/color-dim-converts",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "ComputePipeline",
-                rev = "ff/breaking-0.25",
+                rev = "ff/color-dim-converts",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaPhysics/DynamicQuantities.jl",
             ),
         ]
     )
 
-    Pkg.add(["TOML", "StatsBase", "Distributions", "Random", "DynamicQuantities", "Unitful", "PhysicalConstants", "UnitfulEquivalences", "UnitfulAstro", "DimensionfulAngles", "PlutoUI", "HypertextLiteral"])
-
-    # Statistical analysis
+    # Analysis
     using StatsBase: mean
     using Distributions: Normal
     using Random: Xoshiro
 
-    # Units - DynamicQuantities
+    # Units -- DynamicQuantities
     using DynamicQuantities: DynamicQuantities as DQ
     using DynamicQuantities: SymbolicConstants as C_DQ
 
-    # Units - Unitful
+    # Units -- Unitful
     using Unitful: Unitful as U
     using PhysicalConstants: CODATA2018 as C_U
     using UnitfulEquivalences: UnitfulEquivalences as UE
     import UnitfulAstro
     import DimensionfulAngles
 
-    # Data Viz
+    # Data viz
     using CairoMakie: Colorbar, stephist, heatmap
     using Makie: Makie as M
 
@@ -74,7 +85,6 @@ begin
     using TOML: TOML
     using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
-    using Test: @test
 end
 
 # ╔═╡ 2670973e-750c-47f0-9c6a-a58aadf87682
@@ -358,38 +368,38 @@ md"""
 """
 
 # ╔═╡ f2b222ec-0783-487e-9c52-835976a555b6
-let
-    fig, ax, p = heatmap(
-        ras_DQ, decs_DQ, intcloud_DQ,
-        axis = (;
-            xreversed = true,
-            xlabel = "RA",
-            ylabel = "Dec",
-        ),
-        colormap = :cividis,
-    )
+# let
+#     fig, ax, p = heatmap(
+#         ras_DQ, decs_DQ, intcloud_DQ,
+#         axis = (;
+#             xreversed = true,
+#             xlabel = "RA",
+#             ylabel = "Dec",
+#         ),
+#         colormap = :cividis,
+#     )
 
-    Colorbar(fig[1, 2], p; label = "Intensity")
+#     Colorbar(fig[1, 2], p; label = "Intensity")
 
-    fig
-end
+#     fig
+# end
 
 # ╔═╡ f2c3768f-1c81-456d-ba81-6a91fc09e81b
-let
-    fig, ax, p = heatmap(
-        ras_U, decs_U, intcloud_U,
-        axis = (;
-            xreversed = true,
-            xlabel = "RA",
-            ylabel = "Dec",
-        ),
-        colormap = :cividis,
-    )
+# let
+#     fig, ax, p = heatmap(
+#         ras_U, decs_U, intcloud_U,
+#         axis = (;
+#             xreversed = true,
+#             xlabel = "RA",
+#             ylabel = "Dec",
+#         ),
+#         colormap = :cividis,
+#     )
 
-    Colorbar(fig[1, 2], p; label = "Intensity")
+#     Colorbar(fig[1, 2], p; label = "Intensity")
 
-    fig
-end
+#     fig
+# end
 
 # ╔═╡ c749ce2d-17ae-45f4-b721-3f486b1cbc23
 md"""

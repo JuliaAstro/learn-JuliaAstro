@@ -71,7 +71,7 @@ md"""
 """
 
 # ╔═╡ 786d762f-074e-4f84-88ec-784ca2b9f12e
-save("my-file.asdf", af)
+save(joinpath("data", "my-file.asdf"), af)
 
 # ╔═╡ 209b4d0d-7222-43b8-9a50-736f60ba5dad
 md"""
