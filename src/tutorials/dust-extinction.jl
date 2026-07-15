@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/dust-extinction.png"
@@ -15,15 +15,21 @@ using InteractiveUtils
 
 # ╔═╡ b6b27fe2-c7f7-11f0-8b42-052bc2026e99
 begin
+    # Can remove this block after Makie v0.25 is merged:
+    # https://github.com/MakieOrg/Makie.jl/pull/5484
     import Pkg
     Pkg.activate(; temp = true)
-
-    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-    # is upstreamed
-
-    # Data viz
     Pkg.add(
         [
+            Pkg.PackageSpec(; name = "Downloads"),
+            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "DataFramesMeta"),
+            Pkg.PackageSpec(; name = "VirtualObservatory"),
+            Pkg.PackageSpec(; name = "FITSFiles"),
+            Pkg.PackageSpec(; name = "CodecZlib"),
+            Pkg.PackageSpec(; name = "DynamicQuantities"),
+            Pkg.PackageSpec(; name = "MathTeXEngine"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
@@ -31,12 +37,12 @@ begin
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
-                subdir = "CairoMakie",
+                subdir = "ComputePipeline",
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
-                subdir = "ComputePipeline",
+                subdir = "CairoMakie",
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
@@ -46,28 +52,24 @@ begin
         ]
     )
 
-    Pkg.add(["TOML", "PlutoUI", "DataFramesMeta", "VirtualObservatory", "FITSFiles", "Downloads", "CodecZlib", "DynamicQuantities", "MathTeXEngine"])
-
     # Analysis
     using DustExtinction
-
-    # Data handling
-    using DataFramesMeta: DataFrame, Not, @rsubset
-    using VirtualObservatory: execute, TAPService
-    using FITSFiles: fits, info
-    using Downloads: download
-    using CodecZlib: GzipDecompressor
-
-    # Plotting
-    using CairoMakie
-    using MathTeXEngine: set_texfont_family!, FontFamily
-    set_texfont_family!(FontFamily("TeXGyreHeros"))
 
     # Units
     using DynamicQuantities: @u_str, @us_str, ustrip
     using DynamicQuantities.Constants: c as c0
 
-    deps_ready = true
+    # Data handling and visualization
+    using DataFramesMeta: DataFrame, Not, @rsubset
+    using VirtualObservatory: execute, TAPService
+    using FITSFiles: fits, info
+    using Downloads: download
+    using CodecZlib: GzipDecompressor
+    using CairoMakie
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
+
+    deps_ready = true # Can remove this too after upstream merge
 end
 
 # ╔═╡ 2a612197-bae8-456c-8ad1-0897b19d95f6
@@ -76,7 +78,6 @@ begin
 
     using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
 # ╔═╡ 1da2981b-91f6-4e35-97c5-bafb3c0a12b4
@@ -163,7 +164,7 @@ df_spectra = execute(
     ) = 1
     AND dataproduct_type = 'spectrum'
     """
-    ; strict = false
+    ; strict = false, unitful = false
 ) |> DataFrame
 
 # ╔═╡ 70cefdd5-4afb-4e09-b2df-75983bb40e85

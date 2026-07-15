@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/spec-SDSS.png"
@@ -8,36 +8,26 @@
 #> tags = ["spectroscopy", "FITS", "units", "dust exctinction", "cosmology", "plots", "SDSS"]
 #> date = "2026-05-16"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
-#>
-#>     [[frontmatter.author]]
-#>     name = "Aditya Kumar Pandey"
-#>     [[frontmatter.author]]
-#>     name = "Chris Garling"
-#>     [[frontmatter.author]]
-#>     name = "Ian Weaver"
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ d7ed3be9-00c1-444d-a49d-bb7ce7c5bf03
 begin
+    # Can remove this block after Makie v0.25 is merged:
+    # https://github.com/MakieOrg/Makie.jl/pull/5484
     import Pkg
     Pkg.activate(; temp = true)
-
-    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-    # is upstreamed
-
-    # Data viz
     Pkg.add(
         [
+            Pkg.PackageSpec(; name = "Downloads"),
+            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "DataInterpolations"),
+            Pkg.PackageSpec(; name = "MathTeXEngine"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
-                rev = "ff/breaking-0.25",
-            ),
-            Pkg.PackageSpec(;
-                url = "https://github.com/MakieOrg/Makie.jl",
-                subdir = "CairoMakie",
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
@@ -46,33 +36,50 @@ begin
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
                 url = "https://github.com/icweaver/Measurements.jl",
                 rev = "makie-v0.25.0",
             ),
             Pkg.PackageSpec(;
+                rev = "units",
                 url = "https://github.com/JuliaAstro/SpectrumBase.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-v0.25",
+                rev = "units",
                 url = "https://github.com/JuliaAstro/DustExtinction.jl",
+            ),
+            Pkg.PackageSpec(;
+                rev = "makie-v0.25",
+                url = "https://github.com/JuliaAstro/SkyCoords.jl",
+            ),
+            Pkg.PackageSpec(;
+                rev = "units",
+                url = "https://github.com/JuliaAstro/Cosmology.jl",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaPhysics/DynamicQuantities.jl",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaAstro/FITSFiles.jl",
             ),
         ]
     )
 
-    Pkg.add(["TOML", "PlutoUI", "Cosmology", "SkyCoords", "FITSFiles", "Downloads", "Unitful", "UnitfulAstro", "UnitfulEquivalences", "MathTeXEngine", "DataInterpolations"])
-
     # Analysis
     using DustExtinction, Cosmology, SkyCoords, FITSFiles, SpectrumBase
 
-    using Downloads
+    # Units
+    using DynamicQuantities, Measurements
 
-    # Plotting
+    # Data handling and visualization
+    using Downloads: download
     using CairoMakie
     using MathTeXEngine: set_texfont_family!, FontFamily
     set_texfont_family!(FontFamily("TeXGyreHeros"))
-
-    # Units
-    using Unitful, UnitfulAstro, UnitfulEquivalences, Measurements
 
     deps_ready = true # Can drop this when above patches upstreamed
 end;
@@ -82,7 +89,7 @@ begin
     deps_ready
 
     using TOML: TOML
-    using PlutoUI
+    using PlutoUI: TableOfContents
 end
 
 # ╔═╡ 29945a91-d0c5-470b-81e4-99329e874ee0
@@ -116,10 +123,13 @@ We use a publicly available spectrum from SDSS DR14 -- a galaxy on plate 1323, M
 
 # ╔═╡ 645822c8-d735-4ec5-8db7-7cdbb3fd191b
 sdss_file = let
-    sdss_url = "https://dr14.sdss.org/optical/spectrum/view/data/format=fits/spec=lite?plateid=1323&mjd=52797&fiberid=12"
-    sdss_file = joinpath(@__DIR__, "sdss_example.fits")
-    isfile(sdss_file) ? sdss_file : Downloads.download(sdss_url, sdss_file)
-end
+    # sdss_url = "https://dr14.sdss.org/optical/spectrum/view/data/format=fits/spec=lite?plateid=1323&mjd=52797&fiberid=12"
+    sdss_file = joinpath(@__DIR__, "data", "sdss_example.fits")
+    isfile(sdss_file) ? sdss_file : download(sdss_url, sdss_file)
+end;
+
+# ╔═╡ b665b615-3e0f-45ea-b929-e682c742530a
+Base.current_project()
 
 # ╔═╡ 8b96f755-9cfd-479d-a32b-6a664004793b
 md"""
@@ -171,6 +181,8 @@ let
             xlabel = "Wavelength",
             ylabel = "Flux density * 1e-17",
             title = "SDSS Galaxy — plate 1323, fiber 12",
+            dim1_conversion = Makie.DQConversion(us"Å"),
+            dim2_conversion = Makie.DQConversion(us"erg/Å/cm^2/s"),
         ),
         color = :orange,
     )
@@ -190,16 +202,16 @@ md"""
 """
 
 # ╔═╡ f0833976-0cd9-45e3-ac8e-0a2ed1073d1f
-H_alpha = 6563.0u"Å"
+λ_Hα = 6563.0us"Å"
 
 # ╔═╡ 24edd839-07bb-477b-b059-730bfe57db5f
-H_alpha |> u"nm"
+λ_Hα |> us"nm"
 
 # ╔═╡ c0b77309-56c6-46df-b4ab-360c179c1934
-H_alpha |> u"μm"
+λ_Hα |> us"μm"
 
 # ╔═╡ 0d5c2f5c-f57d-43ef-9633-94f3411aa977
-uconvert(u"erg", H_alpha, Spectral())
+(u"Constants.c * Constants.h" / λ_Hα) |> us"erg"
 
 # ╔═╡ eae70e1e-7182-4257-aaa0-4b8f88c901ce
 md"""
@@ -208,8 +220,8 @@ md"""
 We can use DustExctinction.jl to deredden our spectrum:
 """
 
-# ╔═╡ 43fad909-2733-48db-8c0b-cefd532ed267
-eq = ICRSCoords(deg2rad(178.90417), deg2rad(0.66278))
+# ╔═╡ 63da5539-58e3-438e-a54a-6fdf8980fe51
+eq = ICRSCoords(178.90417u"°", 0.66278u"°")
 
 # ╔═╡ c8529662-9746-4d0f-bef5-796c33d09ac5
 md"""
@@ -246,6 +258,8 @@ let
             xlabel = "Wavelength",
             ylabel = "Flux density",
             title = "CCM89 Dust Dereddening",
+            dim1_conversion = Makie.DQConversion(us"Å"),
+            dim2_conversion = Makie.DQConversion(us"erg/Å/cm^2/s"),
         ),
         label = "original",
     )
@@ -269,7 +283,7 @@ L_\lambda(\lambda, T) = 4\pi^2 R^2 B(\lambda, T)
 """
 
 # ╔═╡ 84052581-f53d-4bed-9776-1ee31d7c38fe
-L(λ, T; R = u"Rsun") = 4 * π^2 * R^2 * blackbody(λ, T).flux_axis
+L(λ, T; R = u"Constants.R_sun") = 4 * π^2 * R^2 * blackbody(λ, T).flux_axis
 
 # ╔═╡ eeae9cac-01cb-45ce-801a-dcb7c7c7a87e
 md"""
@@ -289,10 +303,10 @@ B_solar = spec_solar.flux_axis
 L_solar = L(wav_bb, 5778.0u"K")
 
 # ╔═╡ 48a59ba2-73bc-42dd-bec4-7be6b2aaff90
-maximum(B_solar) |> u"erg/s/cm^2/sr/Å"
+maximum(B_solar) |> us"erg/s/cm^2/sr/Å"
 
 # ╔═╡ b2ac804d-2ebd-42e7-8625-99a91e0458f6
-maximum(L_solar) |> u"erg/s/Å"
+maximum(L_solar) |> us"erg/s/Å"
 
 # ╔═╡ 4147f9f6-df33-4ac1-b31f-17dab96c951f
 md"""
@@ -307,10 +321,11 @@ let
         fig[1, 1];
         yscale = log10,
         yticks = LogTicks(LinearTicks(5)),
-        dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
         xlabel = "Wavelength",
         ylabel = "Flux density",
         title = "Blackbody Spectra",
+        dim1_conversion = Makie.DQConversion(us"Å"),
+        dim2_conversion = Makie.DQConversion(us"erg/Å/cm^2/s")
     )
 
     # Add plots
@@ -361,19 +376,21 @@ let
     ax = Axis(
         fig[1, 1];
         yticks = LinearTicks(5),
-        dim2_conversion = Makie.UnitfulConversion(u"erg/s/cm^2/Å"),
         xlabel = "Wavelength (observed)",
         ylabel = "Flux density",
         title = "Cosmological Surface-Brightness Dimming",
+        dim1_conversion = Makie.DQConversion(us"Å"),
+        dim2_conversion = Makie.DQConversion(us"erg/Å/cm^2/s"),
     )
 
     redshifts = [0.4 => :black, 0.5 => :blue, 1.0 => :green, 2.0 => :red]
+
     for (z, color) in redshifts
         wav_obs = wav_bb * (1 + z)
         lines!(ax, wav_obs, F_obs(wav_obs, z); label = "z = $(z)", color)
     end
 
-    axislegend(; position = :rt)
+    # axislegend(; position = :rt)
 
     fig
 end
@@ -383,59 +400,44 @@ md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ d97007f0-5c6c-4644-bc2d-e035c9d851ac
-function frontmatter()
-    path = split(@__FILE__, "#==#") |> first |> string
-    prefix = "#>"
+# ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
+TableOfContents(; depth = 4)
+
+# ╔═╡ c6094980-463a-4993-85db-7068c5a37cbe
+function frontmatter(path)
+    prefix = "#> "
     is_fm = startswith(prefix)
     block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join((chopprefix(chopprefix(l, prefix), " ") for l in block), "\n"))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
     return toml["frontmatter"]
 end
 
-# ╔═╡ 4668b8af-8ca2-4a51-a7f1-567aa73ee67d
-title(_fm) = _fm["title"]
-
-# ╔═╡ 2aa83581-6911-4fdc-b19e-95196c4651e0
-function authors(_fm)
-    names = [d["name"] for d in _fm["author"]]
-    body = join(names, ", ")
-    return md"_Authors: $(body)_"
-end
-
-# ╔═╡ 48a43023-5a00-4f93-bf97-fdf534f04e65
-function keywords(_fm; kind = "note", title = "Keywords")
+# ╔═╡ 1b59c248-dd4a-45a0-8fd7-4bd88d1d451c
+function keywords(kind = "note", title = "Keywords")
     nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = _fm["tags"]
+    tags = (nb_path |> frontmatter)["tags"]
     header = "!!! $kind \"$title\""
     body = join(("`$tag`" for tag in tags), " ")
     return Markdown.parse("$header\n    $body")
 end
 
 # ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
-begin
-    _fm = frontmatter()
+md"""
+# Spectroscopy with SDSS
 
-    md"""
-    # $(title(_fm))
+_Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_ 
 
-    $(authors(_fm))
+!!! tip "Learning goals"
+    Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
 
-    !!! tip "Learning goals"
-        Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
+$(keywords())
 
-    $(keywords(_fm))
-
-    !!! warning "Companion content"
-        - JuliaAstro > FITS tables
-        - JuliaAstro > Unit handling
-        - JuliaAstro > Dust extinction
-        - JuliaAstro > Cosmological redshift and age
-    """
-end
-
-# ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
-TableOfContents(; depth = 4)
+!!! warning "Companion content"
+    - JuliaAstro > FITS tables
+    - JuliaAstro > Unit handling
+    - JuliaAstro > Dust extinction
+    - JuliaAstro > Cosmological redshift and age
+"""
 
 # ╔═╡ Cell order:
 # ╟─4ca2f579-4240-40b4-a07c-29896c3684b4
@@ -444,6 +446,7 @@ TableOfContents(; depth = 4)
 # ╠═d7ed3be9-00c1-444d-a49d-bb7ce7c5bf03
 # ╟─e35fd5df-e01e-43af-99cf-546ca8c8f342
 # ╠═645822c8-d735-4ec5-8db7-7cdbb3fd191b
+# ╠═b665b615-3e0f-45ea-b929-e682c742530a
 # ╟─8b96f755-9cfd-479d-a32b-6a664004793b
 # ╠═7758319f-471a-4d9d-9e31-103ee81fe9ab
 # ╟─9a8dac0b-1ca0-43ff-b822-27690eae157c
@@ -456,7 +459,7 @@ TableOfContents(; depth = 4)
 # ╠═c0b77309-56c6-46df-b4ab-360c179c1934
 # ╠═0d5c2f5c-f57d-43ef-9633-94f3411aa977
 # ╟─eae70e1e-7182-4257-aaa0-4b8f88c901ce
-# ╠═43fad909-2733-48db-8c0b-cefd532ed267
+# ╠═63da5539-58e3-438e-a54a-6fdf8980fe51
 # ╟─c8529662-9746-4d0f-bef5-796c33d09ac5
 # ╠═6e6972a6-1648-40e4-a1e6-beed98bbc93e
 # ╠═45849da1-b473-4d19-b140-d9d3fca39799
@@ -483,9 +486,7 @@ TableOfContents(; depth = 4)
 # ╟─7063013d-bac7-4d6c-b511-f741e0a8fe4c
 # ╠═cbf45b3f-8adf-4a40-bfc1-f73a4596e113
 # ╟─aeba92bf-15de-425a-8f7e-b2ea0518756c
-# ╟─d97007f0-5c6c-4644-bc2d-e035c9d851ac
-# ╟─4668b8af-8ca2-4a51-a7f1-567aa73ee67d
-# ╟─2aa83581-6911-4fdc-b19e-95196c4651e0
-# ╟─48a43023-5a00-4f93-bf97-fdf534f04e65
 # ╠═89579410-1058-4b49-932c-c1715ce662a8
+# ╟─c6094980-463a-4993-85db-7068c5a37cbe
+# ╟─1b59c248-dd4a-45a0-8fd7-4bd88d1d451c
 # ╠═e4c5b28c-c4fb-4726-ab7a-8f1cc04280bd

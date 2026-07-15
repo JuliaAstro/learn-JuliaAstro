@@ -1,447 +1,232 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
-#> image = "/assets/fits-images.png"
-#> order = 2
-#> title = "FITS images"
+#> image = "/assets/fits-table.png"
+#> order = 1
+#> title = "FITS tables"
 #> layout = "layout.jlhtml"
-#> date = "2025-11-19"
-#> description = "View and manipulate data from FITS images."
-#> tags = ["file I/O", "FITS", "images", "image processing", "plots", "histograms", "colorbars"]
+#> date = "2025-11-18"
+#> description = "View and manipulate data from FITS tables."
+#> tags = ["file I/O", "FITS", "tables", "plots", "histograms"]
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 61c0bf34-302b-4732-a44d-4c2da611eb74
+# ╔═╡ 5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
 begin
-    # Data handling
-    using DataFramesMeta: DataFrame, @rsubset!
     using Downloads: download
     using FITSFiles: fits, info
-    using Printf: @sprintf
-
-    # AstroImages example
-    using StatsBase: Histogram, fit, mean, median, std
-    using AstroImages: Percent, Near, X, Y, load, imview
-
-    # Makie example
-    using CairoMakie: Colorbar, IntervalsBetween, plot, stephist
-
-    # Makie + AlgebraOfGraphics example
-    using AlgebraOfGraphics: data, mapping, histogram, visual, draw, scales
+    using DataFramesMeta: DataFrame, @rsubset
+    using PlutoPlotly: Layout, plot, attr
+    using AlgebraOfGraphics
 end
 
-# ╔═╡ 7d07caf5-e203-4152-8bb9-c1f396c4f80c
+# ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
 begin
-    using Pluto: frontmatter
+    using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
-# ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
+# ╔═╡ d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
 md"""
 ## Summary
 
-Following up from [Working with FITS tables](/tutorials/fits-tables/), this tutorial first demonstrates how to use [AstroImages.jl](https://juliaastro.org/AstroImages) to preview images formed from FITS data tables before using [Makie.jl](https://makie.org) + [AlgebraOfGraphics.jl](https://aog.makie.org) to make publication-ready plots. Next, we will demonstrate how to these tools to help visualize simple image stacking from FITS images and save it back to file.
+This tutorial demonstrates the use of [Downloads.jl](https://github.com/JuliaLang/Downloads.jl) from base Julia to download a data file, then uses [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) to open the file and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to work with the tabular data. Lastly, we use [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) to visualize the data as 1D and 2D histograms.
 """
 
-# ╔═╡ a6e33cf8-1fe3-4810-a66b-adc07166871e
+# ╔═╡ bfe84763-0062-41a3-aa09-ae61a016766c
 md"""
-### Packages 📦
+## Packages 📦
 """
 
-# ╔═╡ f87da6ab-c718-47c3-bedc-78cd025b40e6
+# ╔═╡ c15cb9ec-786b-44db-941c-1812597e10da
 md"""
-## Images from FITS tables
+## Download a FITS table file
+
+Below, we download a FITS file from a Chandra observation of the Galactic Center using the `Downloads.download` function from base Julia to a temporary location:
 """
 
-# ╔═╡ 3b974213-d2a5-4528-b27b-d4c608319213
-md"""
-### Load data
+# ╔═╡ d6f1ad45-ef13-4b04-86fa-d46b9d87b29d
+event_filename = download("http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits")
 
-We start by loading in the data from the previous tutorial. For brevity, we combine the downloading, FITS file loading, and subsetting, into a single cell:
+# ╔═╡ 6cbed09f-78f4-4253-8558-3de82494404b
+md"""
+The file contains a list of events with ``x`` and ``y`` coordinates, energy, and various other pieces of information.
 """
 
-# ╔═╡ b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
-df_evt_main = let
-    event_filename = download(
-        "http://data.astropy.org/tutorials/FITS-tables/chandra_events.fits"
-    )
-    df_evt = fits(event_filename)[2].data |> DataFrame
-    @rsubset! df_evt :ccd_id ∈ 0:3
-end
-
-# ╔═╡ ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
+# ╔═╡ 100d097d-ed33-40ba-a541-04f93d71a11f
 md"""
+## Visualize a FITS table file
+
+We next open this file and view its header information (so-called [Header Data Units](https://www.stsci.edu/hst/wfpc2/Wfpc2_dhb/intro_ch23.html) -- HDUs) with the `FITSFiles.fits` and `FITSFiles.info` functions, respectively:
+"""
+
+# ╔═╡ 11cb6428-3a8e-4916-84a5-1bd06bfd47a9
+hdus = fits(event_filename)
+
+# ╔═╡ a577f6a1-00e4-4fa1-9030-a14ca1ebefc6
+"""
 !!! note
-    We use the mutating version of `@rsubset` (note the exclamation mark above) because we do not need to preserve the original `DataFrame`, `df_evt`, in this case. For more on mutating functions, see [this section](https://docs.julialang.org/en/v1/manual/variables/#man-assignment-expressions) of the Julia manual.
+    For convenience, FITS files opened from a local directory, e.g., `$(event_filename)`, are automatically closed for us.
 
-We next look at a few different ways that we can visualize the 2D histogram that we roughly previewed in the previous tutorial; from explicit (less convenient) to implicit (more convenient).
+!!! todo
+    Include HDUNAME and/or EXTNAME column(s) in displayed `info`?
+""" |> Markdown.parse
+
+# ╔═╡ 2a907d46-51d5-4232-a737-6d19aab073c4
+md"""
+In this case, we're interested in reading `EVENTS`, which contains information about each X-ray photon that hit the detector. To find out what information the table contains, let's print the column names:
 """
 
-# ╔═╡ c26d8744-0026-4f43-b056-1c94ee958f8b
+# ╔═╡ c52dd72a-e504-40e2-9937-f78c9b3e1c7e
+hdus[2].data |> keys
+
+# ╔═╡ fe27a708-66d3-4f91-abe1-ce0135d04879
 md"""
-### View with AstroImages.jl
-
-[AstroImages.jl](https://juliaastro.org/AstroImages/) is the main starting point in the JuliaAstro ecosystem for easily loading and viewing FITS image files. AstroImages.jl can also handle FITS tables, but it is currently limited in what types of tables it can support [^1]. For this tutorial, just using its `imview` function will be enough to give us a good starting point.
-
-[^1]: This package currently uses [FITSIO.jl](https://juliaastro.org/FITSIO/), a convenience wrapper around a second wrapper, [CFITSIO.jl](http://juliaastro.org/CFITSIO/), which wraps the [CFITSIO C library](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html) for FITS file I/O. Currently, FITSIO.jl cannot handle opening tables containing BitArray data.
-
-On the horizon, AstroImages.jl will use [FITSFiles.jl](https://barrettp.github.io/FITSFiles.jl/dev/) as its backend, the pure-Julia alternative currently being developed by JuliaAstro, which can handle this type of data. This is why we used it directly in the previous tutorial. Stay tuned for more!
-"""
-
-# ╔═╡ c04d7668-32ff-4131-8796-007d1637f56f
-md"""
-We start by using `StatsBase.fit` and `StatsBase.Histogram` to bin the ``x`` and ``y`` data ourselves before passing it to `imview` to view the image directly in the notebook. Later we will see how to do this binning step automatically for us:
-"""
-
-# ╔═╡ 430611bb-6caf-4b38-837d-fc05173d4f00
-h = fit(Histogram, (df_evt_main.x, df_evt_main.y); nbins = 400)
-
-# ╔═╡ 515e570b-d140-4d66-845e-cae7b4cecd05
-md"""
-The weights are returned as an `AbstractArray`, which can be viewed directly with AstroImages.jl:
-"""
-
-# ╔═╡ bb11ae83-b919-4511-86cf-51baf77d89a3
-imview(
-    h.weights;
-    # clims = Percent(99.5),
-    # stretch = identity,
-    cmap = :cividis,
-    # contrast = 1.0,
-    # bias = 0.5,
-)
-
-# ╔═╡ 7401caa5-c891-4306-bb3c-a4a9cab7012b
-md"""
-We can immediately see structure appear in our image, and the outlines of the four main (ACIS-I) chips. Try adjusting the imaging options commented out above to modify the image. See the `imview` documentation in the Live docs of this notebook for all available options.
-
-!!! tip
-    Try passing your own AbstractArray to `imview`. This function converts an array of numbers to an array of `ColorTypes` (i.e., RGB values) for visualizing our arrays in full color. For more on this, see the [Arrays, Numbers, and Colors](https://juliaimages.org/latest/tutorials/arrays_colors/#page_arrays_colors) section of the JuliaImages documentation.
-"""
-
-# ╔═╡ d031ddf9-ee84-46b2-b387-1ec99a2ca79b
-# Your code here, e.g., imview(rand(3, 4))
-
-# ╔═╡ c4374601-9c65-4bd2-b2c0-3e83597395bf
-md"""
-Next we will see how to plot this image with labeled axes and a properly formatted colorbar.
-"""
-
-# ╔═╡ 5dd43020-71e9-47e7-9b57-295e57a98bce
-md"""
-### Plotting with Makie.jl
-
-Makie.jl is a modern plotting ecosystem written in pure Julia. Its [set of backends](https://docs.makie.org/stable/explanations/backends/backends#What-is-a-backend) allows us to produce plots for a wide range of contexts. For this tutorial, we will use the CairoMakie.jl backend to produce publication-quality vector graphic plots.
-
-To start, we will pass the histogram object `h` directly to Makie, which its `plot` command knows how to handle:
-"""
-
-# ╔═╡ 02eaf214-7238-45b3-9674-c1b7f1b7d10e
-let
-    fig, ax, p = plot(
-        h;
-        colorrange = (1, 10_000),
-        colorscale = log10,
-        colormap = :cividis,
-    )
-
-    Colorbar(
-        fig[1, 2], p;
-        ticks = [1, 3, 6, 500, 10_000],
-        minorticksvisible = true,
-        minorticks = IntervalsBetween(9),
-    )
-
-    fig
-end
-
-# ╔═╡ 74f155a2-fe8a-404f-b0c6-7a4f2724c408
-md"""
-!!! tip
-    Try adjusting the plot options above, or try adding your own! See the [Getting started](https://docs.makie.org/stable/tutorials/getting-started) section of the Makie.jl documentation for a comprehensive tutorial.
-
-You may notice that there are still a few things missing from our plot that would be nice to have by default, e.g., labeled axes and a formatted colorbar. We will show an ergonomic way to do this next.
-"""
-
-# ╔═╡ 414b0415-e784-4089-a683-a20ec15ee44f
-md"""
-### Plotting with Makie.jl + AoG.jl
-
-Similarly to seaborn for Python, or ggplot2 in R, Julia provides AlgebraOfGraphics.jl, a plotting framework that extends existing plotting capabilities for a wide range of statistical and visualization applications of structured data.
-
-As with these other packages, its usecases are probably best shown by example:
-"""
-
-# ╔═╡ 235242b0-a8c6-4627-9b2c-fc14f705c686
-let
-    plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
-
-    draw(
-        plt, scales(
-            Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
-        );
-        colorbar = (
-            ticks = [1, 3, 6, 500, 10_000],
-            minorticksvisible = true,
-            minorticks = IntervalsBetween(9),
-        )
-    )
-end
-
-# ╔═╡ f7aca318-a535-4a86-8c29-92d90db96271
-md"""
-Here, we reproduce the previous plot above, but now with the desired axes labeling and colorbar formatting applied for us. The colorbar is also automatically labeled for us and the shape of its endpoints are adjusted to triangles to show that the data values extend beyond what is shown on the colorbar scale.
-
-Additionally, note that we are working directly with the DataFrame object `df_evt-main` now instead of needing to manually fit a histogram beforehand.
-
-!!! tip
-    See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
-
-We now turn to working directly with FITS image data.
-"""
-
-# ╔═╡ 0598bfc5-0900-4b04-ad84-9638b89869b9
-md"""
-## Images from FITS arrays
-
-For the rest of this tutorial, we will work with an astronomical image of the Horsehead Nebula taken with a photographic plate. The image has been digitized, i.e., scanned by a computer and converted to a 2D array. Each position in the array corresponds with the projected position on the sky, and bright areas of the image have high values while dark areas have low values in the array.
-
-Images taken with astronomical instruments called CCDs or "[charge-coupled devices](https://en.wikipedia.org/wiki/Charge-coupled_device)" are organized similarly. When illuminated by light, CCDs accumulate electrons, converting brightness values to electron counts. A CCD image is essentially a 2D array, where each position on the array represents a single CCD pixel, and the values in that array represent the number of counts registered in that pixel.
-"""
-
-# ╔═╡ ad35dd30-40f5-4bd7-b1d6-b81a226e85ab
-md"""
-### Load data
-
-We start by downloading our data of the Horsehead Nebula from the link below:
-"""
-
-# ╔═╡ 1e05c329-a82a-4ed8-ba02-11e155539059
-hdus = let
-    fpath = download("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
-    fits(fpath; scale = false)
-end
-
-# ╔═╡ eaf39dba-e724-4eac-9a14-28fcd179efc7
-md"""
-Generally, images are stored in the `PRIMARY` block. Let's take a look at it:
-"""
-
-# ╔═╡ 798dbe98-c2d5-4dd2-b624-f5df795ef470
-img_data = hdus[1].data
-
-# ╔═╡ a9ec676e-8d14-48af-b3ea-6482dce86832
-md"""
-We see that our image is an $(size(img_data, 1)) × $(size(img_data, 2)) array of $(eltype(img_data)) data. This can be visualized in the same way as our previous heatmap example, which we will show next.
-
-!!! tip "Todo"
-    We use the `scale = false` keyword in our `fits` call to preserve the original data type specified in the `BITPIX` header card. For more, see <documentation coming soon>.
-"""
-
-# ╔═╡ b3c6961a-b8a6-4597-aaf7-a97cae793670
-md"""
-### Visualize
-
-Since this is just plain array data instead of tabular / `DataFrame` data, we will use Makie.jl without the AlgebraOfGraphics.jl framework:
-"""
-
-# ╔═╡ 3b8c84de-56f5-4d1e-9a63-a7abbc33bd55
-plot(img_data; colormap = :magma)
-
-# ╔═╡ 83af6865-8c5a-436c-825f-f57f5bec7ec3
-md"""
-Alternatively, we can load the fits array and visualize it directly with AstroImages.jl:
-"""
-
-# ╔═╡ 3b813a3a-b24d-4801-bd1a-d7ac3106518b
-img = load("http://data.astropy.org/tutorials/FITS-images/HorseHead.fits")
-
-# ╔═╡ 3158e659-3efa-4a64-a548-7076a3a03301
-md"""
-This does a few things for us out-of-the-box:
-
-* Loads the FITS file directly from the url
-* Selects the image HDU
-* Converts the image array of numbers to a ColorTypes array (i.e., automatically applies `imview`)
-* Stores the result as an `AstroImage`
-
-`AstroImage` objects behave much like regular arrays, which allows them to support the usual array indexing and `imview` options:
-"""
-
-# ╔═╡ 010ddf8b-7355-41cf-8d92-0d217e382978
-imview(img[1:10, 1:10])
-
-# ╔═╡ 23d0d42f-77e2-4b21-a350-f9f08eabbd22
-imview(img; cmap = :Greys)
-
-# ╔═╡ 0e6b6e0a-d538-4ccb-a284-c8cddabc17b6
-md"""
-And because the underlying data is just an array of numbers, we can perform the usual statistical measurements:
-"""
-
-# ╔═╡ 22824a6b-9a68-4519-86af-2c5b60da5288
-extrema(img) # or minimum(img), maximum(img)
-
-# ╔═╡ 2f151bab-e310-46a2-b277-3082e880360b
-mean(img)
-
-# ╔═╡ 45b56d0c-71b7-4151-95b5-bcd67239f40d
-median(img)
-
-# ╔═╡ c3011e6e-6590-4b88-b3b3-a03c768a82c6
-std(img)
-
-# ╔═╡ 0fa6d28a-4608-444b-ae2c-5845ec8a21b1
-let
-    fig, ax, p = stephist(vec(img_data); bins = 50)
-    ax.xlabel = "Pixel value"
-    ax.ylabel = "Counts"
-    fig
-end
-
-# ╔═╡ 997258a0-39ca-4e5f-a143-f3bdbefd265f
-md"""
-and access the raw underlying data anytime:
-"""
-
-# ╔═╡ 227ea834-faa9-4540-9e0b-b9c87cd19b45
-img.data
-
-# ╔═╡ 9b1ec23d-e773-4893-83ba-c465fd510778
-md"""
-Lastly, `AstroImage` objects use the [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/) interface, which allows them to participate in extended plotting and array handling functionality:
-"""
-
-# ╔═╡ 7c3e5faf-6f80-4413-a72e-bfce5a59fe07
-plot(img; colormap = :greys) # Makie knows how to handle this automatically!
-
-# ╔═╡ 7a582e8c-03fb-406e-83ef-9b15920fb6ba
-md"""
-Here is another example where we add some additional customizations:
-"""
-
-# ╔═╡ 6500f709-d767-44dd-911f-20fb29740671
-let
-    fig, ax, p = plot(
-        img;
-        colorscale = log10, # log scale the colors
-        colormap = :greys,
-        colorbar = (
-            ticks = [4.0e3, 5.0e3, 6.0e4, 1.0e4, 2.0e4],
-            minorticksvisible = true,
-            minorticks = IntervalsBetween(9),
-        )
-    )
-
-    fig
-end
-
-# ╔═╡ 0e690360-cdb1-47c9-b637-b0184508ac03
-img[X = 500, Y = Near(500.1)] == img[500, 500]
-
-# ╔═╡ e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
-md"""
-For more on working with AstroImage data, see the [Getting started](https://juliaastro.org/AstroImages/stable/manual/getting-started/) section of the AstroImages.jl manual.
-
-We end by looking at a brief image stacking example.
-"""
-
-# ╔═╡ 5fb6d8fa-d890-45c5-afa3-944e96bc818e
-md"""
-## Image stacking
-
-For this example, we'll stack several images of M13 taken with a ~10" telescope.
-"""
-
-# ╔═╡ 4e9d0b96-358d-4baa-8ea9-7eb5aeff36f8
-md"""
-### Load data
-
-Let's start by opening a series of FITS files and storing the data in a vector called `imgs`:
-"""
-
-# ╔═╡ e2defd90-7781-4c64-98ad-4aabdfa99d63
-# We use the @sprintf macro from the base Printf.jl Julia module
-# to format our strings
-fpaths = map(1:5) do i
-    @sprintf("http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits", i)
-end
-
-# ╔═╡ 215e0183-adfa-4da0-80d7-108894f73f23
-md"""
-!!! tip
-    This is just an alternative syntax to array comprehensions. We could have just as easily done:
+!!! todo
+    Define a function for this? e.g.,
 
     ```julia
-    [
-        @sprintf(
-            "http://data.astropy.org/tutorials/FITS-images/M13_blue_%04d.fits",
-            i
+    function FITSFiles.names(hdu::FITSFiles.HDU{FITSFiles.Bintable})
+
+        <parse hdu.cards for TTYPEN, TFORMN, TUNITN, etc.>
+
+        return (
+            (name = "", format = "", ...), # col1
+            (name = "", format = "", unit = "") # col2
+            ...
+            (name = "", format = "", coord_type = "") # colN
         )
-        for i in 1:5
-    ]
+    end
     ```
 
-    See [this section of the Julia manual](https://docs.julialang.org/en/v1/manual/functions/#Do-Block-Syntax-for-Function-Arguments) for more on do-block syntax.
+    Analogous to hdu.columns in astropy:
+
+    ```
+    ColDefs(
+        name = 'time'; format = '1D'; unit = 's'
+        name = 'ccd_id'; format = '1I'
+        name = 'node_id'; format = '1I'
+        name = 'expno'; format = '1J'
+        ...
+    )
+    ```
 """
 
-# ╔═╡ 4dc4074e-b3d3-4deb-a657-8a7847a8c156
-imgs = [load(fpath) for fpath in fpaths];
-
-# ╔═╡ 51f3adcf-4e9a-49b5-a3a1-162a132e7f68
+# ╔═╡ 2497c869-17e4-4f5f-9534-30beab70a8ad
 md"""
-### Visualize
+Now we'll take this data and convert it into a `DataFrame` table from the [DataFrames.jl](https://dataframes.juliadata.org/) package, which is re-exported from the [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/) package for convenience:
 """
 
-# ╔═╡ 0338793e-c043-4001-a6c3-8c02159fb282
+# ╔═╡ 5b85edcd-6e79-44a0-85a0-eeee58437203
+df_evt = DataFrame(hdus[2].data)
+
+# ╔═╡ 8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
 md"""
-We can then directly sum up this vector of image data to produce a stacked image:
+!!! note
+    For people coming from other languages, this [comparison page](https://dataframes.juliadata.org/stable/man/comparisons/#Comparisons) in the DataFrames.jl documentation may be helpful.
+
+While it's possible to access FITS tables directly from the `.data` attribute, wrapping it in a `DataFrame` tends to make a variety of common tasks more convenient; for example, subsetting and directly plotting data, as we will show next.
 """
 
-# ╔═╡ 1cc2e29e-e9b3-4313-86b2-9eb7032c0ba4
-img_stacked = sum(imgs)
-
-# ╔═╡ 134e86e5-995e-432c-87a5-bf6a496fe7f6
+# ╔═╡ 4ea25424-5267-420c-acef-45a503582a3a
 md"""
-As in the examples above, this does the usual image transformations defined in `imview` to produce a nice image by default. We can also directly control this in the same way:
+### 1D histogram
+
+We can extract data from the table by referencing the column name. Let's try making a histogram for the energy of each photon, which will give us a sense for the spectrum (folded with the detector's efficiency):
 """
 
-# ╔═╡ 9c5450c2-807f-438d-a907-d78090a631ab
-stephist(vec(img_stacked); bins = 50)
+# ╔═╡ 48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
+plot(df_evt; x = :energy, kind = :histogram, nbinsx = 80)
 
-# ╔═╡ 21bd0738-97cb-499d-ad8d-b6301c6a0bdc
+# ╔═╡ b07413d3-7c29-4f9d-8be6-7bc5118e186d
 md"""
-The pixel values looks to be mostly around [2000, 3000] counts, so we set our colorbar limits there:
+!!! tip
+    We are using the small [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) package for easy interactivity in this notebook format. For publication quality plots with a wide range of analysis and customizations, see the modern [Makie.jl](https://makie.org) plotting package, which powers the [AlgebraOfGraphics.jl](https://aog.makie.org/stable/) framework for visualizing structured data. We will show examples of its use in our [Working with FITS images](/tutorials/fits-images/) tutorial.
 """
 
-# ╔═╡ edb0adae-ccf7-43cd-8985-626020a3adcb
-plot(img_stacked; colorrange = (2.0e3, 3.0e3), colormap = :magma)
-
-# ╔═╡ eccd1973-1082-4fb6-920c-0039ddf5482a
+# ╔═╡ 66629892-ce42-44a9-9a36-6582545bda8e
 md"""
-### Save
+### 2D histogram
 
-Finally, we can save our underlying stacked image + header data using the `save` function exported from AstroImages.jl:
-
-```julia
-using AstroImages
-
-save("test.fits", img_stacked)
-```
+We can form an image from our fits table by binning the ``x`` and ``y`` coordinates of the events data into a 2D histogram. This particular observation spans five CCD chips. First, we determine the events that only fell on the main (ACIS-I) chips, which have number ids 0, 1, 2, and 3:
 """
 
-# ╔═╡ c65018aa-e30a-4727-ad4e-b853a1479a40
+# ╔═╡ 6b9da9ae-29d5-41b3-a1a0-ff8232ba9d6d
+df_evt_main = @rsubset df_evt :ccd_id ∈ 0:3
+
+# ╔═╡ 831e74cd-fc5f-4e8b-862b-898cd7262596
+md"""
+!!! note
+    We use the `@rsubset` convenience macro exported from DataFramesMeta.jl to select the desired rows from our table, in this case the rows where the `ccd_id` are equal to either 0, 1, 2, or 3. For more on working with `DataFrames` and using other convenience macros, see the [DataFrames.jl](https://dataframes.juliadata.org/) and [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/) documentation.
+
+    In particular, people coming from other languages may find this [short comparison table](https://juliadata.org/DataFramesMeta.jl/stable/#Comparison-with-dplyr-and-LINQ) of convenience macros in the DataFramesMeta.jl documentation helpful.
+"""
+
+# ╔═╡ 2e1b6a9c-5005-4862-96e6-1ab1fa253509
+plot(
+    df_evt_main, Layout(yaxis = attr(scaleanchor = :x));
+    x = :x,
+    y = :y,
+    kind = :histogram2d,
+    nbinsx = 200,
+    nbinsy = 200,
+    zmin = 0,
+    zmax = 200,
+)
+
+# ╔═╡ 35a554eb-91dc-42dc-bf30-d3d64a5d74e3
+# let
+#     plt = data(df_evt_main) * mapping(:x, :y) * histogram(bins = 400)
+
+#     draw(
+#         plt, scales(
+#             Color = (colorrange = (1, 10_000), scale = log10, colormap = :cividis)
+#         );
+#         colorbar = (
+#             ticks = [1, 3, 6, 500, 10_000],
+#             minorticksvisible = true,
+#             minorticks = IntervalsBetween(9),
+#         )
+#     )
+# end
+
+# ╔═╡ 159a8db5-9d8a-4309-be4c-45c0d90c7d87
+# md"""
+# Here, we reproduce the previous plot above, but now with the desired axes labeling and colorbar formatting applied for us. The colorbar is also automatically labeled for us and the shape of its endpoints are adjusted to triangles to show that the data values extend beyond what is shown on the colorbar scale.
+
+# Additionally, note that we are working directly with the DataFrame object `df_evt-main` now instead of needing to manually fit a histogram beforehand.
+
+# !!! tip
+#     See this very nice [tutorial series](https://aog.makie.org/stable/tutorials/intro-i) in the AlgebraOfGraphics.jl documentation for more.
+
+# We now turn to working directly with FITS image data.
+# """
+
+# ╔═╡ 6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
+md"""
+For more control to produce publication-ready plots, see our [Working with FITS images](/tutorials/fits-images) tutorial.
+"""
+
+# ╔═╡ 1f60ce5a-e909-44f2-867a-02be8a1ba37c
 md"""
 # Notebook setup 🔧
 """
 
-# ╔═╡ 89e8f2a6-9d3b-44b8-8805-91daa24124c3
+# ╔═╡ 14245719-d3a1-4d46-9fc4-d2ddba6a3d93
 TableOfContents(; depth = 4)
 
-# ╔═╡ e892e25d-06a0-496a-bf63-40a8a988d089
+# ╔═╡ 276ed544-a40f-4686-8acc-515592ed523a
+function frontmatter(path)
+    prefix = "#> "
+    is_fm = startswith(prefix)
+    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
+    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
+    return toml["frontmatter"]
+end
+
+# ╔═╡ 9f14d02c-b104-478c-9a7a-9ae34893d8c6
 function keywords(kind = "note", title = "Keywords")
     nb_path = split(@__FILE__, "#==#") |> first |> string
     tags = (nb_path |> frontmatter)["tags"]
@@ -450,52 +235,42 @@ function keywords(kind = "note", title = "Keywords")
     return Markdown.parse("$header\n    $body")
 end
 
-# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
+# ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
 md"""
-# Working with FITS images
+# Working with FITS tables
 
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-tables.html>
 
-_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
+_Original authors: Lia Corrales, Kris Stern_
 
 !!! tip "Learning goals"
-    - Customize a 2D histogram with image data.
-    - Stack several images into a single image (Todo).
-    - Write image data to a FITS file (Todo).
+    - Download a FITS table file from a URL.
+    - Open a FITS table file and view table contents.
+    - Make a 2D histogram with the table data.
 
 $(keywords())
 
 !!! warning "Companion content"
-    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
+    Content here.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
-AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
-Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[sources]
-AstroImages = {rev = "aog-v0.12", url = "https://github.com/icweaver/AstroImages.jl"}
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
-AlgebraOfGraphics = "~0.12.13"
-AstroImages = "~0.5.1"
-CairoMakie = "~0.15.12"
+AlgebraOfGraphics = "~0.13.0"
 DataFramesMeta = "~0.15.6"
 FITSFiles = "~0.3.2"
-Pluto = "~1.0.2"
+PlutoPlotly = "~0.6.6"
 PlutoUI = "~0.7.83"
-StatsBase = "~0.34.12"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -504,7 +279,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "4440bb132ec696fd1be8e7849869ee574d7c4fe5"
+project_hash = "1c316167fb39851bc95787466e13bc6f95c1c3a2"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -569,9 +344,9 @@ version = "1.2.0"
 
 [[deps.AlgebraOfGraphics]]
 deps = ["Accessors", "Colors", "DataAPI", "Dates", "Dictionaries", "FileIO", "GLM", "GeoInterface", "GeometryBasics", "GridLayoutBase", "Isoband", "KernelDensity", "Loess", "Makie", "NaturalSort", "PlotUtils", "PolygonOps", "PooledArrays", "PrecompileTools", "RelocatableFolders", "StatsBase", "StructArrays", "Tables"]
-git-tree-sha1 = "581bc4a19bfe4ff7ac0b3899d06db5ec4419c284"
+git-tree-sha1 = "46736ae99433e1489e009a564326adee46467bdd"
 uuid = "cbdf2221-f076-402e-a563-3d30da359d67"
-version = "0.12.13"
+version = "0.13.0"
 
     [deps.AlgebraOfGraphics.extensions]
     AlgebraOfGraphicsDynamicQuantitiesExt = "DynamicQuantities"
@@ -601,19 +376,6 @@ version = "1.1.2"
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
-[[deps.AstroAngles]]
-git-tree-sha1 = "bc188d9a6507511e7360444d54ed57d0a9d6cf91"
-uuid = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
-version = "0.2.0"
-
-[[deps.AstroImages]]
-deps = ["AbstractFFTs", "AstroAngles", "ColorSchemes", "DimensionalData", "FITSIO", "FileIO", "ImageAxes", "ImageBase", "ImageIO", "ImageShow", "MappedArrays", "PlotUtils", "PrecompileTools", "Printf", "RecipesBase", "Statistics", "Tables", "UUIDs", "WCS"]
-git-tree-sha1 = "7dfbc2ea14527a0e04e07e3abdb35c4e232dba1c"
-repo-rev = "aog-v0.12"
-repo-url = "https://github.com/icweaver/AstroImages.jl"
-uuid = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
-version = "0.5.1"
-
 [[deps.Automa]]
 deps = ["PrecompileTools", "TranscodingStreams"]
 git-tree-sha1 = "94eab0b3ccdcac361188cc661daf69d4433c1818"
@@ -641,11 +403,6 @@ git-tree-sha1 = "8c290a1b223deaeea9aea44b235d24546da8eb98"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.4.0"
 
-[[deps.BitFlags]]
-git-tree-sha1 = "bbe1079eecf9c9fbb52765193ad2bae27ae09bc8"
-uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.10"
-
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -656,18 +413,6 @@ version = "1.0.9+0"
 git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.5.0"
-
-[[deps.CFITSIO]]
-deps = ["CFITSIO_jll"]
-git-tree-sha1 = "8c6b984c3928736d455eb53a6adf881457825269"
-uuid = "3b1b4be9-1499-4b22-8d78-7db3344d1961"
-version = "1.7.2"
-
-[[deps.CFITSIO_jll]]
-deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "d846411d1d7eb34739105f3d6fbba7c93beded3d"
-uuid = "b3e40c51-02ae-5482-8a39-3ace5868dcf4"
-version = "4.6.4+0"
 
 [[deps.CRC32c]]
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
@@ -684,18 +429,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
-
-[[deps.Cairo]]
-deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
-git-tree-sha1 = "71aa551c5c33f1a4415867fe06b7844faadb0ae9"
-uuid = "159f3aea-2a34-519c-b102-8c37f9878175"
-version = "1.1.1"
-
-[[deps.CairoMakie]]
-deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "80b2770813b42f80235ea57f4333de8ff3e1c342"
-uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.15.12"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -769,9 +502,9 @@ uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.13.1"
 
 [[deps.CommonSolve]]
-git-tree-sha1 = "99ee296f88c12485402e37c2fd025f95ae097637"
+git-tree-sha1 = "eeaad7cef88554c2fa56b5a3f71cfd5cb708c662"
 uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
-version = "0.2.9"
+version = "0.2.11"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -802,18 +535,6 @@ deps = ["Observables", "Preferences"]
 git-tree-sha1 = "7bc84b769c1d384315e7b5c4ac03a6c303e6cf35"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.8"
-
-[[deps.ConcurrentUtilities]]
-deps = ["Serialization", "Sockets"]
-git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
-uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
-version = "2.5.1"
-
-[[deps.Configurations]]
-deps = ["ExproniconLite", "OrderedCollections", "TOML"]
-git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
-uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
-version = "0.17.6"
 
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
@@ -887,47 +608,17 @@ git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 version = "1.6.6"
 
+[[deps.DelimitedFiles]]
+deps = ["Mmap"]
+git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
+uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+version = "1.9.1"
+
 [[deps.Dictionaries]]
 deps = ["Indexing", "Random", "Serialization"]
 git-tree-sha1 = "a55766a9c8f66cf19ffcdbdb1444e249bb4ace33"
 uuid = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 version = "0.4.6"
-
-[[deps.DimensionalData]]
-deps = ["ConstructionBase", "DataAPI", "Dates", "Extents", "Interfaces", "IntervalSets", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "PrecompileTools", "Random", "Statistics", "TableTraits", "Tables"]
-git-tree-sha1 = "7ad5fa0affdbdb7c0db39ff6d437c724934ea459"
-uuid = "0703355e-b756-11e9-17c0-8b28908087d0"
-version = "0.29.27"
-
-    [deps.DimensionalData.extensions]
-    DimensionalDataAbstractFFTsExt = "AbstractFFTs"
-    DimensionalDataAdaptExt = "Adapt"
-    DimensionalDataAlgebraOfGraphicsExt = "AlgebraOfGraphics"
-    DimensionalDataArrayInterfaceExt = "ArrayInterface"
-    DimensionalDataCategoricalArraysExt = "CategoricalArrays"
-    DimensionalDataChainRulesCoreExt = "ChainRulesCore"
-    DimensionalDataDiskArraysExt = "DiskArrays"
-    DimensionalDataMakieExt = "Makie"
-    DimensionalDataNearestNeighborsExt = "NearestNeighbors"
-    DimensionalDataPythonCallExt = "PythonCall"
-    DimensionalDataRecipesBaseExt = "RecipesBase"
-    DimensionalDataSparseArraysExt = "SparseArrays"
-    DimensionalDataStatsBaseExt = "StatsBase"
-
-    [deps.DimensionalData.weakdeps]
-    AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
-    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-    AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
-    ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-    CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    DiskArrays = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-    PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-    StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
@@ -990,27 +681,11 @@ git-tree-sha1 = "83231673ea4d3d6008ac74dc5079e77ab2209d8f"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
 
-[[deps.ExceptionUnwrapping]]
-deps = ["Test"]
-git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
-uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.11"
-
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "c307cd83373868391f3ac30b41530bc5d5d05d08"
+git-tree-sha1 = "e6c4a6407a949e79a9d3f249bf49e6987c80e01f"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.8.1+0"
-
-[[deps.ExpressionExplorer]]
-git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
-uuid = "21656369-7473-754a-2065-74616d696c43"
-version = "1.1.4"
-
-[[deps.ExproniconLite]]
-git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
-uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
-version = "0.10.14"
+version = "2.8.2+0"
 
 [[deps.Extents]]
 git-tree-sha1 = "b309b36a9e02fe7be71270dd8c0fd873625332b4"
@@ -1035,21 +710,17 @@ git-tree-sha1 = "ac5ecd1f53a2f36087ea75020872cd55154401d7"
 uuid = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
 version = "0.3.2"
 
-[[deps.FITSIO]]
-deps = ["CFITSIO", "Printf", "Reexport", "Tables"]
-git-tree-sha1 = "f57de3f533590c785210893030736dc11c4a4afb"
-uuid = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
-version = "0.17.5"
-
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "8e9c059d6857607253e837730dbf780b6b151acd"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.19.0"
-weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
+
+    [deps.FileIO.weakdeps]
+    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -1162,11 +833,15 @@ deps = ["DataAPI", "Extents", "GeoFormatTypes"]
 git-tree-sha1 = "2b0312a0c06b4408773c6dc1829b472ea706f058"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 version = "1.6.1"
-weakdeps = ["GeometryBasics", "Makie", "RecipesBase"]
 
     [deps.GeoInterface.extensions]
     GeoInterfaceMakieExt = ["Makie", "GeometryBasics"]
     GeoInterfaceRecipesBaseExt = "RecipesBase"
+
+    [deps.GeoInterface.weakdeps]
+    GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
@@ -1198,18 +873,6 @@ git-tree-sha1 = "24f6def62397474a297bfcec22384101609142ed"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.86.3+0"
 
-[[deps.GracefulPkg]]
-deps = ["Compat", "Pkg", "TOML"]
-git-tree-sha1 = "a854d6c0e9fb561b88cd20b4ad64f518cb1bfb8d"
-uuid = "828d9ff0-206c-6161-646e-6576656f7244"
-version = "2.4.3"
-
-[[deps.Graphics]]
-deps = ["Colors", "LinearAlgebra", "NaNMath"]
-git-tree-sha1 = "a641238db938fff9b2f60d08ed9030387daf428c"
-uuid = "a2bd30eb-e257-5431-a919-1863eab51364"
-version = "1.1.3"
-
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "69ffb934a5c5b7e086a0b4fee3427db2556fba6e"
@@ -1222,17 +885,16 @@ git-tree-sha1 = "93d5c27c8de51687a2c70ec0716e6e76f298416f"
 uuid = "3955a311-db13-416c-9275-1d80ed98e5e9"
 version = "0.11.2"
 
-[[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.11.0"
-
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
 git-tree-sha1 = "f923f9a774fcf3f5cb761bfa43aeadd689714813"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "8.5.1+0"
+
+[[deps.HashArrayMappedTries]]
+git-tree-sha1 = "2eaa69a7cab70a52b9687c8bf950a5a93ec895ae"
+uuid = "076d061b-32b6-4027-95e0-9a2c6f6d7e74"
+version = "0.2.0"
 
 [[deps.HypergeometricFunctions]]
 deps = ["Gamma", "LinearAlgebra"]
@@ -1288,12 +950,6 @@ git-tree-sha1 = "2a81c3897be6fbcde0802a0ebe6796d0562f63ec"
 uuid = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
 version = "0.9.10"
 
-[[deps.ImageShow]]
-deps = ["Base64", "ColorSchemes", "FileIO", "ImageBase", "ImageCore", "OffsetArrays", "StackViews"]
-git-tree-sha1 = "3b5344bcdbdc11ad58f3b1956709b5b9345355de"
-uuid = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
-version = "0.3.8"
-
 [[deps.Imath_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "dcc8d0cd653e55213df9b75ebc6fe4a8d3254c65"
@@ -1338,11 +994,6 @@ deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 version = "1.11.0"
 
-[[deps.Interfaces]]
-git-tree-sha1 = "331ff37738aea1a3cf841ddf085442f31b84324f"
-uuid = "85a1e053-f937-4924-92a5-1367d23b7b87"
-version = "0.3.2"
-
 [[deps.Interpolations]]
 deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
 git-tree-sha1 = "48922d06068130f87e43edef52382e6a94305ae6"
@@ -1359,9 +1010,9 @@ version = "0.16.3"
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm", "CoreMath", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
-git-tree-sha1 = "921d7e91687e15a2c7c269c226960491fc041832"
+git-tree-sha1 = "c3ee408ae340565f41699e3a3fa1053698c7626e"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "1.0.9"
+version = "1.0.10"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticArblibExt = "Arblib"
@@ -1387,12 +1038,16 @@ version = "1.0.9"
 git-tree-sha1 = "79d6bd28c8d9bccc2229784f1bd637689b256377"
 uuid = "8197267c-284f-5f27-9208-e0e47529a953"
 version = "0.7.14"
-weakdeps = ["Random", "RecipesBase", "Statistics"]
 
     [deps.IntervalSets.extensions]
     IntervalSetsRandomExt = "Random"
     IntervalSetsRecipesBaseExt = "RecipesBase"
     IntervalSetsStatisticsExt = "Statistics"
+
+    [deps.IntervalSets.weakdeps]
+    Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.InverseFunctions]]
 git-tree-sha1 = "a779299d77cd080bf77b97535acecd73e1c5e5cb"
@@ -1485,28 +1140,14 @@ version = "4.1.0+0"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3ac157462e1e800777cc97d0eafd1bdb5356a470"
+git-tree-sha1 = "b7970cef8ae1c990ba0c09cd8bdc1145e006632f"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
-version = "21.1.8+0"
-
-[[deps.LRUCache]]
-git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
-uuid = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
-version = "1.6.2"
-weakdeps = ["Serialization"]
-
-    [deps.LRUCache.extensions]
-    SerializationExt = ["Serialization"]
+version = "22.1.7+0"
 
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
-
-[[deps.LazilyInitializedFields]]
-git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
-uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
-version = "1.3.0"
 
 [[deps.LazyModules]]
 git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
@@ -1568,9 +1209,9 @@ version = "2.42.0+0"
 
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
-git-tree-sha1 = "f04133fe05eff1667d2054c53d59f9122383fe05"
+git-tree-sha1 = "aebd334d06cee9f24cea70bd19a39749daf73881"
 uuid = "89763e89-9b03-5906-acba-b20f662cd828"
-version = "4.7.2+0"
+version = "4.7.3+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1609,12 +1250,6 @@ version = "1.0.1"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
-[[deps.LoggingExtras]]
-deps = ["Dates", "Logging"]
-git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
-uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "1.2.0"
-
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -1627,21 +1262,15 @@ version = "0.5.16"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "ComputePipeline", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "PNGFiles", "Packing", "Pkg", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "efe001e1ee81b8eee0fe7da5a4328fcbbfd6b3aa"
+git-tree-sha1 = "f2c8715d05bf10f9d4dc354e69dee30b6be53239"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.24.12"
+version = "0.24.13"
 
     [deps.Makie.extensions]
     MakieDynamicQuantitiesExt = "DynamicQuantities"
 
     [deps.Makie.weakdeps]
     DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
-
-[[deps.Malt]]
-deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
-git-tree-sha1 = "c2335b4e291f2422e2be8abf8936ccad58a98992"
-uuid = "36869731-bdee-424d-aa32-cab38c994e3b"
-version = "1.4.1"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "0ee4497a4e80dbd29c058fcee6493f5219556f40"
@@ -1658,18 +1287,6 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "aa1078778be5a8e5259ff04fbc3d258b3e78d464"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.9"
-
-[[deps.MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.10"
-
-[[deps.MbedTLS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
-uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.1010+0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1691,23 +1308,11 @@ version = "0.3.4"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2025.11.4"
 
-[[deps.MsgPack]]
-deps = ["Serialization"]
-git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
-uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
-version = "1.2.1"
-
 [[deps.MuladdMacro]]
 deps = ["PrecompileTools"]
 git-tree-sha1 = "e8dcbeef032ba2f9051a44ac22b4e54e3a1a0099"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.6"
-
-[[deps.NaNMath]]
-deps = ["OpenLibm_jll"]
-git-tree-sha1 = "dbd2e8cd2c1c27f0b584f6661b4309609c5a685e"
-uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-version = "1.1.4"
 
 [[deps.NaturalSort]]
 git-tree-sha1 = "eda490d06b9f7c00752ee81cfa451efe55521e21"
@@ -1746,9 +1351,9 @@ version = "1.3.6+0"
 
 [[deps.OpenBLASConsistentFPCSR_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3287ec88df50429a934ebc6cf14606215e27b987"
+git-tree-sha1 = "dafdaa3ff15f20ff703d909d3a6f574a5b0586f3"
 uuid = "6cdc7f73-28fd-5e50-80fb-958a8875b1af"
-version = "0.3.33+0"
+version = "0.3.33+1"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1771,12 +1376,6 @@ version = "3.4.13+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
-
-[[deps.OpenSSL]]
-deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
-uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1833,11 +1432,11 @@ git-tree-sha1 = "0fac6313486baae819364c52b4f483450a9d793f"
 uuid = "5432bcbf-9aad-5242-b902-cca2824c8663"
 version = "0.5.12"
 
-[[deps.Pango_jll]]
-deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "FriBidi_jll", "Glib_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "58e5ed5e386e156bd93e86b305ebd21ac63d2d04"
-uuid = "36c8627f-9965-5494-a995-c6b170f724f3"
-version = "1.57.1+0"
+[[deps.Parameters]]
+deps = ["OrderedCollections", "UnPack"]
+git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
+uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -1872,17 +1471,37 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
-[[deps.Pluto]]
-deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
-git-tree-sha1 = "ebde4fa118c4f0454683254189809c6da48429cf"
-uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
-version = "1.0.2"
+[[deps.PlotlyBase]]
+deps = ["ColorSchemes", "Colors", "Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Parameters", "Pkg", "REPL", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "6256ab3ee24ef079b3afa310593817e069925eeb"
+uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
+version = "0.8.23"
 
-[[deps.PlutoDependencyExplorer]]
-deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
-git-tree-sha1 = "c3e5073a977b1c58b2d55c1ec187c3737e64e6af"
-uuid = "72656b73-756c-7461-726b-72656b6b696b"
-version = "1.2.2"
+    [deps.PlotlyBase.extensions]
+    DataFramesExt = "DataFrames"
+    DistributionsExt = "Distributions"
+    IJuliaExt = "IJulia"
+    JSON3Ext = "JSON3"
+
+    [deps.PlotlyBase.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+    IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+    JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+
+[[deps.PlutoPlotly]]
+deps = ["AbstractPlutoDingetjes", "Artifacts", "ColorSchemes", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "PrecompileTools", "Reexport", "ScopedValues", "Scratch", "TOML"]
+git-tree-sha1 = "2b9e3d771adfe535a4fdda855f4741fdaacd3f7f"
+uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
+version = "0.6.6"
+
+    [deps.PlutoPlotly.extensions]
+    PlotlyKaleidoExt = "PlotlyKaleido"
+    UnitfulExt = "Unitful"
+
+    [deps.PlutoPlotly.weakdeps]
+    PlotlyKaleido = "f2990250-8cf9-495f-b13a-cce12b45703c"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -1900,11 +1519,6 @@ deps = ["DataAPI", "Future"]
 git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.4.3"
-
-[[deps.PrecompileSignatures]]
-git-tree-sha1 = "18ef344185f25ee9d51d80e179f8dad33dc48eb1"
-uuid = "91cefc8d-f054-46dc-8f8c-26e11d7c5411"
-version = "3.0.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1997,22 +1611,10 @@ weakdeps = ["FixedPointNumbers"]
     [deps.Ratios.extensions]
     RatiosFixedPointNumbersExt = "FixedPointNumbers"
 
-[[deps.RecipesBase]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
-uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.3.4"
-
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
-
-[[deps.RegistryInstances]]
-deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
-git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
-uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
-version = "0.1.0"
 
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
@@ -2040,9 +1642,9 @@ version = "0.5.1+0"
 
 [[deps.Roots]]
 deps = ["Accessors", "CommonSolve", "Printf"]
-git-tree-sha1 = "ed45bcc7cf3c8887595b973f2b1efbe91dcc50ec"
+git-tree-sha1 = "125cbd31a56de53169c3eed9c17180bc6c245f83"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "3.0.1"
+version = "3.0.4"
 
     [deps.Roots.extensions]
     RootsChainRulesCoreExt = "ChainRulesCore"
@@ -2074,6 +1676,12 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
+
+[[deps.ScopedValues]]
+deps = ["HashArrayMappedTries", "Logging"]
+git-tree-sha1 = "67a144433c4ce877ee6d1ada69a124d6b1ecf7be"
+uuid = "7e506255-f358-4e82-b7e4-beb19740aa63"
+version = "1.6.2"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -2112,11 +1720,6 @@ deps = ["Statistics"]
 git-tree-sha1 = "3949ad92e1c9d2ff0cd4a1317d5ecbba682f4b92"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.1"
-
-[[deps.SimpleBufferStream]]
-git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
-uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
-version = "1.2.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -2348,6 +1951,11 @@ deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 version = "1.11.0"
 
+[[deps.UnPack]]
+git-tree-sha1 = "387c1f73762231e86e0c9c5443ce3b4a0a9a0c2b"
+uuid = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+version = "1.0.2"
+
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 version = "1.11.0"
@@ -2398,18 +2006,6 @@ deps = ["Unitful"]
 git-tree-sha1 = "903be579194534af1c4b4778d1ace676ca042238"
 uuid = "a7773ee8-282e-5fa2-be4e-bd808c38a91a"
 version = "1.0.0"
-
-[[deps.WCS]]
-deps = ["ConstructionBase", "WCS_jll"]
-git-tree-sha1 = "c12065744b66adfed32d24c2a13a3053cc235ea7"
-uuid = "15f3aee2-9e10-537f-b834-a6fb8bdb944d"
-version = "0.6.3"
-
-[[deps.WCS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "947bfa11fcd65dac9e9b2e963504fba6b4971d31"
-uuid = "550c8279-ae0e-5d1b-948f-937f2608a23e"
-version = "7.7.0+0"
 
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
@@ -2583,71 +2179,36 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─3c48207e-ae5d-4597-8010-587d6ed8736b
-# ╟─91f00e98-e69c-4435-b9d0-10d30006efef
-# ╟─a6e33cf8-1fe3-4810-a66b-adc07166871e
-# ╠═61c0bf34-302b-4732-a44d-4c2da611eb74
-# ╟─f87da6ab-c718-47c3-bedc-78cd025b40e6
-# ╟─3b974213-d2a5-4528-b27b-d4c608319213
-# ╠═b9ad9d11-f4c9-4c6f-bff2-b09ba4d22495
-# ╟─ae04bf64-0ea2-4da2-b6ae-a86f11a786b8
-# ╟─c26d8744-0026-4f43-b056-1c94ee958f8b
-# ╟─c04d7668-32ff-4131-8796-007d1637f56f
-# ╠═430611bb-6caf-4b38-837d-fc05173d4f00
-# ╟─515e570b-d140-4d66-845e-cae7b4cecd05
-# ╠═bb11ae83-b919-4511-86cf-51baf77d89a3
-# ╟─7401caa5-c891-4306-bb3c-a4a9cab7012b
-# ╠═d031ddf9-ee84-46b2-b387-1ec99a2ca79b
-# ╟─c4374601-9c65-4bd2-b2c0-3e83597395bf
-# ╟─5dd43020-71e9-47e7-9b57-295e57a98bce
-# ╠═02eaf214-7238-45b3-9674-c1b7f1b7d10e
-# ╟─74f155a2-fe8a-404f-b0c6-7a4f2724c408
-# ╟─414b0415-e784-4089-a683-a20ec15ee44f
-# ╠═235242b0-a8c6-4627-9b2c-fc14f705c686
-# ╟─f7aca318-a535-4a86-8c29-92d90db96271
-# ╟─0598bfc5-0900-4b04-ad84-9638b89869b9
-# ╟─ad35dd30-40f5-4bd7-b1d6-b81a226e85ab
-# ╠═1e05c329-a82a-4ed8-ba02-11e155539059
-# ╟─eaf39dba-e724-4eac-9a14-28fcd179efc7
-# ╠═798dbe98-c2d5-4dd2-b624-f5df795ef470
-# ╟─a9ec676e-8d14-48af-b3ea-6482dce86832
-# ╟─b3c6961a-b8a6-4597-aaf7-a97cae793670
-# ╠═3b8c84de-56f5-4d1e-9a63-a7abbc33bd55
-# ╟─83af6865-8c5a-436c-825f-f57f5bec7ec3
-# ╠═3b813a3a-b24d-4801-bd1a-d7ac3106518b
-# ╟─3158e659-3efa-4a64-a548-7076a3a03301
-# ╠═010ddf8b-7355-41cf-8d92-0d217e382978
-# ╠═23d0d42f-77e2-4b21-a350-f9f08eabbd22
-# ╟─0e6b6e0a-d538-4ccb-a284-c8cddabc17b6
-# ╠═22824a6b-9a68-4519-86af-2c5b60da5288
-# ╠═2f151bab-e310-46a2-b277-3082e880360b
-# ╠═45b56d0c-71b7-4151-95b5-bcd67239f40d
-# ╠═c3011e6e-6590-4b88-b3b3-a03c768a82c6
-# ╠═0fa6d28a-4608-444b-ae2c-5845ec8a21b1
-# ╟─997258a0-39ca-4e5f-a143-f3bdbefd265f
-# ╠═227ea834-faa9-4540-9e0b-b9c87cd19b45
-# ╟─9b1ec23d-e773-4893-83ba-c465fd510778
-# ╠═7c3e5faf-6f80-4413-a72e-bfce5a59fe07
-# ╟─7a582e8c-03fb-406e-83ef-9b15920fb6ba
-# ╠═6500f709-d767-44dd-911f-20fb29740671
-# ╠═0e690360-cdb1-47c9-b637-b0184508ac03
-# ╟─e2e9b225-88c2-4297-bcc7-fe31b1a8ca9f
-# ╟─5fb6d8fa-d890-45c5-afa3-944e96bc818e
-# ╟─4e9d0b96-358d-4baa-8ea9-7eb5aeff36f8
-# ╠═e2defd90-7781-4c64-98ad-4aabdfa99d63
-# ╟─215e0183-adfa-4da0-80d7-108894f73f23
-# ╠═4dc4074e-b3d3-4deb-a657-8a7847a8c156
-# ╟─51f3adcf-4e9a-49b5-a3a1-162a132e7f68
-# ╟─0338793e-c043-4001-a6c3-8c02159fb282
-# ╠═1cc2e29e-e9b3-4313-86b2-9eb7032c0ba4
-# ╟─134e86e5-995e-432c-87a5-bf6a496fe7f6
-# ╠═9c5450c2-807f-438d-a907-d78090a631ab
-# ╟─21bd0738-97cb-499d-ad8d-b6301c6a0bdc
-# ╠═edb0adae-ccf7-43cd-8985-626020a3adcb
-# ╟─eccd1973-1082-4fb6-920c-0039ddf5482a
-# ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
-# ╠═89e8f2a6-9d3b-44b8-8805-91daa24124c3
-# ╟─e892e25d-06a0-496a-bf63-40a8a988d089
-# ╠═7d07caf5-e203-4152-8bb9-c1f396c4f80c
+# ╟─7f40f78e-c509-11f0-afed-03ce3a08418b
+# ╟─d45a9f5c-52ca-4c6d-a9f3-c3b8f7617c45
+# ╟─bfe84763-0062-41a3-aa09-ae61a016766c
+# ╠═5ea4f6bd-73b8-4661-a3df-3e0f2db4f258
+# ╟─c15cb9ec-786b-44db-941c-1812597e10da
+# ╠═d6f1ad45-ef13-4b04-86fa-d46b9d87b29d
+# ╟─6cbed09f-78f4-4253-8558-3de82494404b
+# ╟─100d097d-ed33-40ba-a541-04f93d71a11f
+# ╠═11cb6428-3a8e-4916-84a5-1bd06bfd47a9
+# ╟─a577f6a1-00e4-4fa1-9030-a14ca1ebefc6
+# ╟─2a907d46-51d5-4232-a737-6d19aab073c4
+# ╠═c52dd72a-e504-40e2-9937-f78c9b3e1c7e
+# ╟─fe27a708-66d3-4f91-abe1-ce0135d04879
+# ╟─2497c869-17e4-4f5f-9534-30beab70a8ad
+# ╠═5b85edcd-6e79-44a0-85a0-eeee58437203
+# ╟─8ec6647e-b58e-4d9c-9ddf-97cca6da4d75
+# ╟─4ea25424-5267-420c-acef-45a503582a3a
+# ╠═48c23f36-53d8-4ae7-af9d-ed8ecb66c0ed
+# ╟─b07413d3-7c29-4f9d-8be6-7bc5118e186d
+# ╟─66629892-ce42-44a9-9a36-6582545bda8e
+# ╠═6b9da9ae-29d5-41b3-a1a0-ff8232ba9d6d
+# ╟─831e74cd-fc5f-4e8b-862b-898cd7262596
+# ╠═2e1b6a9c-5005-4862-96e6-1ab1fa253509
+# ╠═35a554eb-91dc-42dc-bf30-d3d64a5d74e3
+# ╠═159a8db5-9d8a-4309-be4c-45c0d90c7d87
+# ╟─6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
+# ╟─1f60ce5a-e909-44f2-867a-02be8a1ba37c
+# ╠═14245719-d3a1-4d46-9fc4-d2ddba6a3d93
+# ╟─276ed544-a40f-4686-8acc-515592ed523a
+# ╟─9f14d02c-b104-478c-9a7a-9ae34893d8c6
+# ╠═4bba77e4-81ba-453f-9666-924cf566e02c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
