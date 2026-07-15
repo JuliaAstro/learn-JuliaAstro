@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> order = 2
@@ -20,21 +20,44 @@ begin
 
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "FITSFiles", version = "0.2"),
+            Pkg.PackageSpec(; name = "Downloads"),
+            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSFiles.jl"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSWCS.jl"),
+            Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/AstroAngles.jl"),
             Pkg.PackageSpec(;
-                rev = "fitsfiles",
+                rev = "makie",
                 url = "https://github.com/JuliaAstro/AstroImages.jl",
             ),
-            Pkg.PackageSpec(; name = "Plots"),
-            Pkg.PackageSpec(; name = "PlutoUI"),
-            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "Makie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/icweaver/DimensionalData.jl",
+                rev = "makie-0.25",
+            ),
         ]
     )
 
-    using AstroImages, FITSWCS
+    # Analysis
+    using FITSWCS
+
+    # # Data handling and visualization
     using Downloads: download
-    using Plots
+    using AstroImages, CairoMakie
 
     AstroImages.set_cmap!(:cividis)
 
@@ -166,11 +189,12 @@ md"""
 We will read the FITS file containing an image of the Helix nebula from the astropy-data GitHub repository using the [AstroImages.jl](https://juliaastro.org/AstroImages/) package:
 """
 
-# ╔═╡ 0a893863-0748-46ea-9e03-562c1e63b775
+# ╔═╡ 4eea74ab-53a4-4e7c-8505-b1aefe678ef5
 img = let
-    f = download("https://github.com/astropy/astropy-data/raw/6d92878d18e970ce6497b70a9253f65c925978bf/tutorials/celestial-coords1/tailored_dss.22.29.38.50-20.50.13_60arcmin.fits")
-    load(f)
-end
+    url = "https://github.com/astropy/astropy-data/raw/6d92878d18e970ce6497b70a9253f65c925978bf/tutorials/celestial-coords1/tailored_dss.22.29.38.50-20.50.13_60arcmin.fits"
+    f = joinpath(@__DIR__, "data", "tailored_dss.22.29.38.50-20.50.13_60arcmin.fits")
+    isfile(f) ? load(f) : load(download(url, f))
+end;
 
 # ╔═╡ 1fd4e3ce-412a-4bd2-b649-f35f090bfa60
 md"""
@@ -217,7 +241,7 @@ The image data, `img`, is an `AstroImages.AstroImage`, containing WCS informatio
 """
 
 # ╔═╡ c167fb7f-5ab6-4b32-a2c5-beeefa1ae2c8
-implot(img; gridcolor = :coral)
+implotview(img; gridcolor = :coral)
 
 # ╔═╡ 5a3f62b9-0d39-46f5-b763-49244c13d4f0
 md"""
@@ -329,7 +353,7 @@ $(keywords())
 # ╠═b4e2cc78-6327-47ee-86c6-8869ec1c2a88
 # ╟─ca0aa269-b6ac-4804-86da-408f988e7d99
 # ╟─e12e893b-7ff6-4c25-89d1-050c20eeb1c0
-# ╠═0a893863-0748-46ea-9e03-562c1e63b775
+# ╠═4eea74ab-53a4-4e7c-8505-b1aefe678ef5
 # ╟─1fd4e3ce-412a-4bd2-b649-f35f090bfa60
 # ╟─f4b32c4e-f289-4ee0-bde3-44dbb0387e32
 # ╠═91d60255-18d6-47f7-8f66-09b9cd397602

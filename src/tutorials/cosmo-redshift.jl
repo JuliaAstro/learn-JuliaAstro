@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> image = "/assets/redshift-and-age.png"
@@ -15,28 +15,29 @@ using InteractiveUtils
 
 # ╔═╡ 1d4c2ee6-c6eb-11f0-8669-cd67adc8e577
 begin
+    # Can remove this block after Makie v0.25 is merged:
+    # https://github.com/MakieOrg/Makie.jl/pull/5484
     import Pkg
     Pkg.activate(; temp = true)
-
-    # TODO: Can remove when https://github.com/MakieOrg/Makie.jl/pull/5623
-    # is upstreamed
-
-    # Data viz
     Pkg.add(
         [
-            Pkg.PackageSpec(;
-                url = "https://github.com/icweaver/Makie.jl",
-                subdir = "Makie",
-                rev = "units-matrix",
-            ),
+            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "DynamicQuantities"),
+            Pkg.PackageSpec(; name = "MathTeXEngine"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
-                subdir = "CairoMakie",
+                subdir = "Makie",
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
                 rev = "ff/breaking-0.25",
             ),
             Pkg.PackageSpec(;
@@ -46,20 +47,18 @@ begin
         ]
     )
 
-    Pkg.add(["TOML", "PlutoUI", "DynamicQuantities", "MathTeXEngine"])
-
-    # Cosmological analysis
+    # Analysis
     using Cosmology: cosmology, angular_diameter_dist, age
-
-    # Plotting
-    using CairoMakie
-    using MathTeXEngine: set_texfont_family!, FontFamily
-    set_texfont_family!(FontFamily("TeXGyreHeros"))
 
     # Units
     using DynamicQuantities: @u_str, @us_str, ustrip
 
-    deps_ready = true
+    # Data handling and visualization
+    using CairoMakie
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
+
+    deps_ready = true # Can remove this too after upstream merge
 end
 
 # ╔═╡ 49b56034-eb0e-4c54-84de-a619eb9785c7
@@ -68,7 +67,6 @@ begin
 
     using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
 # ╔═╡ 078f30c6-ec2b-4163-896d-1852f31ace3b

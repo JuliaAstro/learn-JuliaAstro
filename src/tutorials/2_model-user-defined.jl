@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.25
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Modeling 2: Create a User Defined Model"
@@ -13,16 +13,19 @@ using InteractiveUtils
 
 # ╔═╡ 33e2fa03-a93d-400e-b3aa-87683e5bbd5a
 begin
+    # Can remove this block after Makie v0.25 is merged:
+    # https://github.com/MakieOrg/Makie.jl/pull/5484
     import Pkg
     Pkg.activate(; temp = true)
-
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "FITSFiles"),
-            Pkg.PackageSpec(; name = "DynamicQuantities"),
-            Pkg.PackageSpec(; name = "LsqFit"),
+            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "DynamicQuantities"),
+            Pkg.PackageSpec(; name = "FITSFiles"),
+            Pkg.PackageSpec(; name = "LsqFit"),
+            Pkg.PackageSpec(; name = "MathTeXEngine"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
@@ -41,15 +44,20 @@ begin
         ]
     )
 
-    Pkg.add("TOML")
-
-    using Downloads: download
-    using FITSFiles: FITSFiles
-    using DynamicQuantities
-    using CairoMakie
+    # Analysis
     using LsqFit
 
-    deps_ready = true
+    # Units
+    using DynamicQuantities
+
+    # Data handling and visualization
+    using Downloads: download
+    using FITSFiles: FITSFiles
+    using CairoMakie
+    using MathTeXEngine: set_texfont_family!, FontFamily
+    set_texfont_family!(FontFamily("TeXGyreHeros"))
+
+    deps_ready = true # Can remove this too after upstream merge
 end
 
 # ╔═╡ 9d88288c-6415-4851-a52f-0008fecacf0e
@@ -58,7 +66,6 @@ begin
 
     using TOML: TOML
     using PlutoUI: TableOfContents
-    using Test: @test
 end
 
 # ╔═╡ 4027b761-1f9c-4fbc-9cf7-8d0d479e8a33
