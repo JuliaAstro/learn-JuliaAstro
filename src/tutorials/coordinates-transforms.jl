@@ -65,8 +65,8 @@ begin
                 url = "https://github.com/JuliaAstro/FITSWCS.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-v0.25",
-                url = "https://github.com/JuliaAstro/SkyCoords.jl",
+                rev = "altaz",
+                url = "https://github.com/activexray/SkyCoords.jl",
             ),
             Pkg.PackageSpec(;
                 rev = "makie-0.25",
@@ -74,6 +74,13 @@ begin
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/JuliaPhysics/DynamicQuantities.jl",
+            ),
+            Pkg.PackageSpec(;
+                rev = "sofa-v2-migration",
+                url = "https://github.com/JuliaAstro/SOFA.jl",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaAstro/AstroTime.jl",
             ),
         ]
     )
@@ -89,10 +96,15 @@ begin
     # using UnitfulAstro: pc
     using SkyCoords
     using AstroAngles
+    using SOFA
+    using AstroTime
 
     using DynamicQuantities.Units: °
     using DynamicQuantities.Constants: pc
 end
+
+# ╔═╡ edf44d69-a40d-43ed-a4de-ceee627ffaab
+using Dates
 
 # ╔═╡ 56aaebbc-8166-4e52-a43e-93453137ad75
 begin
@@ -422,101 +434,101 @@ md"""
 # ╔═╡ 605fd406-3edc-476a-ac66-8a3d5e5b6661
 md"""
 !!! warning "Under construction"
-    This section is not available until <https://github.com/JuliaAstro/SkyCoords.jl/issues/35> is merged.
+    This section is not available until <https://github.com/JuliaAstro/SkyCoords.jl/issues/35> is closed.
 """
 
 # ╔═╡ e7b5928b-35b3-438d-8b07-7d79899c6df6
 md"""
-To determine whether a target is observable from a given observatory on Earth or to find out what targets are observable from a city or place on Earth at some time, we sometimes need to convert a coordinate or set of coordinates to a frame that is local to an on-earth observer. The most common choice for such a frame is “horizontal” or “Altitude-Azimuth” coordinates. In this frame, the sky coordinates of a source can be specified as an altitude from the horizon and an azimuth angle at a specified time. This coordinate frame is supported in astropy.coordinates through the AltAz coordinate frame.
+To determine whether a target is observable from a given observatory on Earth or to find out what targets are observable from a city or place on Earth at some time, we sometimes need to convert a coordinate or set of coordinates to a frame that is local to an on-earth observer. The most common choice for such a frame is “horizontal” or “Altitude-Azimuth” coordinates. In this frame, the sky coordinates of a source can be specified as an altitude from the horizon and an azimuth angle at a specified time. This coordinate frame is supported in SkyCoords.jl through the [`AltAzCoords`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.AltAzCoords) coordinate frame.
 """
 
 # ╔═╡ 9faa3737-b931-43c9-85cb-c70e63e507ce
 md"""
-The AltAz frame is different from the previously-demonstrated Galactic frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by instantiating the class with no arguments (see the example above where we used .transform_to(Galactic())). In order to specify an instance of the AltAz frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time (or times) we are requesting the frame at.
+The `AltAzCoords` frame is different from the previously-demonstrated `GalCoords` frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by converting with no arguments (see the example above where we used `GalCoords(<ICRSCoords>)`. In order to specify an instance of the `AltAzCoords` frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time we are requesting the frame at.
 """
-
-# ╔═╡ b0b0b9f6-3069-477e-a450-dda14f1af278
-md"""
-In astropy.coordinates, we specify locations on Earth with the EarthLocation class (docs). If we know the Earth longitude and latitude of our site, we can use these to create an instance of EarthLocation directly:
-"""
-
-# ╔═╡ ecea345a-63ce-40a7-ab5e-79de43448140
-
-
-# ╔═╡ c6781d81-dfe7-4c84-947c-2ab867fdeb27
-md"""
-The EarthLocation class also provides handy short-hands for retrieving an instance for a given street address (by querying the OpenStreetMap web API):
-"""
-
-# ╔═╡ cefca15f-6fab-40fa-941f-35c99f673830
-
-
-# ╔═╡ 06976d1b-7442-48c6-b09e-8939dd853806
-md"""
-Or for an astronomical observatory (use EarthLocation.get_site_names() to see a list of all available sites). For example, to retrieve an EarthLocation instance for the position of Kitt Peak National Observatory (in AZ, USA):
-"""
-
-# ╔═╡ 5785bc77-ce3f-43f8-adca-c2804ca194cc
-
 
 # ╔═╡ e3cae13e-1c09-4ae0-9b77-f7db3b942075
 md"""
-We will use Kitt Peak as our site.
+We will use Kitt Peak National Observatory (in AZ, USA) Kitt as our site by storing its latitude and longitude in an [`Observer`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.Observer) object:
 """
 
 # ╔═╡ f1a88ead-193f-4ec0-a431-544ea9fc4b0c
-
+obs_location = Observer(deg2rad(31.96333333), deg2rad(-111.6))
 
 # ╔═╡ fa0f8370-dff2-4ecc-9cdc-d0409cbbcfe9
 md"""
-As an example, we will now compute the altitude of a few of the open clusters from our catalog above over the course of a night. We have an object to represent our location on Earth, so now we need to create a set of times to compute the AltAz frame for. AltAz expects time information to be passed in as an astropy.time.Time object (docs; which can contain an array of times). Let’s pretend we have an observing run coming up on Dec 18, 2020, and we would like to compute the altitude/azimuth coordinates for our open clusters over that whole night.
+As an example, we will now compute the altitude of a few of the open clusters from our catalog above over the course of a night. We have an object (`obs_location`) to represent our location on Earth, so now we need to create a set of times to compute the `AltAzCoords` frame for. `AltAzCoords` expects time information to be passed in UTC JD. Let's pretend we had an observing run coming up on Dec 18, 2020, and we would like to compute the altitude/azimuth coordinates for our open clusters over that whole night:
+
+!!! todo
+    Support units, AstroTime.jl, etc.
 """
+
+# ╔═╡ 922f4393-d3ca-4d2a-aec4-bcba885e4f6b
+# 1AM UTC = 6PM local time (AZ mountain time), roughly the start of a night
+obs_date = from_utc("2020-12-18T01:00:00")
+
+# ╔═╡ 38754f06-c9a0-41ee-9a03-0b1e4882b9e4
+# Compute the alt/az over a 14 hour period, starting at 6PM local time,
+# with 256 equally spaced time points:
+times = obs_date .+ range(0, 14, 256) .* hours
 
 # ╔═╡ c26b86b5-4662-4285-bfb1-f381f0aa9957
 md"""
-Now we use our location, `observing_location`, and this grid of times, `time_grid`, to create an AltAz frame object.
+Now we use our location, `obs_location`, and this grid of times, `time_grid`, to transform our ICRS positions to their corresponding alt/az. Let's do this for the first open cluster in our catalog:
 """
 
-# ╔═╡ 27a65e38-afb7-49de-a564-14037eaf852a
+# ╔═╡ fa106a43-e57e-4d11-9f94-a89eaa53ed71
+# Should probably make an AstroTime extension in SkyCoords.jl or SOFA.jl for this
+jds = (julian ∘ to_utc).(AstroDates.DateTime, times)
 
+# ╔═╡ 721f0a73-ac9a-4e47-bab0-7eefd81e3ad1
+altaz(c, jd; obs = obs_location) = AltAzCoords(c, obs, jd)
 
 # ╔═╡ f7cba3b2-95bd-46f1-ad03-530a06c9239f
 md"""
 !!! note
-    This frame accepts even more parameters about the atmosphere, which can be used to correct for atmospheric refraction. But here we leave those additional parameters set to their defaults, which ignores refraction.
+    `AltAzCoords` accepts even more parameters about the atmosphere, which can be used to correct for atmospheric refraction. But here we leave those additional parameters set to their defaults, which ignores refraction.
 """
-
-# ╔═╡ 926bde7d-f8d5-4ebb-b000-21d08f14a8d1
-
-
-# ╔═╡ 66232ce9-ae18-4332-887f-dfae37b6c27b
-md"""
-Now we can transform the ICRS SkyCoord positions of the open clusters to AltAz to get the location of each of the clusters in the sky over Kitt Peak over a night. Let’s first do this only for the first open cluster in the catalog we loaded:
-"""
-
-# ╔═╡ e983fe98-8f43-479f-b6ce-f4790cf354e4
-
 
 # ╔═╡ 9ef4da1b-215c-4678-adfb-59df132afec5
 md"""
-There is a lot of information in the representation of our transformed SkyCoord, but note that the frame of the new object is now correctly noted as AltAz, as in<SkyCoord (AltAz: .... Like transforming to Galactic coordinates above, the new SkyCoord object now contains the data in a new representation, so the ICRS component names .ra and .dec will not work on this new object. Instead, the data (the altitude and azimuth as a function of time) can be accessed with the .alt and .az component names. For example, let’s plot the altitude of this open cluster over the course of the night:
+Let's now plot the altitude of this open cluster over the course of the night:
 """
 
-# ╔═╡ 6be6c513-b296-499f-acbf-3f23a01803fa
+# ╔═╡ a7b9e31f-f529-48cf-8ae6-cc0891040d8f
+alts_cluster1 = [altaz(open_cluster_c[1], jd).alt for jd in jds] * u"rad"
 
+# ╔═╡ a11fb0a5-ecbd-4818-92d7-cec37318e6f9
+lines(
+    to_utc.(Dates.DateTime, times), alts_cluster1 |> us"°";
+    axis = (;
+        xlabel = "Date/Time [UTC]",
+        ylabel = "Altitude",
+        # dim2_conversion = Makie.DQConversion(us"°"),
+    )
+)
 
 # ╔═╡ e857a4d0-de14-44d1-aeef-14df00a542a8
 md"""
-Here we can see that this open cluster reaches a high altitude above the horizon from Kitt Peak, and so it looks like it would be observable from this site. The above curve only shows the altitude trajectory for the first open cluster in our catalog, but we would like to compute the equivalent for all of the open clusters in the catalog. To do this, we have to make use of a concept that is used heavily in Numpy: array broadcasting. We have 474 open clusters and we want to evaluate the AltAz coordinates of these clusters at 256 different times.
+Here we can see that this open cluster reaches a high altitude above the horizon from Kitt Peak, and so it looks like it would be observable from this site. The above curve only shows the altitude trajectory for the first open cluster in our catalog, but we would like to compute the equivalent for all of the open clusters in the catalog. We have 474 open clusters and we want to evaluate the alt/az coordinates of these clusters at 256 different times:
 """
 
 # ╔═╡ fb0c9eba-20cb-475b-a044-d199095ce325
-
+length(open_cluster_c), length(times)
 
 # ╔═╡ a5dc2919-6a35-4495-b341-510766d5946c
 md"""
 We therefore want to produce a two-dimensional coordinate object that is indexed along one axis by the open cluster index, and along other axis by the time index. The astropy.coordinates transformation machinery supports array-like broadcasting, so we can do this by creating new, unmatched, length-1 axes on both the open clusters SkyCoord object and the AltAz frame using numpy.newaxis (doc):
 """
+
+# ╔═╡ fe6f1ef7-4d55-403a-b5f2-e1c6d59e5264
+altaz_grid = altaz.(open_cluster_c, permutedims(jds))
+
+# ╔═╡ 2fb8f03f-22f3-41e9-b6a2-c8def8d6c291
+alts_grid = getproperty.(altaz_grid, :alt) * u"rad" |> us"deg"
+
+# ╔═╡ d09ae7f4-7834-4d22-be91-d8d2277569f6
+series(to_utc.(Dates.DateTime, times), alts_grid[begin:10, :]; color = :Spectral)
 
 # ╔═╡ 4d8cf50e-0735-4114-ac72-b50ea2565647
 md"""
@@ -629,7 +641,7 @@ $(keywords())
 # ╟─f031ba93-4ab8-4b26-acb9-3c9c162a3a8b
 # ╠═75ca894d-df36-4b8e-a41c-c83eeaa6de2b
 # ╠═82dc476a-d1b8-45c2-a104-ca650f5f1c75
-# ╠═703baf6d-19c2-4fee-89a3-f1e5e5e43967
+# ╟─703baf6d-19c2-4fee-89a3-f1e5e5e43967
 # ╠═e000650c-fdc2-4dfc-8d1e-cc92fde93a4f
 # ╟─2e96000f-d39a-4052-92ec-a76f5de67ddd
 # ╠═149ac51b-a571-4ab6-b213-decce18c06d1
@@ -651,26 +663,25 @@ $(keywords())
 # ╟─605fd406-3edc-476a-ac66-8a3d5e5b6661
 # ╟─e7b5928b-35b3-438d-8b07-7d79899c6df6
 # ╟─9faa3737-b931-43c9-85cb-c70e63e507ce
-# ╟─b0b0b9f6-3069-477e-a450-dda14f1af278
-# ╠═ecea345a-63ce-40a7-ab5e-79de43448140
-# ╟─c6781d81-dfe7-4c84-947c-2ab867fdeb27
-# ╠═cefca15f-6fab-40fa-941f-35c99f673830
-# ╟─06976d1b-7442-48c6-b09e-8939dd853806
-# ╠═5785bc77-ce3f-43f8-adca-c2804ca194cc
 # ╟─e3cae13e-1c09-4ae0-9b77-f7db3b942075
 # ╠═f1a88ead-193f-4ec0-a431-544ea9fc4b0c
 # ╟─fa0f8370-dff2-4ecc-9cdc-d0409cbbcfe9
+# ╠═922f4393-d3ca-4d2a-aec4-bcba885e4f6b
+# ╠═38754f06-c9a0-41ee-9a03-0b1e4882b9e4
 # ╟─c26b86b5-4662-4285-bfb1-f381f0aa9957
-# ╠═27a65e38-afb7-49de-a564-14037eaf852a
+# ╠═fa106a43-e57e-4d11-9f94-a89eaa53ed71
+# ╠═721f0a73-ac9a-4e47-bab0-7eefd81e3ad1
 # ╟─f7cba3b2-95bd-46f1-ad03-530a06c9239f
-# ╠═926bde7d-f8d5-4ebb-b000-21d08f14a8d1
-# ╟─66232ce9-ae18-4332-887f-dfae37b6c27b
-# ╠═e983fe98-8f43-479f-b6ce-f4790cf354e4
 # ╟─9ef4da1b-215c-4678-adfb-59df132afec5
-# ╠═6be6c513-b296-499f-acbf-3f23a01803fa
+# ╠═a7b9e31f-f529-48cf-8ae6-cc0891040d8f
+# ╠═edf44d69-a40d-43ed-a4de-ceee627ffaab
+# ╠═a11fb0a5-ecbd-4818-92d7-cec37318e6f9
 # ╟─e857a4d0-de14-44d1-aeef-14df00a542a8
 # ╠═fb0c9eba-20cb-475b-a044-d199095ce325
 # ╟─a5dc2919-6a35-4495-b341-510766d5946c
+# ╠═fe6f1ef7-4d55-403a-b5f2-e1c6d59e5264
+# ╠═2fb8f03f-22f3-41e9-b6a2-c8def8d6c291
+# ╠═d09ae7f4-7834-4d22-be91-d8d2277569f6
 # ╟─4d8cf50e-0735-4114-ac72-b50ea2565647
 # ╟─eef0b9d5-32e4-4d2e-9116-7b44ce0e1567
 # ╠═765aee74-6bb5-40c2-859d-c55ef6860bfa
