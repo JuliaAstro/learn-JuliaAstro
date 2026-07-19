@@ -474,7 +474,7 @@ times = obs_date .+ range(0, 14, 256) .* hours
 
 # ╔═╡ c26b86b5-4662-4285-bfb1-f381f0aa9957
 md"""
-Now we use our location, `obs_location`, and this grid of times, `time_grid`, to transform our ICRS positions to their corresponding alt/az. Let's do this for the first open cluster in our catalog:
+Now we use our location, `obs_location`, and this grid of times, `times`, to transform our ICRS positions to their corresponding alt/az. Let's do this for the first open cluster in our catalog:
 """
 
 # ╔═╡ fa106a43-e57e-4d11-9f94-a89eaa53ed71
@@ -500,35 +500,93 @@ alts_cluster1 = [altaz(open_cluster_c[1], jd).alt for jd in jds] * u"rad"
 
 # ╔═╡ a11fb0a5-ecbd-4818-92d7-cec37318e6f9
 lines(
-    to_utc.(Dates.DateTime, times), alts_cluster1 |> us"°";
+    to_utc.(Dates.DateTime, times), alts_cluster1;
     axis = (;
         xlabel = "Date/Time [UTC]",
         ylabel = "Altitude",
-        # dim2_conversion = Makie.DQConversion(us"°"),
+        dim2_conversion = Makie.DQConversion(us"°"),
     )
 )
 
+# ╔═╡ fb0c9eba-20cb-475b-a044-d199095ce325
+n_clusters, n_times = length(open_cluster_c), length(times)
+
 # ╔═╡ e857a4d0-de14-44d1-aeef-14df00a542a8
 md"""
-Here we can see that this open cluster reaches a high altitude above the horizon from Kitt Peak, and so it looks like it would be observable from this site. The above curve only shows the altitude trajectory for the first open cluster in our catalog, but we would like to compute the equivalent for all of the open clusters in the catalog. We have 474 open clusters and we want to evaluate the alt/az coordinates of these clusters at 256 different times:
+Here we can see that this open cluster reaches a high altitude above the horizon from Kitt Peak, and so it looks like it would be observable from this site. The above curve only shows the altitude trajectory for the first open cluster in our catalog, but we would like to compute the equivalent for all of the open clusters in the catalog. We have $(n_clusters) open clusters and we want to evaluate the alt/az coordinates of these clusters at $(n_times) different times:
 """
-
-# ╔═╡ fb0c9eba-20cb-475b-a044-d199095ce325
-length(open_cluster_c), length(times)
 
 # ╔═╡ a5dc2919-6a35-4495-b341-510766d5946c
+"""
+We therefore want to produce a two-dimensional coordinate object that is indexed along one axis by the open cluster index, and along other axis by the time index. We _could_ do this by broadcasting over two dimensions:
+
+```julia
+altaz_grid = altaz.(open_cluster_c, permutedims(jds))
+```
+
+but this would be pretty slow because we would be computing things like precession-nutation, Earth rotation, polar motion, and refraction constants for each of our $(n_clusters) × $(n_times) = $(n_clusters * n_times) total points. There are only **$(n_times)** distinct time points to consider, so there is a more efficient route that we can go.
+""" |> Markdown.parse
+
+# ╔═╡ f67881ba-1f84-4380-9c87-d365e0a82ef7
 md"""
-We therefore want to produce a two-dimensional coordinate object that is indexed along one axis by the open cluster index, and along other axis by the time index. The astropy.coordinates transformation machinery supports array-like broadcasting, so we can do this by creating new, unmatched, length-1 axes on both the open clusters SkyCoord object and the AltAz frame using numpy.newaxis (doc):
+The strategy is to use SOFA.jl's two-stage idiom: i) build an astrometry context once per time with `apco13`, then ii) run cheap per-star transforms (`atciqz` --> `atioq`) against it. We implement this below:
 """
 
-# ╔═╡ fe6f1ef7-4d55-403a-b5f2-e1c6d59e5264
-altaz_grid = altaz.(open_cluster_c, permutedims(jds))
+# ╔═╡ 8080d735-b994-474d-9d8f-8d8e985d3c03
+# quick: one apco13 per TIME, then cheap per-star transforms
+function altaz_fast(cl, obs, jds)
+    out = Matrix{AltAzCoords{Float64}}(undef, length(cl), length(jds))
+    for (j, jd) in pairs(jds)
+        r = SOFA.apco13(
+            float(jd), 0.0, 0.0,
+            float(obs.longitude), float(obs.latitude), float(obs.altitude),
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.55,
+        )
+        astrom = r[1]
+        for (i, c) in pairs(cl)
+            icrs = convert(ICRSCoords, c)
+            ri, di = SOFA.atciqz(icrs.ra, icrs.dec, astrom)
+            o = SOFA.atioq(ri, di, astrom)
+            out[i, j] = AltAzCoords(π / 2 - o[2], o[1])
+        end
+    end
+    return out
+end
 
-# ╔═╡ 2fb8f03f-22f3-41e9-b6a2-c8def8d6c291
-alts_grid = getproperty.(altaz_grid, :alt) * u"rad" |> us"deg"
+# ╔═╡ a3aabdfa-6a90-4b2b-9b43-179166c1fac1
+md"""
+!!! todo
+    Upstream a more general version of this to the SOFA.jl extension in SkyCoords.jl
+"""
 
-# ╔═╡ d09ae7f4-7834-4d22-be91-d8d2277569f6
-series(to_utc.(Dates.DateTime, times), alts_grid[begin:10, :]; color = :Spectral)
+# ╔═╡ 0d43b6fc-530d-4f44-8ba5-4d0de7cec52d
+altaz_grid = altaz_fast(open_cluster_c, obs_location, jds)
+
+# ╔═╡ 2857dc98-1780-4689-a172-9d9b08f906e7
+md"""
+Let’s now over-plot the trajectories for the first 10 open clusters in the catalog:
+"""
+
+# ╔═╡ ce47bdd9-dc4d-47ee-9430-c11cbcab3fff
+# This is an alternative to `alts_cluster1`, which handled the
+# unit conversion to degrees within Makie.jl
+alts_grid = getproperty.(altaz_grid, :alt) * u"rad" |> us"°"
+
+# ╔═╡ f537cb9e-a465-48a1-80a4-a8b79f29e150
+series(
+    to_utc.(Dates.DateTime, times),
+    alts_grid[begin:10, :];
+    color = :Spectral,
+    axis = (;
+        xlabel = "Date/Time [UTC]",
+        ylabel = "Altitude",
+    ),
+)
+
+# ╔═╡ 5bc81327-4ed8-4c78-9856-7402d370a044
+md"""
+From this, we can see that only two of the clusters in this batch seem to be easily observable.
+"""
 
 # ╔═╡ 4d8cf50e-0735-4114-ac72-b50ea2565647
 md"""
@@ -679,9 +737,14 @@ $(keywords())
 # ╟─e857a4d0-de14-44d1-aeef-14df00a542a8
 # ╠═fb0c9eba-20cb-475b-a044-d199095ce325
 # ╟─a5dc2919-6a35-4495-b341-510766d5946c
-# ╠═fe6f1ef7-4d55-403a-b5f2-e1c6d59e5264
-# ╠═2fb8f03f-22f3-41e9-b6a2-c8def8d6c291
-# ╠═d09ae7f4-7834-4d22-be91-d8d2277569f6
+# ╟─f67881ba-1f84-4380-9c87-d365e0a82ef7
+# ╠═8080d735-b994-474d-9d8f-8d8e985d3c03
+# ╟─a3aabdfa-6a90-4b2b-9b43-179166c1fac1
+# ╠═0d43b6fc-530d-4f44-8ba5-4d0de7cec52d
+# ╟─2857dc98-1780-4689-a172-9d9b08f906e7
+# ╠═ce47bdd9-dc4d-47ee-9430-c11cbcab3fff
+# ╠═f537cb9e-a465-48a1-80a4-a8b79f29e150
+# ╟─5bc81327-4ed8-4c78-9856-7402d370a044
 # ╟─4d8cf50e-0735-4114-ac72-b50ea2565647
 # ╟─eef0b9d5-32e4-4d2e-9116-7b44ce0e1567
 # ╠═765aee74-6bb5-40c2-859d-c55ef6860bfa
