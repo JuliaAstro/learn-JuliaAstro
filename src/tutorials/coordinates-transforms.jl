@@ -431,12 +431,6 @@ md"""
 ## Transforming to More Complex Coordinate Frames: Computing the Altitude of a Target at an Observatory
 """
 
-# ╔═╡ 605fd406-3edc-476a-ac66-8a3d5e5b6661
-md"""
-!!! warning "Under construction"
-    This section is not available until <https://github.com/JuliaAstro/SkyCoords.jl/issues/35> is closed.
-"""
-
 # ╔═╡ e7b5928b-35b3-438d-8b07-7d79899c6df6
 md"""
 To determine whether a target is observable from a given observatory on Earth or to find out what targets are observable from a city or place on Earth at some time, we sometimes need to convert a coordinate or set of coordinates to a frame that is local to an on-earth observer. The most common choice for such a frame is “horizontal” or “Altitude-Azimuth” coordinates. In this frame, the sky coordinates of a source can be specified as an altitude from the horizon and an azimuth angle at a specified time. This coordinate frame is supported in SkyCoords.jl through the [`AltAzCoords`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.AltAzCoords) coordinate frame.
@@ -444,7 +438,7 @@ To determine whether a target is observable from a given observatory on Earth or
 
 # ╔═╡ 9faa3737-b931-43c9-85cb-c70e63e507ce
 md"""
-The `AltAzCoords` frame is different from the previously-demonstrated `GalCoords` frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by converting with no arguments (see the example above where we used `GalCoords(<ICRSCoords>)`. In order to specify an instance of the `AltAzCoords` frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time we are requesting the frame at.
+The `AltAzCoords` frame is different from the previously-demonstrated `GalCoords` frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by converting with no arguments (see the example above where we used `GalCoords(<ICRSCoords>)`. In order to specify an instance of the `AltAzCoords` frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time we are requesting the frame at. In SkyCoords.jl, this observing context is bundled into an [`AltAzFrame`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.AltAzFrame) object.
 """
 
 # ╔═╡ e3cae13e-1c09-4ae0-9b77-f7db3b942075
@@ -474,7 +468,7 @@ times = obs_date .+ range(0, 14, 256) .* hours
 
 # ╔═╡ c26b86b5-4662-4285-bfb1-f381f0aa9957
 md"""
-Now we use our location, `obs_location`, and this grid of times, `times`, to transform our ICRS positions to their corresponding alt/az. Let's do this for the first open cluster in our catalog:
+Now we use our location, `obs_location`, and this grid of times, `times`, to transform our ICRS positions to their corresponding alt/az. First we bundle the location together with each time point into its own `AltAzFrame`, giving us one observing context per time:
 """
 
 # ╔═╡ fa106a43-e57e-4d11-9f94-a89eaa53ed71
@@ -482,21 +476,21 @@ Now we use our location, `obs_location`, and this grid of times, `times`, to tra
 jds = (julian ∘ to_utc).(AstroDates.DateTime, times)
 
 # ╔═╡ 721f0a73-ac9a-4e47-bab0-7eefd81e3ad1
-altaz(c, jd; obs = obs_location) = AltAzCoords(c, obs, jd)
+frames = AltAzFrame.(obs_location, jds)
 
 # ╔═╡ f7cba3b2-95bd-46f1-ad03-530a06c9239f
 md"""
 !!! note
-    `AltAzCoords` accepts even more parameters about the atmosphere, which can be used to correct for atmospheric refraction. But here we leave those additional parameters set to their defaults, which ignores refraction.
+    `AltAzFrame` accepts even more parameters about the atmosphere, which can be used to correct for atmospheric refraction. But here we leave those additional parameters set to their defaults, which ignores refraction.
 """
 
 # ╔═╡ 9ef4da1b-215c-4678-adfb-59df132afec5
 md"""
-Let's now plot the altitude of this open cluster over the course of the night:
+Let's now compute and plot the altitude of the first open cluster in our catalog over the course of the night:
 """
 
 # ╔═╡ a7b9e31f-f529-48cf-8ae6-cc0891040d8f
-alts_cluster1 = [altaz(open_cluster_c[1], jd).alt for jd in jds] * u"rad"
+alts_cluster1 = [AltAzCoords(open_cluster_c[1], frame).alt for frame in frames] * u"rad"
 
 # ╔═╡ a11fb0a5-ecbd-4818-92d7-cec37318e6f9
 lines(
@@ -518,49 +512,17 @@ Here we can see that this open cluster reaches a high altitude above the horizon
 
 # ╔═╡ a5dc2919-6a35-4495-b341-510766d5946c
 """
-We therefore want to produce a two-dimensional coordinate object that is indexed along one axis by the open cluster index, and along other axis by the time index. We _could_ do this by broadcasting over two dimensions:
-
-```julia
-altaz_grid = altaz.(open_cluster_c, permutedims(jds))
-```
-
-but this would be pretty slow because we would be computing things like precession-nutation, Earth rotation, polar motion, and refraction constants for each of our $(n_clusters) × $(n_times) = $(n_clusters * n_times) total points. There are only **$(n_times)** distinct time points to consider, so there is a more efficient route that we can go.
+We therefore want to produce a two-dimensional coordinate object that is indexed along one axis by the open cluster index, and along the other axis by the time index. Naively, this would be pretty slow: it would involve computing things like precession-nutation, Earth rotation, polar motion, and refraction constants for each of our $(n_clusters) × $(n_times) = $(n_clusters * n_times) total points. There are only **$(n_times)** distinct time points to consider, though, and this is exactly what our `AltAzFrame`s capture: each frame computes this expensive star-independent setup once, the first time it is used, and caches it for every subsequent transform. Broadcasting over the frames is therefore efficient by construction:
 """ |> Markdown.parse
+
+# ╔═╡ 0d43b6fc-530d-4f44-8ba5-4d0de7cec52d
+altaz_grid = AltAzCoords.(open_cluster_c, permutedims(frames))
 
 # ╔═╡ f67881ba-1f84-4380-9c87-d365e0a82ef7
 md"""
-The strategy is to use SOFA.jl's two-stage idiom: i) build an astrometry context once per time with `apco13`, then ii) run cheap per-star transforms (`atciqz` --> `atioq`) against it. We implement this below:
+!!! note
+    Under the hood, this maps onto SOFA.jl's two-stage idiom: i) an astrometry context is built once per frame with `apco13`, then ii) cheap per-star transforms (`atciqz` --> `atioq`) are run against it.
 """
-
-# ╔═╡ 8080d735-b994-474d-9d8f-8d8e985d3c03
-# quick: one apco13 per TIME, then cheap per-star transforms
-function altaz_fast(cl, obs, jds)
-    out = Matrix{AltAzCoords{Float64}}(undef, length(cl), length(jds))
-    for (j, jd) in pairs(jds)
-        r = SOFA.apco13(
-            float(jd), 0.0, 0.0,
-            float(obs.longitude), float(obs.latitude), float(obs.altitude),
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.55,
-        )
-        astrom = r[1]
-        for (i, c) in pairs(cl)
-            icrs = convert(ICRSCoords, c)
-            ri, di = SOFA.atciqz(icrs.ra, icrs.dec, astrom)
-            o = SOFA.atioq(ri, di, astrom)
-            out[i, j] = AltAzCoords(π / 2 - o[2], o[1])
-        end
-    end
-    return out
-end
-
-# ╔═╡ a3aabdfa-6a90-4b2b-9b43-179166c1fac1
-md"""
-!!! todo
-    Upstream a more general version of this to the SOFA.jl extension in SkyCoords.jl
-"""
-
-# ╔═╡ 0d43b6fc-530d-4f44-8ba5-4d0de7cec52d
-altaz_grid = altaz_fast(open_cluster_c, obs_location, jds)
 
 # ╔═╡ 2857dc98-1780-4689-a172-9d9b08f906e7
 md"""
@@ -576,7 +538,7 @@ alts_grid = getproperty.(altaz_grid, :alt) * u"rad" |> us"°"
 series(
     to_utc.(Dates.DateTime, times),
     alts_grid[begin:10, :];
-    color = :Spectral,
+    color = :tab10,
     axis = (;
         xlabel = "Date/Time [UTC]",
         ylabel = "Altitude",
@@ -595,15 +557,29 @@ md"""
 
 # ╔═╡ eef0b9d5-32e4-4d2e-9116-7b44ce0e1567
 md"""
-Transformations between some reference frames require knowing more information about a source. For example, the transformation from ICRS to Galactic coordinates (as demonstrated above) amounts to a 3D rotation, but no change of origin. This transformation is therefore supported for any spherical position (with or without distance information). However, some transformations include a change of origin, and therefore require that the source data (i.e., the SkyCoord object) has defined distance information. For example, for a SkyCoord with only sky position, we can transform from the ICRS to the FK5 coordinate system:
+Transformations between some reference frames require knowing more information about a source. For example, the transformation from ICRS to Galactic coordinates (as demonstrated above) amounts to a 3D rotation, but no change of origin. This transformation is therefore supported for any spherical position (with or without distance information). However, some transformations include a change of origin, and therefore require that the source data (i.e., the `AbstractSkyCoords` object) has defined distance information. For example, for an `AbstractSkyCoords` with only sky position, we can transform from the ICRS to the FK5 coordinate system:
 """
 
-# ╔═╡ 765aee74-6bb5-40c2-859d-c55ef6860bfa
+# ╔═╡ e1de3da5-f07f-4dce-9deb-60b27c735dd0
+icrs_c = ICRSCoords(150.4°, -11°)
 
+# ╔═╡ 49a0948d-60e6-4cd3-85f4-99de2074b576
+icrs_c |> FK5Coords{2000}
 
 # ╔═╡ 0a9854b8-d5e1-4b5f-8d22-328a69e9da30
 md"""
-However, we would NOT be able to transform this position to the Galactocentric frame (docs), because this transformation involves a shift of origin from the solar system barycenter to the Galactic center:
+However, we would NOT be able to transform this position to the Galactocentric frame, because this transformation involves a shift of origin from the solar system barycenter to the Galactic center:
+"""
+
+# ╔═╡ 999f665c-92bc-4abb-95da-43aabeeaf0dd
+md"""
+!!! todo
+    Implement Galactocentric coords
+"""
+
+# ╔═╡ 9cb3e881-c5d6-4d62-bb98-56d635054533
+md"""
+In this tutorial, we have introduced the key concepts that underly the SkyCoords.jl framework: coordinate component formats, representations, and frames. We demonstrated how to change the representation of an `AbstractSkyCoords` object (e.g., `ICRSCoords` to `CartesianCoords`). We then introduced the concept of coordinate frames and frame transformations.
 """
 
 # ╔═╡ 1a853d21-a144-4486-9956-6d9d5f71620f
@@ -613,17 +589,17 @@ md"""
 
 # ╔═╡ 82f44845-5bd4-48ed-b04e-a0cf3c6ca240
 md"""
-Przybylski’s star or HD101065 is in the southern constellation of Centaurus with a right ascension of 174.4040348 degrees and a declination of -46.70953633 degrees. Create a SkyCoord object of its sky position.
+Przybylski’s star or HD101065 is in the southern constellation of Centaurus with a right ascension of 174.4040348 degrees and a declination of -46.70953633 degrees. Create an `AbstractSkyCoords` object of its sky position.
 """
 
 # ╔═╡ a2970366-b716-4574-b93f-49d18372e108
 md"""
-If the distance to Przybylski’s star is 108.4 pc, retrieve a 3D Cartesian representation. (Hint: we did this earlier in the tutorial and it may help to create a new 3D SkyCoord object.)
+If the distance to Przybylski’s star is 108.4 pc, retrieve a 3D Cartesian representation. (Hint: we did this earlier in the tutorial and it may help to create a new 3D `AbstractSkyCoords` object.)
 """
 
 # ╔═╡ d3f76adc-ba32-4862-a9c1-35d1a20e3474
 md"""
-Imagine it is May 2018, and you would like to take an observation of HD 101065 from Greenwich Royal Observatory. Use SkyCoords to figure out if you can observe the star that month. You can use any time and date of that month for your timeframe.
+Imagine it is May 2018, and you would like to take an observation of HD 101065 from Greenwich Royal Observatory. Use SkyCoords.jl to figure out if you can observe the star that month. You can use any time and date of that month for your timeframe.
 """
 
 # ╔═╡ 03b572a4-e51b-41e7-bc38-247644e41ebd
@@ -718,7 +694,6 @@ $(keywords())
 # ╠═7abac62e-39ab-467e-95d2-e4f7d8eb4371
 # ╟─afe3b38d-7381-403b-8dd0-de56e4c9309c
 # ╟─ef9592cc-673a-488f-9e8f-fe9314f6d8b6
-# ╟─605fd406-3edc-476a-ac66-8a3d5e5b6661
 # ╟─e7b5928b-35b3-438d-8b07-7d79899c6df6
 # ╟─9faa3737-b931-43c9-85cb-c70e63e507ce
 # ╟─e3cae13e-1c09-4ae0-9b77-f7db3b942075
@@ -737,18 +712,19 @@ $(keywords())
 # ╟─e857a4d0-de14-44d1-aeef-14df00a542a8
 # ╠═fb0c9eba-20cb-475b-a044-d199095ce325
 # ╟─a5dc2919-6a35-4495-b341-510766d5946c
-# ╟─f67881ba-1f84-4380-9c87-d365e0a82ef7
-# ╠═8080d735-b994-474d-9d8f-8d8e985d3c03
-# ╟─a3aabdfa-6a90-4b2b-9b43-179166c1fac1
 # ╠═0d43b6fc-530d-4f44-8ba5-4d0de7cec52d
+# ╟─f67881ba-1f84-4380-9c87-d365e0a82ef7
 # ╟─2857dc98-1780-4689-a172-9d9b08f906e7
 # ╠═ce47bdd9-dc4d-47ee-9430-c11cbcab3fff
 # ╠═f537cb9e-a465-48a1-80a4-a8b79f29e150
 # ╟─5bc81327-4ed8-4c78-9856-7402d370a044
 # ╟─4d8cf50e-0735-4114-ac72-b50ea2565647
 # ╟─eef0b9d5-32e4-4d2e-9116-7b44ce0e1567
-# ╠═765aee74-6bb5-40c2-859d-c55ef6860bfa
-# ╟─0a9854b8-d5e1-4b5f-8d22-328a69e9da30
+# ╠═e1de3da5-f07f-4dce-9deb-60b27c735dd0
+# ╠═49a0948d-60e6-4cd3-85f4-99de2074b576
+# ╠═0a9854b8-d5e1-4b5f-8d22-328a69e9da30
+# ╟─999f665c-92bc-4abb-95da-43aabeeaf0dd
+# ╟─9cb3e881-c5d6-4d62-bb98-56d635054533
 # ╟─1a853d21-a144-4486-9956-6d9d5f71620f
 # ╟─82f44845-5bd4-48ed-b04e-a0cf3c6ca240
 # ╟─a2970366-b716-4574-b93f-49d18372e108
