@@ -41,7 +41,7 @@ begin
     # Analysis
     using StatsBase: coef, predict
     using LinearAlgebra: Diagonal
-    using GLM: Normal, @formula, glm, aweights
+    using GLM: Normal, @formula, glm, fweights
     using Optimization: OptimizationProblem, solve
     using OptimizationOptimJL: NelderMead
 
@@ -53,9 +53,6 @@ begin
     using MathTeXEngine: set_texfont_family!, FontFamily
     set_texfont_family!(FontFamily("TeXGyreHeros"))
 end;
-
-# ╔═╡ 727a8e8f-a1cf-4c0d-909c-a351d132b8ea
-using GLM: fweights
 
 # ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
 begin
@@ -124,9 +121,9 @@ A fair bit happened here. In the above line, AoG.jl:
 - Plot the fitted line along with its estimated 95% confidence interval.
 - Labeled the axes with the appropriate column names used.
 
-While this is convenient for quick visualization to see that there indeed appears to be a linear relationshiop between the log period of the pulsation period and luminosity (inverse relation to observed magnitude), we really would like to take special care with our statistical analysis.
+While this is convenient for quick visualization to see that there indeed appears to be a linear relationship between the log period of the pulsation period and luminosity (inverse relation to observed magnitude), we really would like to take special care with our statistical analysis.
 
-For example, we would like to weight our fit by the uncertainty in our magnitude measurements, `Ks_err`. It is also important to note that their is a difference between frequency weights, which this package uses by default, and analytic weights, which go like the inverse variance of our measurements ``\left(1 / \sigma_i^2\right)``, where ``\sigma_i \equiv `` `Ks_err` for our purposes. This will also impact how our confidence interval is calculated.
+For example, we would like to weight our fit by the uncertainty in our magnitude measurements, `Ks_err`. It is also important to note that there is a difference between frequency weights, which this package uses by default, and analytic weights, which go like the inverse variance of our measurements ``\left(1 / \sigma_i^2\right)``, where ``\sigma_i \equiv `` `Ks_err` for our purposes. This will also impact how our confidence interval is calculated.
 
 Let's apply these requirements, and also update the styling of our plot a bit:
 """
@@ -150,7 +147,7 @@ with_theme(Theme(aog_theme())) do
     # Linear model
     layer_model = layer_scatter *
         mapping(weights = :weights) *
-        linear(; weighttype = :aweights)
+        linear()
 
     # Combined layers
     layer_data = layer_scatter + layer_errorbars
@@ -170,10 +167,10 @@ end
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
 !!! warning
-    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release.
+    AlgebraOfGraphics.jl currently interprets the `weights` column as frequency weights; `linear(; weighttype = :aweights)` will become available once GLM.jl v2 is released. Until then, normalizing inverse-variance weights to sum to the number of data points (as done above) gives results numerically identical to a proper analytic-weights fit.
 
 !!! tip
-    Themese can also be set globally with:
+    Themes can also be set globally with:
 
     ```julia
     using CairoMakie
@@ -196,7 +193,7 @@ df_w = @transform df :weights = w .* (length(w) / sum(w))
 # Linear model
 layer_model = layer_scatter *
     mapping(weights = :weights) *
-    linear(; weighttype = :aweights)
+    linear()
 ```
 
 We'll next take a look under the hood to see how these calculations were performed.
@@ -247,7 +244,7 @@ We now have the y-intercept and slope for our weighted linear model, all in base
 md"""
 ### GLM.jl
 
-[GLM.jl](https://juliastats.org/GLM.jl/dev/) is the linear and generalized linear models package used by AoG.jl to perform model fitting and uncertainty estimation. It is invoked via the `GLM.glm` function, which can be passed our linear formula via the `GLM.@formula` macro, a distribution that our uncertainties are sampled from, and the kind of weighs that we are using, e.g., probability, analytic, frequency, etc.
+[GLM.jl](https://juliastats.org/GLM.jl/dev/) is the linear and generalized linear models package used by AoG.jl to perform model fitting and uncertainty estimation. It is invoked via the `GLM.glm` function, which can be passed our linear formula via the `GLM.@formula` macro, a distribution that our uncertainties are sampled from, and the kind of weights that we are using, e.g., probability, analytic, frequency, etc.
 """
 
 # ╔═╡ 2cf30811-3204-4498-9b73-8a3c3bba28e2
@@ -266,19 +263,14 @@ md"""
 # ╔═╡ 4a17877a-6a38-4364-9bd9-91dde011a42a
 fit_glm = let w = inv.(df_glm.Ks_err .^ 2)
     # Normalize the inverse-variance weights to sum to n (same as the AoG cell)
-    glm(@formula(Ks ~ log_P), df_glm, Normal(); wts = aweights(w .* (length(w) / sum(w))))
+    # Can replace with weights = aweights(w) in GLM v2.
+    glm(@formula(Ks ~ log_P), df_glm, Normal(); weights = fweights(w .* (length(w) / sum(w))))
 end
 
 # ╔═╡ 816426f9-0511-4dde-9ec4-7c9ccb212a45
 md"""
 !!! note
     See the [GLM.jl documentation](https://juliastats.org/GLM.jl/stable/) for more.
-"""
-
-# ╔═╡ 480d8ef0-42d7-4089-9da2-1543baa2d02b
-md"""
-!!! todo
-    Rename wts to weights once this is in: <https://github.com/JuliaStats/GLM.jl/pull/570>
 """
 
 # ╔═╡ 3b7eee06-f730-45d5-aae1-53b7731694d9
@@ -487,9 +479,7 @@ $(keywords())
 # ╠═2cf30811-3204-4498-9b73-8a3c3bba28e2
 # ╟─19df3403-ef9d-4b07-8b14-3b10056475e8
 # ╠═4a17877a-6a38-4364-9bd9-91dde011a42a
-# ╠═727a8e8f-a1cf-4c0d-909c-a351d132b8ea
 # ╟─816426f9-0511-4dde-9ec4-7c9ccb212a45
-# ╟─480d8ef0-42d7-4089-9da2-1543baa2d02b
 # ╟─3b7eee06-f730-45d5-aae1-53b7731694d9
 # ╠═8c44bde9-c64a-41c2-8b47-e98d40b3cf42
 # ╠═0c73d53c-8b6e-4b13-a253-27046c1bd741
