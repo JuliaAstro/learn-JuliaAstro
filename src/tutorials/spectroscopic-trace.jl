@@ -6,7 +6,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-12-31"
 #> description = "Derive a spectroscopic trace model and extract a 1D spectrum."
-#> tags = ["Spectroscopy"]
+#> tags = ["spectroscopy"]
 
 using Markdown
 using InteractiveUtils
