@@ -5,7 +5,7 @@
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
 #> layout = "layout.jlhtml"
 #> date = "2025-12-31"
-#> description = "TODO"
+#> description = "Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates."
 #> tags = ["coordinates"]
 
 using Markdown
@@ -115,9 +115,6 @@ md"""
 In the previous tutorial in this series, we showed how astronomical coordinates in the ICRS or equatorial coordinate system can be represented in Julia using the SkyCoords.jl package ([docs](https://juliaastro.org/SkyCoords/)). There are many other coordinate systems that are commonly used in astronomical research. For example, the Galactic coordinate system is often used in radio astronomy and Galactic science, the "horizontal" or altitude-azimuth frame is often used for observatory-specific observation planning, and Ecliptic coordinates are often used for solar system science or space mission footprints. All of these coordinate frames (and others!) are supported by SkyCoords.jl. As we will see below, subtypes of the `AbstractSkyCoords` supertype in SkyCoords.jl are designed to make transforming between these systems a straightforward task.
 
 In this tutorial, we will explore how the SkyCoords.jl package can be used to transform astronomical coordinates between different coordinate systems or frames.
-
-!!! todo
-    Create Part 1 of this tutorial series.
 """
 
 # ╔═╡ f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
@@ -255,15 +252,8 @@ open_cluster_c[begin:4]
 
 # ╔═╡ 2e96000f-d39a-4052-92ec-a76f5de67ddd
 md"""
-Let’s now visualize the sky positions of all of these clusters, colored by their distances. We plot these in an all-sky spherical projection (e.g., aitoff) using GeoMakie.jl ([docs](https://geo.makie.org/stable/)), with longitude increasing to the left as is typically done for plotting astronomical objects on the sky:
+Let’s now visualize the sky positions of all of these clusters, colored by their distances. We plot these in an all-sky spherical projection (e.g., aitoff) using GeoMakie.jl ([docs](https://geo.makie.org/stable/)), with longitude increasing to the left as is typically done for plotting astronomical objects on the sky. The `SkyCoords.lonlat` accessor gives us each coordinate's longitude/latitude pair in radians, which we convert to the degrees expected by `GeoAxis`:
 """
-
-# ╔═╡ 149ac51b-a571-4ab6-b213-decce18c06d1
-# # !!!! NO!!
-# begin
-#     Base.rad2deg(c::ICRSCoords) = (rad2deg(c.ra), rad2deg(c.dec))
-#     Base.rad2deg(c::GalCoords) = (rad2deg(c.l), rad2deg(c.b))
-# end
 
 # ╔═╡ 098d72bc-45c9-4e65-8a09-c496ffca64b3
 wrap180(x) = mod(x + 180, 360) - 180
@@ -295,7 +285,7 @@ with_theme(fontsize = 12) do
     end
 
     plt = scatter!(
-        ax, rad2deg.(open_cluster_c);
+        ax, [rad2deg.(SkyCoords.lonlat(c)) for c in open_cluster_c];
         color = tbl.distance,
     )
 
@@ -395,7 +385,7 @@ with_theme(fontsize = 12) do
     end
 
     plt = scatter!(
-        ax, rad2deg.(open_cluster_gal);
+        ax, [rad2deg.(SkyCoords.lonlat(c)) for c in open_cluster_gal];
         color = tbl.distance,
     )
 
@@ -435,23 +425,23 @@ To determine whether a target is observable from a given observatory on Earth or
 
 # ╔═╡ 9faa3737-b931-43c9-85cb-c70e63e507ce
 md"""
-The `AltAzCoords` frame is different from the previously-demonstrated `GalCoords` frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by converting with no arguments (see the example above where we used `GalCoords(<ICRSCoords>)`. In order to specify an instance of the `AltAzCoords` frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time we are requesting the frame at. In SkyCoords.jl, this observing context is bundled into an [`AltAzFrame`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.AltAzFrame) object.
+The `AltAzCoords` frame is different from the previously-demonstrated `GalCoords` frame in that it requires additional metadata to define the frame instance. Since the Galactic frame is close to being a 3D rotation away from the ICRS frame, and that rotation matrix is fixed, we could transform to Galactic by converting with no arguments (see the example above where we used `GalCoords(<ICRSCoords>)`). In order to specify an instance of the `AltAzCoords` frame, we have to (at minimum) pass in (1) a location on Earth, and (2) the time we are requesting the frame at. In SkyCoords.jl, this observing context is bundled into an [`AltAzFrame`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.AltAzFrame) object.
 """
 
 # ╔═╡ e3cae13e-1c09-4ae0-9b77-f7db3b942075
 md"""
-We will use Kitt Peak National Observatory (in AZ, USA) Kitt as our site by storing its latitude and longitude in an [`Observer`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.Observer) object:
+We will use Kitt Peak National Observatory (in AZ, USA) as our site by storing its latitude, longitude, and elevation in an [`Observer`](https://juliaastro.org/SkyCoords/stable/api/#SkyCoords.Observer) object. Like the coordinate constructors, `Observer` accepts its arguments as plain values (radians and meters) or as unitful quantities:
 """
 
 # ╔═╡ f1a88ead-193f-4ec0-a431-544ea9fc4b0c
-obs_location = Observer(31.96333333°, -111.6°)
+obs_location = Observer(31.96333333°, -111.6°, 2096u"m")
 
 # ╔═╡ fa0f8370-dff2-4ecc-9cdc-d0409cbbcfe9
 md"""
 As an example, we will now compute the altitude of a few of the open clusters from our catalog above over the course of a night. We have an object (`obs_location`) to represent our location on Earth, so now we need to create a set of times to compute the `AltAzCoords` frame for. `AltAzCoords` expects time information to be passed in UTC JD. Let's pretend we had an observing run coming up on Dec 18, 2020, and we would like to compute the altitude/azimuth coordinates for our open clusters over that whole night:
 
 !!! todo
-    Support units, AstroTime.jl, etc.
+    Support AstroTime.jl types directly.
 """
 
 # ╔═╡ 922f4393-d3ca-4d2a-aec4-bcba885e4f6b
@@ -675,7 +665,6 @@ $(keywords())
 # ╟─703baf6d-19c2-4fee-89a3-f1e5e5e43967
 # ╠═e000650c-fdc2-4dfc-8d1e-cc92fde93a4f
 # ╟─2e96000f-d39a-4052-92ec-a76f5de67ddd
-# ╠═149ac51b-a571-4ab6-b213-decce18c06d1
 # ╠═397fb01b-5120-48ee-b295-6105a574a36a
 # ╟─098d72bc-45c9-4e65-8a09-c496ffca64b3
 # ╟─e65c1300-bb4a-475e-bdb7-c6fe2f5bed0f
