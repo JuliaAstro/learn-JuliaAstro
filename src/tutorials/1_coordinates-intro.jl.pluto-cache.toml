@@ -140,11 +140,11 @@ text_representation = """<div class=\"markdown\"><p>For more information and exa
 
 [cells.4467ad5b-2a92-41d0-89ae-7c584fb10702]
 errored = false
-execution_key = "a53657a4b88c813f"
+execution_key = "1eb141c73cb8e100"
 mime = "text/plain"
-output_packed = "grFwdWJsaXNoZWRfb2JqZWN0c4Cmb3V0cHV0hqRib2R5uSIwMDo0NzoxMS4wNSA4NToxNDozOC4wMCKwcGVyc2lzdF9qc19zdGF0ZcKkbWltZap0ZXh0L3BsYWlusmxhc3RfcnVuX3RpbWVzdGFtcMtB2pms65dyFbdoYXNfcGx1dG9faG9va19mZWF0dXJlc8Kscm9vdGFzc2lnbmVlwA=="
+output_packed = "grFwdWJsaXNoZWRfb2JqZWN0c4Cmb3V0cHV0hqRib2R5uSIwMDo0NzoxMS4wNSA4NToxNDozOC4wMCKwcGVyc2lzdF9qc19zdGF0ZcKkbWltZap0ZXh0L3BsYWlusmxhc3RfcnVuX3RpbWVzdGFtcMtB2pmtEdYkA7doYXNfcGx1dG9faG9va19mZWF0dXJlc8Kscm9vdGFzc2lnbmVlwA=="
 result_hash = "aab68fde1e1d319"
-runtime_ns = 50896
+runtime_ns = 52830
 text_representation = "\"00:47:11.05 85:14:38.00\""
 
 [cells.454c3e7a-8f67-48f2-ae1f-8ce5211ed916]
