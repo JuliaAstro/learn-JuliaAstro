@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v0.2.6
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
@@ -24,6 +24,7 @@ begin
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "AstroAngles"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
@@ -56,9 +57,6 @@ begin
                 url = "https://github.com/JuliaAstro/AstroImages.jl",
             ),
             Pkg.PackageSpec(;
-                url = "https://github.com/JuliaAstro/AstroAngles.jl",
-            ),
-            Pkg.PackageSpec(;
                 url = "https://github.com/JuliaAstro/FITSFiles.jl",
             ),
             Pkg.PackageSpec(;
@@ -76,7 +74,6 @@ begin
                 url = "https://github.com/JuliaPhysics/DynamicQuantities.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "sofa-v2-migration",
                 url = "https://github.com/JuliaAstro/SOFA.jl",
             ),
             Pkg.PackageSpec(;
@@ -262,11 +259,11 @@ Let’s now visualize the sky positions of all of these clusters, colored by the
 """
 
 # ╔═╡ 149ac51b-a571-4ab6-b213-decce18c06d1
-# !!!! NO!!
-begin
-    Base.rad2deg(c::ICRSCoords) = (rad2deg(c.ra), rad2deg(c.dec))
-    Base.rad2deg(c::GalCoords) = (rad2deg(c.l), rad2deg(c.b))
-end
+# # !!!! NO!!
+# begin
+#     Base.rad2deg(c::ICRSCoords) = (rad2deg(c.ra), rad2deg(c.dec))
+#     Base.rad2deg(c::GalCoords) = (rad2deg(c.l), rad2deg(c.b))
+# end
 
 # ╔═╡ 098d72bc-45c9-4e65-8a09-c496ffca64b3
 wrap180(x) = mod(x + 180, 360) - 180
@@ -447,7 +444,7 @@ We will use Kitt Peak National Observatory (in AZ, USA) Kitt as our site by stor
 """
 
 # ╔═╡ f1a88ead-193f-4ec0-a431-544ea9fc4b0c
-obs_location = Observer(deg2rad(31.96333333), deg2rad(-111.6))
+obs_location = Observer(31.96333333°, -111.6°)
 
 # ╔═╡ fa0f8370-dff2-4ecc-9cdc-d0409cbbcfe9
 md"""
@@ -648,7 +645,7 @@ $(keywords())
 # ╟─dd98b24e-610e-11ef-1180-ef02be7d7cac
 # ╟─d502528d-1b8b-46c0-9e46-5d3196cd3656
 # ╟─f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
-# ╠═6f72fec9-eaf8-4831-8f59-49c4cc153f02
+# ╟─6f72fec9-eaf8-4831-8f59-49c4cc153f02
 # ╟─13b7b907-1005-4bce-9b0c-1787a8867f84
 # ╟─cc989039-910a-4956-b725-cbe9592e0e22
 # ╠═aed06f42-4f0b-4b08-bb48-c120d129e54f
