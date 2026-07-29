@@ -2,3 +2,4 @@ _cache
 _site
 build/
 * backup [0-9].jl
+*pluto-cache.toml
