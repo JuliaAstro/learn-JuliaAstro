@@ -1,24 +1,25 @@
 <!DOCTYPE html><html lang="en">
 <head>
 
-<title>Intro</title>
-<meta name="description" content='Intro to using these notebooks.'>
-<meta property="og:article:tag" content='intro'>
-<meta property='og:title' content='Intro'>
+<title>Astronomical Coordinates 3: Working with Velocity Data</title>
+<meta name="description" content='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.'>
+<meta property="og:article:tag" content='coordinates'>
+<meta property="og:article:tag" content='gaia'>
+<meta property='og:title' content='Astronomical Coordinates 3: Working with Velocity Data'>
 <meta property='og:type' content='article'>
-<meta property='og:description' content='Intro to using these notebooks.'>
+<meta property='og:description' content='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.'>
 
 
-<link rel="root" href="." />
-<link rel="icon" href="./assets/favicon.ico" />
-<link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+<link rel="root" href="../.." />
+<link rel="icon" href="../../assets/favicon.ico" />
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="./assets/styles/layout.css" type="text/css" />
-<script src="./assets/scripts/sidebar.js" type="module" defer></script>
+<link rel="stylesheet" href="../../assets/styles/layout.css" type="text/css" />
+<script src="../../assets/scripts/sidebar.js" type="module" defer></script>
 
-<link rel="pp-search-data" href="./pp_search_data.json" />
+<link rel="pp-search-data" href="../../pp_search_data.json" />
 <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" integrity="sha256-DFDZACuFeAqEKv/7Vnu1Tt5ALa58bcWZegGGFNgET8g=" crossorigin="anonymous" defer></script>
-<script src="./assets/scripts/search.js" type="module" defer></script>
+<script src="../../assets/scripts/search.js" type="module" defer></script>
 
 <script type="importmap">{"imports":{"aVc6E":"./firebase-firestore.7f842f36.js","bEDS4":"./firebase-app.b603aaa4.js"}}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/editor.ca0dbe6e.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/editor.a7d04aac.css"><script type="module" src="https://cdn.jsdelivr.net/gh/JuliaPluto/Pluto.jl@1.0.3/frontend-dist/frontend.4541b03a.js"></script>
     <meta name="viewport" content="width=device-width">
@@ -81,11 +82,11 @@ window.pluto_recording_audio_url = undefined;
         <nav id="pages-sidebar" style="height: 100vh; overflow-y: auto; top: 0px;">
         <div>
         <ul>
-            <li class="pluto_home_link"><a class="pluto_home_link" href='.'><img src="./assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
+            <li class="pluto_home_link"><a class="pluto_home_link" href='../..'><img src="../../assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
         </li>
                 <li>
             <div class="search-bar">
-                <form action="./search" method="GET">
+                <form action="../../search" method="GET">
                     <input type="search" name="q" placeholder="Search..." style="width: 100%">
                 </form>
             </div>
@@ -93,37 +94,37 @@ window.pluto_recording_audio_url = undefined;
         <li>
 <h3>FILE I/O</h3>
 <ul>
-<li class=''><a href='./tutorials/fits-tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='./tutorials/fits-images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class=''><a href='./tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='./tutorials/asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
+<li class=''><a href='../../tutorials/fits-tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='../../tutorials/fits-images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
 </ul>
 </li>
 <li>
 <h3>UNITS</h3>
 <ul>
-<li class=''><a href='./tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='./tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='./tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='./tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 <li>
 <h3>MODELS</h3>
 <ul>
-<li class=''><a href='./tutorials/1_models-linear/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='./tutorials/2_model-user-defined/' title='Explore more complex data-fitting techniques.'>Modeling 2: Create a User Defined Model</a></li>
+<li class=''><a href='../../tutorials/1_models-linear/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='../../tutorials/2_model-user-defined/' title='Explore more complex data-fitting techniques.'>Modeling 2: Create a User Defined Model</a></li>
 </ul>
 </li>
 <li>
 <h3>COSMOLOGY</h3>
 <ul>
-<li class=''><a href='./tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 <li>
 <h3>DUST</h3>
 <ul>
-<li class=''><a href='./tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
+<li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
 </ul>
 </li>
 <li>
 <h3>SPECTROSCOPY</h3>
 <ul>
-<li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 
@@ -131,7 +132,7 @@ window.pluto_recording_audio_url = undefined;
         </div>
         </nav>
         <div id="pages-content">
-        <pluto-editor statefile='./generated_assets/index_3beeaa44.plutostate' notebookfile='./generated_assets/index_3beeaa44.plutostate' disable-ui=''></pluto-editor>
+        <pluto-editor statefile='../../generated_assets/3_coordinates-velocities_6d77d090.plutostate' notebookfile='../../generated_assets/3_coordinates-velocities_6d77d090.plutostate' disable-ui=''></pluto-editor>
 
         </div>
     </div>
