@@ -110,7 +110,10 @@ As we have seen in the previous tutorials, `AbstractSkyCoords` objects can be us
 
 !!! todo
     Add velocity component support (proper motion and radial velocity) to `AbstractSkyCoords` objects in SkyCoords.jl
+"""
 
+# ╔═╡ 0410fb4b-ff43-49af-bbad-c9fe022629fa
+md"""
 ## Passing Velocity Data
 
 In Julia, a natural lightweight way to bundle velocity components together with a sky position is a `NamedTuple`. For example, to represent a sky position and a proper motion in the ICRS coordinate frame, in addition to a coordinate object for the position components `ra`, `dec`, we can store values for the proper motion components `pm_ra_cosdec` and `pm_dec` ("pm" for "proper motion") as unitful DynamicQuantities.jl quantities:
@@ -119,8 +122,8 @@ In Julia, a natural lightweight way to bundle velocity components together with 
 # ╔═╡ e5e0904a-eae9-47b0-8758-4b0a7d5b142f
 (;
     coord = ICRSCoords(10°, 20°),
-    pm_ra_cosdec = 1us"mas/yr",
-    pm_dec = 2us"mas/yr",
+    pm_ra_cosdec = 1 * us"mas/yr",
+    pm_dec = 2 * us"mas/yr",
 )
 
 # ╔═╡ e2e15684-5dcf-4889-b966-ef5fc59a982f
@@ -132,7 +135,7 @@ Like the examples in previous tutorials demonstrated for positional coordinates,
 
 # ╔═╡ f2d636e1-547f-4f96-aa86-ae3c16c11166
 (;
-    coord = ICRSCoords.(range(0, 10, 5) * °, range(5, 20, 5) * °),
+    coord = ICRSCoords.(range(0, 10, 5)°, range(5, 20, 5)°),
     pm_ra_cosdec = range(-5, 5, 5) * us"mas/yr",
     pm_dec = range(-5, 5, 5) * us"mas/yr",
 )
@@ -147,9 +150,9 @@ We can also include radial velocity data with a `radial_velocity` field:
 # ╔═╡ ae4aa69a-73b4-4d95-b8bb-ee3765132c80
 velocity_coord = (;
     coord = ICRSCoords(10°, 20°),
-    pm_ra_cosdec = 1us"mas/yr",
-    pm_dec = 2us"mas/yr",
-    radial_velocity = 100us"km/s",
+    pm_ra_cosdec = 1 * us"mas/yr",
+    pm_dec = 2 * us"mas/yr",
+    radial_velocity = 100 * us"km/s",
 )
 
 # ╔═╡ a8f2133d-e970-47d2-b244-5b665f21210d
@@ -162,6 +165,16 @@ velocity_coord.pm_ra_cosdec
 
 # ╔═╡ 7b3581dd-01c3-4621-a988-750a8ec4feb8
 velocity_coord.radial_velocity
+
+# ╔═╡ 7826bd61-a07d-4910-861e-3adca52e3fc5
+md"""
+!!! tip
+    We are using [symbolic units](https://juliaphysics.github.io/DynamicQuantities.jl/stable/symbolic_units/) here for convenience. For speed, stick with regular [units](https://juliaphysics.github.io/DynamicQuantities.jl/stable/units/), and just convert to whatever unit you need for display purposes:
+
+    ```julia
+    100 * u"km/s" |> us"km/s"
+    ```
+"""
 
 # ╔═╡ 08193019-6c81-4f83-a89f-c2d288192004
 md"""
@@ -207,8 +220,8 @@ function galactic_pm(c::ICRSCoords, pm_ra_cosdec, pm_dec)
         ustrip(us"mas/yr", pm_dec) * ê_north(c.ra, c.dec)
     v_gal = SkyCoords.ICRS_TO_GAL * v_icrs
     return (;
-        pm_l_cosb = (v_gal ⋅ ê_east(g.l, g.b))us"mas/yr",
-        pm_b = (v_gal ⋅ ê_north(g.l, g.b))us"mas/yr",
+        pm_l_cosb = (v_gal ⋅ ê_east(g.l, g.b)) * us"mas/yr",
+        pm_b = (v_gal ⋅ ê_north(g.l, g.b)) * us"mas/yr",
     )
 end
 
@@ -332,11 +345,11 @@ end
 
 # ╔═╡ d5ff195c-9e28-4e90-8250-4d1d9ea2f136
 md"""
-We know that HD 219829 will be the brightest source in this small region, so we can extract the row with the smallest G-band magnitude. Let's check the proper motion values for this source to make sure that they are large:
+We know that HD 219829 will be the brightest source in this small region, so we can sort the table by G-band magnitude with the `@orderby` macro from DataFramesMeta.jl ([docs](https://juliadata.org/DataFramesMeta.jl/stable/)) and extract the first row. Let's check the proper motion values for this source to make sure that they are large:
 """
 
 # ╔═╡ a8e57417-9a4e-49e9-9d9d-73d8d8938071
-hd219829_row = hd219829_table[argmin(hd219829_table.phot_g_mean_mag), :]
+hd219829_row = first(@orderby(hd219829_table, :phot_g_mean_mag))
 
 # ╔═╡ 1e3179fe-05b3-4da6-ac4e-1991f4866158
 hd219829_row[[:source_id, :pmra, :pmdec]]
@@ -345,7 +358,8 @@ hd219829_row[[:source_id, :pmra, :pmdec]]
 md"""
 Indeed, it looks like this is our source! Let's construct a velocity-data bundle for it using the data from the *Gaia* archive. We also convert the measured parallax to a distance like we did in the first tutorial, and record the reference epoch of the measurements as `obstime` (more on this below):
 
-*Note about the Gaia catalog proper motion column names: The names in the Gaia archive and other repositories containing Gaia data give right ascension proper motion values simply as `pmra`. These components implicitly contain the ``\cos(\mathrm{dec})`` term, so we do **not** have to modify these values in order to store them as `pm_ra_cosdec`.*
+!!! note "Note about the Gaia catalog proper motion column names"
+    The names in the Gaia archive and other repositories containing Gaia data give right ascension proper motion values simply as `pmra`. These components implicitly contain the ``\cos(\mathrm{dec})`` term, so we do **not** have to modify these values in order to store them as `pm_ra_cosdec`.
 """
 
 # ╔═╡ ef024267-f69b-4e12-9aa5-710e12c5d520
@@ -386,45 +400,37 @@ dss_img = load(dss_cutout_filename)
 
 # ╔═╡ 8f1d2372-7ece-4b72-8dc8-29ba3ef5f5d2
 md"""
-The FITS header contains World Coordinate System (WCS) information — metadata that defines the mapping between pixel coordinates in the image and sky coordinates. (If you are unfamiliar with FITS files or WCS, check out the [FITS Images tutorial](https://learn.juliaastro.org/tutorials/fileio-fits_images/), which explains both in more detail.) We can construct a `WCSTransform` object for this mapping directly from the header with FITSWCS.jl:
+The FITS header contains World Coordinate System (WCS) information — metadata that defines the mapping between pixel coordinates in the image and sky coordinates. (If you are unfamiliar with FITS files or WCS, check out the [FITS Images tutorial](https://learn.juliaastro.org/tutorials/fits-images/), which explains both in more detail.) We can construct a `WCSTransform` object for this mapping directly from the header with FITSWCS.jl:
 
 !!! note
     The DSS returns its astrometry as a legacy plate solution instead of standard WCS keywords; FITSWCS.jl detects this and rebuilds an equivalent standard (tangent-plane) WCS from it.
 """
 
 # ╔═╡ 4c56f658-6735-416d-892a-8aad7ed9a733
-dss_wcs = WCS(header(dss_img))
+WCS(header(dss_img))
 
 # ╔═╡ f1f08c80-0603-4c92-b66d-c7e0a426d413
 md"""
-By converting the *Gaia*-measured sky position of HD 219829 to pixel coordinates with `world_to_pixel`, we can over-plot a marker for it on the DSS image:
-
-!!! todo
-    Add a Makie.jl recipe to AstroImages.jl that displays world coordinate axis labels and grid lines (an equivalent of astropy's [WCSAxes](https://docs.astropy.org/en/latest/visualization/wcsaxes/index.html)). For now, we plot in pixel coordinates.
+AstroImages.jl also provides the `implotview` convenience function, which displays the image as a complete Makie.jl figure panel with world coordinate (here, RA/Dec) axis labels and grid lines derived from its WCS — an equivalent of astropy's [WCSAxes](https://docs.astropy.org/en/latest/visualization/wcsaxes/index.html). The created axis is available as `iv.ax` for overplotting, and `world_transform(iv)` returns the world-to-pixel transformation of the displayed image — the analogue of astropy's `ax.get_transform("world")`. Passing it to Makie.jl's `transformation` keyword lets us over-plot a marker for the *Gaia*-measured sky position of HD 219829 directly in world coordinates (degrees):
 """
 
 # ╔═╡ 51f6ac42-b6dd-4e50-bd43-f1215ddc1ff0
 let
-    fig = Figure(size = (600, 600))
-
-    ax = Axis(
-        fig[1, 1];
-        xlabel = "x [pix]",
-        ylabel = "y [pix]",
-        title = "DSS image around HD 219829",
-        aspect = DataAspect(),
+    fig, iv = implotview(
+        dss_img;
+        cmap = :grays,
+        gridcolor = :cyan,
+        axis = (; title = "DSS image around HD 219829"),
     )
 
-    image!(ax, dss_img)
-
     c = hd219829_coord.coord
-    x, y = world_to_pixel(dss_wcs, rad2deg.([c.ra, c.dec]))
     scatter!(
-        ax, x, y;
+        iv.ax, rad2deg(c.ra), rad2deg(c.dec);
         markersize = 30,
         color = :transparent,
         strokecolor = :red,
         strokewidth = 2,
+        transformation = world_transform(iv),
     )
 
     fig
@@ -440,12 +446,22 @@ To account for the proper motion of the source and evolve the position to a new 
     Add an `apply_space_motion`-style epoch propagation function to SkyCoords.jl that properly propagates the full 3D space motion (including the distance and radial velocity).
 """
 
+# ╔═╡ 81a64d90-9741-47f7-8f2b-032b2d6ec6d7
+"""
+    apply_space_motion(coord_bundle, t)
+
+Linearly propagate the sky position of one of our velocity-data bundles along its proper motion, from its reference epoch (`obstime`) to the Julian year `t`.
+"""
+function apply_space_motion(c, t)
+    Δt = (t - c.obstime) * yr
+    return apply_space_motion(c.coord, c.pm_ra_cosdec, c.pm_dec, Δt)
+end
+
 # ╔═╡ 0a87c508-7149-48db-afe1-2517b0beff59
 """
     apply_space_motion(c::ICRSCoords, pm_ra_cosdec, pm_dec, Δt)
 
-Linearly propagate the sky position `c` along its proper motion over the time interval
-`Δt`, returning the new position as an `ICRSCoords` object.
+Linearly propagate the sky position `c` along its proper motion over the time interval `Δt`, returning the new position as an `ICRSCoords` object.
 """
 function apply_space_motion(c::ICRSCoords, pm_ra_cosdec, pm_dec, Δt)
     Δra = pm_ra_cosdec * Δt / cos(c.dec)
@@ -466,12 +482,10 @@ md"""
 we can now propagate its position from this epoch back to (the Julian year) 1950:
 """
 
-# ╔═╡ c73921c3-60f7-48a8-aad5-24682a798b95
+# ╔═╡ 5ee1e197-9a19-4f2c-8fbb-ec4f953a91af
 hd219829_coord_1950 = apply_space_motion(
-    hd219829_coord.coord,
-    hd219829_coord.pm_ra_cosdec,
-    hd219829_coord.pm_dec,
-    (1950.0 - hd219829_coord.obstime)yr,
+    hd219829_coord,
+    1950.0
 )
 
 # ╔═╡ 5cdfccb8-397e-4e5d-b811-cd1b518126b9
@@ -481,39 +495,33 @@ Let's now plot our predicted position for this source as it would appear in 1950
 
 # ╔═╡ 64b1b0aa-5e61-480d-a9b7-bdad0570b2f2
 let
-    fig = Figure(size = (600, 600))
-
-    ax = Axis(
-        fig[1, 1];
-        xlabel = "x [pix]",
-        ylabel = "y [pix]",
-        title = "DSS image around HD 219829",
-        aspect = DataAspect(),
+    fig, iv = implotview(
+        dss_img;
+        cmap = :grays,
+        gridcolor = :cyan,
+        axis = (; title = "DSS image around HD 219829"),
     )
 
-    image!(ax, dss_img)
+    wt = world_transform(iv)
 
     c = hd219829_coord.coord
-    x, y = world_to_pixel(dss_wcs, rad2deg.([c.ra, c.dec]))
     scatter!(
-        ax, x, y;
+        iv.ax, rad2deg(c.ra), rad2deg(c.dec);
         markersize = 30,
         color = :transparent,
         strokecolor = :red,
         strokewidth = 2,
+        transformation = wt,
     )
 
     # Plot the predicted (past) position:
-    x_1950, y_1950 = world_to_pixel(
-        dss_wcs,
-        rad2deg.([hd219829_coord_1950.ra, hd219829_coord_1950.dec]),
-    )
     scatter!(
-        ax, x_1950, y_1950;
+        iv.ax, rad2deg(hd219829_coord_1950.ra), rad2deg(hd219829_coord_1950.dec);
         markersize = 30,
         color = :transparent,
         strokecolor = :dodgerblue,
         strokewidth = 2,
+        transformation = wt,
     )
 
     fig
@@ -610,6 +618,7 @@ $(keywords())
 # ╟─d3db4bd5-c2f5-4be9-97ea-a9f4d1fbfd56
 # ╠═955ad972-038b-4519-9eeb-b5a297b4d185
 # ╟─cc4fab2a-8a85-4dd8-833f-523d675597e3
+# ╟─0410fb4b-ff43-49af-bbad-c9fe022629fa
 # ╠═e5e0904a-eae9-47b0-8758-4b0a7d5b142f
 # ╟─e2e15684-5dcf-4889-b966-ef5fc59a982f
 # ╠═f2d636e1-547f-4f96-aa86-ae3c16c11166
@@ -618,6 +627,7 @@ $(keywords())
 # ╟─a8f2133d-e970-47d2-b244-5b665f21210d
 # ╠═8291ed3e-4f11-481c-be48-3c50ccaa3839
 # ╠═7b3581dd-01c3-4621-a988-750a8ec4feb8
+# ╟─7826bd61-a07d-4910-861e-3adca52e3fc5
 # ╟─08193019-6c81-4f83-a89f-c2d288192004
 # ╠═911b0b50-ea1f-4d70-bc40-73a21b94bd2c
 # ╟─84ea56f6-e90a-4744-8136-f0d35cabfa0b
@@ -653,11 +663,12 @@ $(keywords())
 # ╟─f1f08c80-0603-4c92-b66d-c7e0a426d413
 # ╠═51f6ac42-b6dd-4e50-bd43-f1215ddc1ff0
 # ╟─41bcfaae-0dd6-4dcf-a8d2-98b8df1b96d0
+# ╠═81a64d90-9741-47f7-8f2b-032b2d6ec6d7
 # ╠═0a87c508-7149-48db-afe1-2517b0beff59
 # ╟─6af46369-2d72-4d47-afd9-3a8b4863d018
 # ╠═1aeaf43f-50dd-402a-a1a3-c6996aeeea80
 # ╟─ea446b7c-da7e-469d-9d03-4b70ab58efe2
-# ╠═c73921c3-60f7-48a8-aad5-24682a798b95
+# ╠═5ee1e197-9a19-4f2c-8fbb-ec4f953a91af
 # ╟─5cdfccb8-397e-4e5d-b811-cd1b518126b9
 # ╠═64b1b0aa-5e61-480d-a9b7-bdad0570b2f2
 # ╟─a58365fa-b732-4dbf-870f-0faeff92adec
