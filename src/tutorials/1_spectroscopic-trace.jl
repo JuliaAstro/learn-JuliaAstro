@@ -237,9 +237,17 @@ slice_window = 425:475
 # ╔═╡ d324c2ad-e9c1-4bec-aa4b-7305466263ae
 img_slice = img_array[slice_window, :]
 
+# ╔═╡ e25f71c5-af24-4a5c-a85a-33dfe657df32
+function aspect!(fig)
+    rowsize!(fig.layout, 1, Aspect(1, 1 / 3.0))
+    resize_to_layout!(fig)
+    return fig
+end
+
 # ╔═╡ 126da840-d43d-46cd-b2ff-e181587d6358
 let
     fig, ax, p = image(img_slice')
+    aspect!(fig)
 end
 
 # ╔═╡ f2cdbcf8-2956-4564-a7e6-3d56b2bdd9a9
@@ -280,10 +288,22 @@ Overplot the "weighted" centroid locations on the data to verify they look reaso
 """
 
 # ╔═╡ 87cdc911-a696-41ef-9ae0-6eee2f4496ed
-plot_slice(img, window) = image(
-    CI(axes(img, 2)), CI(window), img';
-    axis = (xlabel = "X position", ylabel = "Y position"),
-)
+begin
+    # Pixel centers sit on the integer coordinates, so the image edges
+    # extend half a pixel past the first and last centers
+    pixel_edges(r) = CI(first(r) - 0.5, last(r) + 0.5)
+
+    plot_slice(img, window; kwargs...) = image(
+        pixel_edges(axes(img, 2)), pixel_edges(window), img';
+        axis = (xlabel = "X position", ylabel = "Y position"),
+        kwargs...,
+    )
+
+    plot_slice!(ax, img, window; kwargs...) = image!(
+        ax, pixel_edges(axes(img, 2)), pixel_edges(window), img';
+        kwargs...,
+    )
+end
 
 # ╔═╡ 9f592e18-dabe-42d7-ba56-71236b65acfb
 let
@@ -296,7 +316,7 @@ let
         alpha = 0.5,
     )
 
-    fig
+    aspect!(fig)
 end
 
 # ╔═╡ 49d0b7fd-36d2-4fd4-9481-6ed6a771f9a4
@@ -443,7 +463,7 @@ let
 
     lines!(ax, xvals, polymodel(trace_coeffs_deg3).(xvals); color = :white)
 
-    fig
+    aspect!(fig)
 end
 
 # ╔═╡ 566652eb-38bb-44f6-877c-c6351f238c4f
@@ -472,7 +492,7 @@ let
 
     lines!(ax, xvals, polymodel(trace_coeffs).(xvals); color = :white)
 
-    fig
+    aspect!(fig)
 end
 
 # ╔═╡ 36d4f00f-ac37-4f68-a4d8-9ed3416e6e58
@@ -532,9 +552,9 @@ let
 
     trace = polymodel(trace_coeffs).(xvals)
 
-    band!(ax, xvals, trace .- 15, trace .+ 15; color = (:orange, 0.3))
+    band!(ax, xvals, trace .- 15, trace .+ 15; color = (:lightgreen, 0.2))
 
-    fig
+    aspect!(fig)
 end
 
 # ╔═╡ 478365cb-402e-4ca8-bc08-3890d5c438e3
@@ -573,13 +593,13 @@ let
 
     ax1 = Axis(fig[1, 1]; title = "We go from this...")
 
-    image!(ax1, 1 .. 1600, 425 .. 475, img_array[425:475, :]')
+    plot_slice!(ax1, img_slice, slice_window)
 
     ax2 = Axis(fig[2, 1]; title = "...to this")
 
-    image!(ax2, 1 .. 1600, -npixels_to_cut .. npixels_to_cut, cutouts')
+    plot_slice!(ax2, cutouts, -npixels_to_cut:npixels_to_cut)
 
-    fig
+    aspect!(fig)
 end
 
 # ╔═╡ c1de2f91-62e2-4a2e-aaf5-a9b5d048ef8f
@@ -657,7 +677,7 @@ Both the empirical trace profile `mean_trace_profile` and the modeled `model_tra
 
 # ╔═╡ 60a5c6f6-e701-4f16-9fe0-f55156995ed1
 md"""
-# Step 5. Extract the traced spectrum
+## Step 5. Extract the traced spectrum
 
 We can obtain our spectrum by directly averaging the pixels along the trace:
 """
@@ -724,7 +744,7 @@ Note that the Gaussian model and the direct trace yield nearly identical results
 
 # ╔═╡ 48ac66ec-7169-4ca9-87d6-481372fb55b7
 md"""
-# Step 6: Repeat for another star
+## Step 6: Repeat for another star
 
 In this last step, we go through all the above steps again for another star (Deneb), but with less explanation.
 """
@@ -742,22 +762,30 @@ let
     fig
 end
 
+# ╔═╡ 7d4136f5-3d28-4246-a18e-af7ed3a1ef28
+slice_window2 = 470:520
+
+# ╔═╡ d0c3cc31-6bd9-497e-af22-6e16625b42b9
+img_slice2 = image_array2[slice_window2, :]
+
 # ╔═╡ a30cafd3-76ff-4b57-96c5-3a2ed7bb16b6
-image(
-    1 .. 1600, 470 .. 520, image_array2[470:520, :]';
-    colormap = :viridis,
-    axis = (xlabel = "X position", ylabel = "Y position"),
-)
+let
+    fig, ax, p = plot_slice(
+        img_slice2, slice_window2;
+        colormap = :viridis
+    )
+    aspect!(fig)
+end
 
 # ╔═╡ 0d1c84ab-8283-41aa-906f-fbec8a8d77a0
 begin
     background2 = median.(eachcol(image_array2))
-    weighted_yaxis_values2 = map(eachcol(image_array2[470:520, :] .- background2')) do col_weights
-        mean(470:520, weights(col_weights))
+    weighted_yaxis_values2 = map(eachcol(img_slice2 .- background2')) do col_weights
+        mean(slice_window2, weights(col_weights))
     end
     trace_coeffs2 = polyfit(xvals, weighted_yaxis_values2, 3)
     trace_center2 = polymodel(trace_coeffs2).(xvals)
-end
+end;
 
 # ╔═╡ f6d5f6a9-d270-4c2e-a46c-bdad74c99436
 let
@@ -772,14 +800,12 @@ end
 
 # ╔═╡ b23d2a6c-a7d7-4ccf-afe9-c15c5d05dc75
 let
-    fig, ax, p = image(
-        1 .. 1600, 470 .. 520, image_array2[470:520, :]';
-        axis = (xlabel = "X position", ylabel = "Y position"),
-    )
+    fig, ax, p = plot_slice(img_slice2, slice_window2)
+
     scatter!(ax, xvals, weighted_yaxis_values2; marker = :cross, color = :white, alpha = 0.25)
     lines!(ax, xvals, trace_center2; color = :red)
-    ylims!(ax, 470, 520)
-    fig
+
+    aspect!(fig)
 end
 
 # ╔═╡ 885b28ab-5113-458d-9683-17dd334a852a
@@ -875,6 +901,7 @@ $(keywords())
 # ╠═4ce20eff-0704-48e5-b6b9-d73512177ee4
 # ╠═d324c2ad-e9c1-4bec-aa4b-7305466263ae
 # ╠═126da840-d43d-46cd-b2ff-e181587d6358
+# ╟─e25f71c5-af24-4a5c-a85a-33dfe657df32
 # ╟─f2cdbcf8-2956-4564-a7e6-3d56b2bdd9a9
 # ╠═f600d2f5-b890-4fef-9be5-e2a8517e96cb
 # ╠═a665f59d-b446-4ff3-abb2-5e400b8eead4
@@ -931,6 +958,8 @@ $(keywords())
 # ╟─48ac66ec-7169-4ca9-87d6-481372fb55b7
 # ╠═aa2995fe-045e-47ff-ab1e-99edec484196
 # ╠═ebdc9660-6c34-4184-8616-9d3cc22035d5
+# ╠═7d4136f5-3d28-4246-a18e-af7ed3a1ef28
+# ╠═d0c3cc31-6bd9-497e-af22-6e16625b42b9
 # ╠═a30cafd3-76ff-4b57-96c5-3a2ed7bb16b6
 # ╠═0d1c84ab-8283-41aa-906f-fbec8a8d77a0
 # ╠═f6d5f6a9-d270-4c2e-a46c-bdad74c99436
