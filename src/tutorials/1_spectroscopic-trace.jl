@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Spectroscopic Data Reduction Part 1: Tracing"
@@ -20,7 +20,7 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
+            Pkg.PackageSpec(; name = "Pluto"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "Images"),
             Pkg.PackageSpec(; name = "StatsBase"),
@@ -60,7 +60,7 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
+    using Pluto: frontmatter
     using PlutoUI: TableOfContents, Dump
 end
 
@@ -287,12 +287,13 @@ md"""
 Overplot the "weighted" centroid locations on the data to verify they look reasonable:
 """
 
+# ╔═╡ 6256dbea-975e-41d4-9399-f94472f37511
+# Pixel centers sit on the integer coordinates, so the image edges
+# extend half a pixel past the first and last centers
+pixel_edges(r) = CI(first(r) - 0.5, last(r) + 0.5)
+
 # ╔═╡ 87cdc911-a696-41ef-9ae0-6eee2f4496ed
 begin
-    # Pixel centers sit on the integer coordinates, so the image edges
-    # extend half a pixel past the first and last centers
-    pixel_edges(r) = CI(first(r) - 0.5, last(r) + 0.5)
-
     plot_slice(img, window; kwargs...) = image(
         pixel_edges(axes(img, 2)), pixel_edges(window), img';
         axis = (xlabel = "X position", ylabel = "Y position"),
@@ -633,16 +634,18 @@ We want to fit that profile with a Gaussian for future use. This is a nonlinear 
     Switch to Optimization.jl (as in the Modeling 1 tutorial) once the temporary Makie pin in the Packages cell is removed; that pin restricts SciMLBase to versions incompatible with recent Optimization.jl releases.
 """
 
+# ╔═╡ 56bea746-0f0e-4d7d-81d7-16d4334674cb
+gaussian(x, A, μ, σ) = A * exp(-(x - μ)^2 / (2σ^2))
+
+# ╔═╡ a0ac8b9d-4377-46b4-83e9-069dbc0372b8
+function trace_profile_objective(u)
+    A, μ, σ = u
+    residuals = @. mean_trace_profile - gaussian(trace_profile_xaxis, A, μ, σ)
+    return sum(abs2, residuals)
+end
+
 # ╔═╡ aed503aa-dac5-4385-b3c1-d419aabb03dc
 begin
-    gaussian(x, A, μ, σ) = A * exp(-(x - μ)^2 / (2σ^2))
-
-    function trace_profile_objective(u)
-        A, μ, σ = u
-        residuals = @. mean_trace_profile - gaussian(trace_profile_xaxis, A, μ, σ)
-        return sum(abs2, residuals)
-    end
-
     # Initial guess: amplitude = profile max, centered at 0, width of 5 pixels
     guess = [maximum(mean_trace_profile), 0.0, 5.0]
 
@@ -683,11 +686,10 @@ We can obtain our spectrum by directly averaging the pixels along the trace:
 """
 
 # ╔═╡ c078171c-15a7-493d-bd76-72e97ed5c3fc
-begin
-    average_spectrum = vec(mean(cutouts .- background, dims = 1))
+average_spectrum = vec(mean(cutouts .- background, dims = 1))
 
-    lines(average_spectrum)
-end
+# ╔═╡ 0e99a359-c892-4cbb-92dd-e9f6231066dc
+lines(average_spectrum)
 
 # ╔═╡ 4cab94a9-c19a-47ba-9a8d-823e20caf9ae
 md"""
@@ -770,10 +772,7 @@ img_slice2 = image_array2[slice_window2, :]
 
 # ╔═╡ a30cafd3-76ff-4b57-96c5-3a2ed7bb16b6
 let
-    fig, ax, p = plot_slice(
-        img_slice2, slice_window2;
-        colormap = :viridis
-    )
+    fig, ax, p = plot_slice(img_slice2, slice_window2; colormap = :viridis)
     aspect!(fig)
 end
 
@@ -832,15 +831,6 @@ md"""
 
 # ╔═╡ 88e74f38-c943-4757-82bf-96e39d67da0c
 TableOfContents()
-
-# ╔═╡ 77442012-d0fc-4e1d-994f-e96c63f74040
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
 
 # ╔═╡ ff0a7c90-cb17-4a19-ab07-09d50c9ab98d
 function keywords(kind = "note", title = "Keywords")
@@ -908,6 +898,7 @@ $(keywords())
 # ╠═6d2c22cb-2be2-44da-a51e-b97bed017888
 # ╟─8180ac7f-a742-410f-baf2-f57ead7374c8
 # ╠═9f592e18-dabe-42d7-ba56-71236b65acfb
+# ╠═6256dbea-975e-41d4-9399-f94472f37511
 # ╠═87cdc911-a696-41ef-9ae0-6eee2f4496ed
 # ╟─49d0b7fd-36d2-4fd4-9481-6ed6a771f9a4
 # ╠═74a57803-7ec0-46da-9043-f5e79d6a5f49
@@ -943,12 +934,15 @@ $(keywords())
 # ╠═768e0d76-add8-4669-aea3-6c03e9562fe5
 # ╠═39c61b6b-0500-4bbc-a735-833635251806
 # ╟─136afb89-0145-4e46-ac5c-11dac62565b5
+# ╠═56bea746-0f0e-4d7d-81d7-16d4334674cb
+# ╠═a0ac8b9d-4377-46b4-83e9-069dbc0372b8
 # ╠═aed503aa-dac5-4385-b3c1-d419aabb03dc
 # ╠═3dbe6187-30d3-4751-be15-5909f7093294
 # ╠═09bd9a92-b575-4ce9-938e-9588773aaf09
 # ╟─e844f47b-e418-4361-804b-f63ac16bfaad
 # ╟─60a5c6f6-e701-4f16-9fe0-f55156995ed1
 # ╠═c078171c-15a7-493d-bd76-72e97ed5c3fc
+# ╠═0e99a359-c892-4cbb-92dd-e9f6231066dc
 # ╟─4cab94a9-c19a-47ba-9a8d-823e20caf9ae
 # ╠═52fbc382-a66b-4776-989f-d70663601a77
 # ╟─fdc85139-8047-4434-b059-4572717adefa
@@ -970,5 +964,4 @@ $(keywords())
 # ╟─011d0d6b-5bc4-4399-80bf-63f5f401219b
 # ╠═88e74f38-c943-4757-82bf-96e39d67da0c
 # ╟─ff0a7c90-cb17-4a19-ab07-09d50c9ab98d
-# ╟─77442012-d0fc-4e1d-994f-e96c63f74040
 # ╠═77cf408c-81de-483f-90ee-619842b67d73
