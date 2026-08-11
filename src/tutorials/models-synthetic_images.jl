@@ -1,12 +1,12 @@
 ### A Pluto.jl notebook ###
-# v1.0.2
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Synthetic Images from simulated data"
 #> layout = "layout.jlhtml"
 #> date = "2025-12-31"
 #> description = "TODO"
-#> tags = ["TODO"]
+#> tags = ["modeling", "convolution", "coordinates", "WCS", "FITS", "radio astronomy", "plotting", "colorbar"]
 
 using Markdown
 using InteractiveUtils
@@ -40,16 +40,10 @@ Yi-Hao Chen, Sebastian Heinz, Kelle Cruz, Stephanie T. Douglas
 md"""
 !!! tip "Learning Goals"
     - Assign WCS astrometry to an image using `astropy.wcs`
-    - Construct a PSF using `astropy.modeling.model`
+    - Construct a PSF using PSFModels.jl
     - Convolve raw data with PSF using `astropy.convolution`
     - Calculate polarization fraction and angle from Stokes I, Q, U data
     - Overplot quivers on the image
-"""
-
-# ╔═╡ 056f460f-31e0-407c-99c9-8ade5ff318c6
-md"""
-!!! note "Keywords"
-    modeling, convolution, coordinates, WCS, FITS, radio astronomy, matplotlib, colorbar
 """
 
 # ╔═╡ cfd34de0-4e20-4e33-ab09-97c0c275d787
@@ -100,7 +94,10 @@ Once we know the range of the data, we can do a visualization with the proper ra
 """
 
 # ╔═╡ aaa0cff5-a00f-4299-9110-5398c9f9299b
-image(log10.(hdudata .+ 1.0e-3); colormap = :viridis, axis = (; aspect = DataAspect()))
+image(
+    log10.(hdudata .+ 1.0e-3);
+    colormap = :viridis, axis = (; aspect = DataAspect())
+)
 
 # ╔═╡ 11c76b80-5b82-4dcc-a3e3-a7354e7f1620
 md"""
@@ -336,6 +333,9 @@ md"""
 Note that rotating Stokes Q and I maps requires changing signs of both. Here we assume that the Stokes q and u maps were calculated defining the y/declination axis as vertical, such that Q is positive for polarization vectors along the x/right-ascention axis.
 """
 
+# ╔═╡ cd6261d4-7add-485c-96b1-90ddf2a7eb2d
+bin_data(image, x_new, y_new, factor) = dropdims(sum(sum(reshape(image, x_new, factor[1], y_new, factor[2]), dims = 3), dims = 1), dims = (1, 3))
+
 # ╔═╡ 79e9de31-e607-420b-824f-aca14c546658
 let fig = Figure()
     ax = Axis(fig[1, 1]; aspect = DataAspect())
@@ -353,10 +353,9 @@ let fig = Figure()
     y = range(1, size(convolved_image, 2), length = factor[2])
 
     # bin the data
-    I_bin = dropdims(sum(sum(reshape(convolved_image, nx_new, factor[1], ny_new, factor[2]), dims = 3), dims = 1), dims = (1, 3))
-    Q_bin = dropdims(sum(sum(reshape(convolved_image_q, nx_new, factor[1], ny_new, factor[2]), dims = 3), dims = 1), dims = (1, 3))
-    U_bin = dropdims(sum(sum(reshape(convolved_image_u, nx_new, factor[1], ny_new, factor[2]), dims = 3), dims = 1), dims = (1, 3))
-    # display(U_bin)
+    I_bin = bin_data(convolved_image, nx_new, ny_new, factor)
+    Q_bin = bin_data(convolved_image_q, nx_new, ny_new, factor)
+    U_bin = bin_data(convolved_image_u, nx_new, ny_new, factor)
 
     ψ = atan.(U_bin, Q_bin) / 2 # polarization angle
     frac = hypot.(Q_bin, U_bin) ./ I_bin # polarization fraction
@@ -372,6 +371,8 @@ let fig = Figure()
 
     arrows2d!(ax, x, y, pixX, pixY)
 
+    Colorbar(fig[1, 2], i_plot)
+
     fig
 end
 
@@ -385,7 +386,6 @@ md"""
 ### Convert the units of the data from Jy/arcsec² to Jy/beam
 """
 
-
 # ╔═╡ 44e3a268-9514-46f3-958d-6e857ac1e8a0
 md"""
 The intensity of the data is given in unit of Jy/arcsec^2. Observational data usually have the intensity unit in Jy/beam. Assuming a beam size or take the psf we created earlier, you can convert the data into Jy/beam.
@@ -397,10 +397,25 @@ md"""
 """
 
 # ╔═╡ b5a47b88-d4fb-410d-abc0-dff4c83e0229
-import PlutoUI
+begin
+    using Pluto: frontmatter
+    import PlutoUI: TableOfContents
+end
+
+# ╔═╡ a4986f88-05e2-4bad-b21b-f4b5c34ab59e
+function keywords(kind = "note", title = "Keywords")
+    nb_path = split(@__FILE__, "#==#") |> first |> string
+    tags = (nb_path |> frontmatter)["tags"]
+    header = "!!! $kind \"$title\""
+    body = join(("`$tag`" for tag in tags), " ")
+    return Markdown.parse("$header\n    $body")
+end
+
+# ╔═╡ 402be5f4-ff0e-4d16-aba2-16703daaa822
+keywords()
 
 # ╔═╡ f5144c9e-46e7-4eb7-9cc8-84f7c531fc76
-PlutoUI.TableOfContents()
+TableOfContents()
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -411,6 +426,7 @@ Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
 PSFModels = "9ba017d1-7760-46cd-84a3-1e79e9ae9ddc"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 SkyCoords = "fc659fc5-75a3-5475-a2ea-3da92c065361"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
@@ -422,6 +438,7 @@ DSP = "~0.8.5"
 Distributions = "~0.25.125"
 FITSIO = "~0.17.5"
 PSFModels = "~0.8.2"
+Pluto = "~1.0.3"
 PlutoUI = "~0.7.80"
 SkyCoords = "~1.7.0"
 Unitful = "~1.28.0"
@@ -434,7 +451,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "8504f3b9284f43b8de6269f1713c24b452e314e7"
+project_hash = "bd8cb1bf69a92d067ec4707bbc7c4cd02a2f4a78"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "bbc22a9a08a0ef6460041086d8a7b27940ed4ffd"
@@ -577,6 +594,11 @@ git-tree-sha1 = "4435559dc39793d53a9e3d278e185e920b4619ef"
 uuid = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
 version = "0.2.8"
 
+[[deps.BitFlags]]
+git-tree-sha1 = "bbe1079eecf9c9fbb52765193ad2bae27ae09bc8"
+uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
+version = "0.1.10"
+
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -643,6 +665,12 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
+
+[[deps.CodecZlib]]
+deps = ["TranscodingStreams", "Zlib_jll"]
+git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
+uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
+version = "0.7.8"
 
 [[deps.CodecZstd]]
 deps = ["TranscodingStreams", "Zstd_jll"]
@@ -714,6 +742,18 @@ deps = ["Observables", "Preferences"]
 git-tree-sha1 = "3b4be73db165146d8a88e47924f464e55ab053cd"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.7"
+
+[[deps.ConcurrentUtilities]]
+deps = ["Serialization", "Sockets"]
+git-tree-sha1 = "3c9be947934c38475bafe822c6d61aaed17f0738"
+uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
+version = "2.6.0"
+
+[[deps.Configurations]]
+deps = ["ExproniconLite", "OrderedCollections", "TOML"]
+git-tree-sha1 = "4358750bb58a3caefd5f37a4a0c5bfdbbf075252"
+uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+version = "0.17.6"
 
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
@@ -897,11 +937,27 @@ git-tree-sha1 = "83231673ea4d3d6008ac74dc5079e77ab2209d8f"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
 
+[[deps.ExceptionUnwrapping]]
+deps = ["Test"]
+git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
+uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
+version = "0.1.11"
+
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "8f05e9a2e7c2e3eb524102bb2926c5743c07fbe1"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.8.0+0"
+
+[[deps.ExpressionExplorer]]
+git-tree-sha1 = "5f1c005ed214356bbe41d442cc1ccd416e510b7e"
+uuid = "21656369-7473-754a-2065-74616d696c43"
+version = "1.1.4"
+
+[[deps.ExproniconLite]]
+git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
+uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
+version = "0.10.14"
 
 [[deps.Extents]]
 git-tree-sha1 = "b309b36a9e02fe7be71270dd8c0fd873625332b4"
@@ -943,12 +999,10 @@ deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "8e9c059d6857607253e837730dbf780b6b151acd"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.19.0"
+weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
-
-    [deps.FileIO.weakdeps]
-    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -1098,6 +1152,12 @@ git-tree-sha1 = "24f6def62397474a297bfcec22384101609142ed"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.86.3+0"
 
+[[deps.GracefulPkg]]
+deps = ["Compat", "Pkg", "TOML"]
+git-tree-sha1 = "a854d6c0e9fb561b88cd20b4ad64f518cb1bfb8d"
+uuid = "828d9ff0-206c-6161-646e-6576656f7244"
+version = "2.4.3"
+
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
 git-tree-sha1 = "a641238db938fff9b2f60d08ed9030387daf428c"
@@ -1120,6 +1180,12 @@ version = "0.11.2"
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
+
+[[deps.HTTP]]
+deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
+uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+version = "1.11.0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1357,10 +1423,24 @@ git-tree-sha1 = "eb62a3deb62fc6d8822c0c4bef73e4412419c5d8"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
 version = "18.1.8+0"
 
+[[deps.LRUCache]]
+git-tree-sha1 = "5519b95a490ff5fe629c4a7aa3b3dfc9160498b3"
+uuid = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
+version = "1.6.2"
+weakdeps = ["Serialization"]
+
+    [deps.LRUCache.extensions]
+    SerializationExt = ["Serialization"]
+
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.LazilyInitializedFields]]
+git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
+uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
+version = "1.3.0"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1468,6 +1548,12 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LoggingExtras]]
+deps = ["Dates", "Logging"]
+git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
+uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+version = "1.2.0"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -1496,6 +1582,12 @@ version = "0.24.10"
     [deps.Makie.weakdeps]
     DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 
+[[deps.Malt]]
+deps = ["Distributed", "Logging", "RelocatableFolders", "Serialization", "Sockets"]
+git-tree-sha1 = "c2335b4e291f2422e2be8abf8936ccad58a98992"
+uuid = "36869731-bdee-424d-aa32-cab38c994e3b"
+version = "1.4.1"
+
 [[deps.MappedArrays]]
 git-tree-sha1 = "0ee4497a4e80dbd29c058fcee6493f5219556f40"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
@@ -1511,6 +1603,18 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
+
+[[deps.MbedTLS]]
+deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
+git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
+uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
+version = "1.1.10"
+
+[[deps.MbedTLS_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
+uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
+version = "2.28.1010+0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1531,6 +1635,12 @@ version = "0.3.4"
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2025.11.4"
+
+[[deps.MsgPack]]
+deps = ["Serialization"]
+git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
+uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
+version = "1.2.1"
 
 [[deps.MuladdMacro]]
 git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
@@ -1606,6 +1716,12 @@ version = "3.4.9+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
+
+[[deps.OpenSSL]]
+deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
+git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
+uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
+version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1719,6 +1835,18 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.Pluto]]
+deps = ["Base64", "Configurations", "Dates", "Downloads", "ExpressionExplorer", "FileWatching", "GracefulPkg", "HTTP", "HypertextLiteral", "InteractiveUtils", "LRUCache", "Logging", "LoggingExtras", "MIMEs", "Malt", "Markdown", "MsgPack", "Pkg", "PlutoDependencyExplorer", "PrecompileSignatures", "PrecompileTools", "REPL", "Random", "RegistryInstances", "RelocatableFolders", "SHA", "Scratch", "Sockets", "TOML", "Tables", "URIs", "UUIDs"]
+git-tree-sha1 = "fe7515cf6ddb62e738d924e4ca2dddaa60ff80ba"
+uuid = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+version = "1.0.3"
+
+[[deps.PlutoDependencyExplorer]]
+deps = ["ExpressionExplorer", "InteractiveUtils", "Markdown"]
+git-tree-sha1 = "c3e5073a977b1c58b2d55c1ec187c3737e64e6af"
+uuid = "72656b73-756c-7461-726b-72656b6b696b"
+version = "1.2.2"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
@@ -1755,6 +1883,11 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
 uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
 version = "0.2.4"
+
+[[deps.PrecompileSignatures]]
+git-tree-sha1 = "18ef344185f25ee9d51d80e179f8dad33dc48eb1"
+uuid = "91cefc8d-f054-46dc-8f8c-26e11d7c5411"
+version = "3.0.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1856,6 +1989,12 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.RegistryInstances]]
+deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
+git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
+uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
+version = "0.1.0"
+
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
 git-tree-sha1 = "ffdaf70d81cf6ff22c2b6e733c900c3321cab864"
@@ -1943,6 +2082,11 @@ deps = ["Statistics"]
 git-tree-sha1 = "3949ad92e1c9d2ff0cd4a1317d5ecbba682f4b92"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.1"
+
+[[deps.SimpleBufferStream]]
+git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
+uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
+version = "1.2.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -2400,7 +2544,7 @@ version = "4.1.0+0"
 # ╟─f62ff3ee-616a-11ef-1dbc-ed0b7632e565
 # ╟─9f351dcb-d673-41e9-9bd4-2b6aa370668b
 # ╟─be0efdf1-eb53-4cc3-adc5-29da71659da4
-# ╟─056f460f-31e0-407c-99c9-8ade5ff318c6
+# ╟─402be5f4-ff0e-4d16-aba2-16703daaa822
 # ╠═9d8e8bbc-c6d7-4646-8660-62c4d42dcc34
 # ╟─cfd34de0-4e20-4e33-ab09-97c0c275d787
 # ╟─41474fbb-cf99-4b06-b054-54ad38e7c8f0
@@ -2469,11 +2613,13 @@ version = "4.1.0+0"
 # ╠═f4f4b625-e86f-4cf9-8c36-9479f29539e2
 # ╟─e6971a8b-d017-4719-bb32-9dd9446d47cd
 # ╟─f53e13f0-ce9b-44ac-9643-e02e33bf8429
+# ╠═cd6261d4-7add-485c-96b1-90ddf2a7eb2d
 # ╠═79e9de31-e607-420b-824f-aca14c546658
 # ╟─8e4d50d5-b081-4fc4-a320-6a0370456c1d
 # ╟─9a1f1c93-f723-4b05-af74-cfeded1f0c46
 # ╟─44e3a268-9514-46f3-958d-6e857ac1e8a0
 # ╟─303886dd-2072-4fce-847d-44c927dded66
+# ╟─a4986f88-05e2-4bad-b21b-f4b5c34ab59e
 # ╠═b5a47b88-d4fb-410d-abc0-dff4c83e0229
 # ╠═f5144c9e-46e7-4eb7-9cc8-84f7c531fc76
 # ╟─00000000-0000-0000-0000-000000000001
