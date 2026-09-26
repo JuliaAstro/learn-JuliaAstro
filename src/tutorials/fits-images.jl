@@ -22,7 +22,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "StatsBase"),
@@ -80,7 +79,6 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -347,24 +345,6 @@ md"""
 # ╔═╡ 89e8f2a6-9d3b-44b8-8805-91daa24124c3
 TableOfContents(; depth = 4)
 
-# ╔═╡ c61c61a3-9582-4680-95e5-59a6b818ef9d
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ e892e25d-06a0-496a-bf63-40a8a988d089
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
 md"""
 # Working with FITS images
@@ -378,8 +358,6 @@ _Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, L
     1. Make a 2D histogram with image data
     1. Stack several images into a single image
     1. Write image data to a FITS fil
-
-$(keywords())
 
 !!! warning "Companion content"
     [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
@@ -435,6 +413,4 @@ $(keywords())
 # ╟─eccd1973-1082-4fb6-920c-0039ddf5482a
 # ╟─c65018aa-e30a-4727-ad4e-b853a1479a40
 # ╠═89e8f2a6-9d3b-44b8-8805-91daa24124c3
-# ╟─c61c61a3-9582-4680-95e5-59a6b818ef9d
-# ╟─e892e25d-06a0-496a-bf63-40a8a988d089
 # ╠═7d07caf5-e203-4152-8bb9-c1f396c4f80c

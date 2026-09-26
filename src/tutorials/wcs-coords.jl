@@ -21,7 +21,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSFiles.jl"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSWCS.jl"),
@@ -68,7 +67,6 @@ end;
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents, details
 end
 
@@ -297,24 +295,6 @@ md"""
 # ╔═╡ eee39591-e860-4c91-bed4-e05e5dfaf0de
 TableOfContents()
 
-# ╔═╡ a8cb2e7a-790b-4896-b49a-e9fa6b98bffa
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ b18be7a0-a053-4d56-8713-3eb473044ac2
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ bb93ae12-1f64-474d-9762-a4c9813ab801
 md"""
 # Working with Celestial Coordinates in WCS 1: Specifying, reading, and plotting
@@ -327,8 +307,6 @@ _Original authors: Kris Stern, Kelle Cruz, Lia Corrales, David Shupe, Adrian Pri
     1. Demonstrate two ways to build a `FITSWCS.WCSTransform` object
     1. Show an image of the Helix nebula with RA and Dec labeled
     1. Plot a scale bar on an image with WCS information
-
-$(keywords())
 
 !!! warning "Companion content"
     1. "An Introduction to Modern Astrophysics" ([Carroll & Ostlie](https://ui.adsabs.harvard.edu/abs/2006ima..book.....C/abstract))
@@ -370,6 +348,4 @@ $(keywords())
 # ╟─a7df5632-ec33-41d7-92eb-e68fcb6d1f4c
 # ╟─1321b8db-291c-4ebf-a5d0-ac254629e950
 # ╠═eee39591-e860-4c91-bed4-e05e5dfaf0de
-# ╟─b18be7a0-a053-4d56-8713-3eb473044ac2
-# ╟─a8cb2e7a-790b-4896-b49a-e9fa6b98bffa
 # ╠═4d5ec068-f75d-459e-97c6-12f2ebdc337c

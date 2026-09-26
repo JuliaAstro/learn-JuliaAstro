@@ -21,7 +21,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "DataInterpolations"),
             Pkg.PackageSpec(; name = "MathTeXEngine"),
@@ -88,7 +87,6 @@ end;
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -403,24 +401,6 @@ md"""
 # ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
 TableOfContents(; depth = 4)
 
-# ╔═╡ c6094980-463a-4993-85db-7068c5a37cbe
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 1b59c248-dd4a-45a0-8fd7-4bd88d1d451c
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
 md"""
 # Spectroscopy with SDSS
@@ -429,8 +409,6 @@ _Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_
 
 !!! tip "Learning goals"
     Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
-
-$(keywords())
 
 !!! warning "Companion content"
     - JuliaAstro > FITS tables
@@ -487,6 +465,4 @@ $(keywords())
 # ╠═cbf45b3f-8adf-4a40-bfc1-f73a4596e113
 # ╟─aeba92bf-15de-425a-8f7e-b2ea0518756c
 # ╠═89579410-1058-4b49-932c-c1715ce662a8
-# ╟─c6094980-463a-4993-85db-7068c5a37cbe
-# ╟─1b59c248-dd4a-45a0-8fd7-4bd88d1d451c
 # ╠═e4c5b28c-c4fb-4726-ab7a-8f1cc04280bd

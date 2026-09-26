@@ -22,7 +22,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "VirtualObservatory"),
@@ -76,7 +75,6 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -421,24 +419,6 @@ md"""
 # ╔═╡ f819c0d7-9563-447d-8768-c2c93512b60f
 TableOfContents(; depth = 4)
 
-# ╔═╡ 600681a9-0e10-477b-9ebb-3dc47a5c4e47
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 267b8569-c7a4-42cf-bb85-c9285298de8d
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ f18df5a0-1dda-4371-aea6-8ecbce67908c
 md"""
 # Analyzing interstellar reddening and calculating synthetic photometry
@@ -455,8 +435,6 @@ _Original input from: Emir Karamehmetoglu, Pey Lian Lim, Karl Gordon, Kevin Cove
     - Calculate photometric extinction and reddening.
     - Calculate synthetic photometry for a dust-reddened star. (todo)
     - Convert from frequency to wavelength.
-
-$(keywords())
 
 !!! warning "Companion content"
     Content here.
@@ -509,6 +487,4 @@ $(keywords())
 # ╠═ff040052-e0b3-4447-811e-4f743456aed3
 # ╟─8a2e5f54-ec9d-46c5-88c6-aa647e7ea036
 # ╠═f819c0d7-9563-447d-8768-c2c93512b60f
-# ╟─600681a9-0e10-477b-9ebb-3dc47a5c4e47
-# ╟─267b8569-c7a4-42cf-bb85-c9285298de8d
 # ╠═2a612197-bae8-456c-8ad1-0897b19d95f6

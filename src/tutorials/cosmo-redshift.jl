@@ -21,7 +21,6 @@ begin
     Pkg.activate(; temp = true)
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "DynamicQuantities"),
             Pkg.PackageSpec(; name = "MathTeXEngine"),
@@ -65,7 +64,6 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -280,24 +278,6 @@ md"""
 # ╔═╡ 5fc3b3de-86af-423e-81c4-f41b23977fbc
 TableOfContents(; depth = 4)
 
-# ╔═╡ 34a1f8ae-f2bb-4ae1-9e91-ae6cd70a7d13
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ e24cb37e-acfd-441c-9839-40649611c1c7
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 33515b2a-5ee4-4eab-9c7e-4aa6780ee369
 md"""
 # Plotting cosmological redshift and age
@@ -313,8 +293,6 @@ _Original authors: Neil Crighton, Stephanie T. Douglas_
 
     * Relate distance, redshift, and age for two different types of cosmologies.
 
-
-$(keywords())
 
 !!! warning "Companion content"
     Content here.
@@ -346,6 +324,4 @@ $(keywords())
 # ╟─d7d4e075-0445-46c2-b88e-56a3f1df0bba
 # ╟─6afad2fa-0555-400a-9de7-e341e5956955
 # ╠═5fc3b3de-86af-423e-81c4-f41b23977fbc
-# ╟─34a1f8ae-f2bb-4ae1-9e91-ae6cd70a7d13
-# ╟─e24cb37e-acfd-441c-9839-40649611c1c7
 # ╠═49b56034-eb0e-4c54-84de-a619eb9785c7

@@ -19,7 +19,6 @@ begin
     Pkg.activate(; temp = true)
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
@@ -65,7 +64,6 @@ end
 
 # ╔═╡ eeb03783-3d93-454f-82b8-7e55e0d803d2
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -428,24 +426,6 @@ md"""
 # ╔═╡ 624fbeba-1ec9-4809-ac62-e042ac1efe67
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ 3d759c8a-ec5c-432a-9543-88a762864fa1
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 6e367762-b07d-4c6f-92b8-090bf1aac8f3
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ f31d8083-9809-4fcb-9063-b10ae54c93ee
 md"""
 # Astronomical Coordinates 1: Getting Started with SkyCoords.jl
@@ -459,8 +439,6 @@ _Original authors: Adrian Price-Whelan_
     - Use a sky coordinate object to query the *Gaia* archive directly from Julia
     - Output coordinate data in different string representations with AstroAngles.jl
     - Demonstrate working with 3D sky coordinates (including distance information for objects)
-
-$(keywords())
 """
 
 # ╔═╡ Cell order:
@@ -529,6 +507,4 @@ $(keywords())
 # ╟─1c478bec-a8f5-4959-9822-b643956779bc
 # ╟─d1eb67e4-a49c-4272-abbc-eea03e18c1ff
 # ╠═624fbeba-1ec9-4809-ac62-e042ac1efe67
-# ╟─3d759c8a-ec5c-432a-9543-88a762864fa1
-# ╟─6e367762-b07d-4c6f-92b8-090bf1aac8f3
 # ╠═eeb03783-3d93-454f-82b8-7e55e0d803d2

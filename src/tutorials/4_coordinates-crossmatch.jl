@@ -19,7 +19,6 @@ begin
     Pkg.activate(; temp = true)
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "Dates"),
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
@@ -71,7 +70,6 @@ end
 
 # ╔═╡ b37fc349-2c11-48b9-bea7-457e7a8fe650
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -385,24 +383,6 @@ md"""
 # ╔═╡ 31d9e987-b49b-4131-93b0-4a212c149f5d
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ 29856300-b8bd-43d4-aec8-5f43d6ad2a43
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ c2805f81-d01c-455e-870a-aa3ff07682b6
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ a128cd53-182c-4e66-a3a4-dceb9fc0cf18
 md"""
 # Astronomical Coordinates 4: Cross-matching Catalogs
@@ -414,8 +394,6 @@ _Original authors: Adrian Price-Whelan_
 !!! tip "Learning Goals"
     - Demonstrate how to retrieve a catalog from VizieR over TAP with VirtualObservatory.jl
     - Show how to perform positional cross-matches between catalogs of sky coordinates
-
-$(keywords())
 """
 
 # ╔═╡ Cell order:
@@ -471,6 +449,4 @@ $(keywords())
 # ╟─2dc2ec0b-fdfc-421a-bbc3-1096b0e073a9
 # ╟─a49724fc-50d6-4900-9cba-ca81e67e5935
 # ╠═31d9e987-b49b-4131-93b0-4a212c149f5d
-# ╟─29856300-b8bd-43d4-aec8-5f43d6ad2a43
-# ╟─c2805f81-d01c-455e-870a-aa3ff07682b6
 # ╠═b37fc349-2c11-48b9-bea7-457e7a8fe650

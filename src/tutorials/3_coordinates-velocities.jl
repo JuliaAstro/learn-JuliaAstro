@@ -20,7 +20,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
@@ -81,7 +80,6 @@ end
 
 # ╔═╡ bfd71b9c-ca7e-4480-92d3-c16fc03358d2
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -579,24 +577,6 @@ md"""
 # ╔═╡ 2858ead6-0a96-4b82-b721-8d5154660bc7
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ e43f434d-57c7-447b-b92d-55600797ddad
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ c7dc7a08-783e-41ae-8ecd-13c0bdcc6bb1
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 2afe550d-7e72-49ae-825d-4888a497a62f
 md"""
 # Astronomical Coordinates 3: Working with Velocity Data
@@ -608,8 +588,6 @@ _Original authors: Adrian Price-Whelan, Saima Siddiqui, Luthien Liu, Zihao Chen_
 !!! tip "Learning Goals"
     - Introduce how to represent and transform velocity data along with sky coordinates
     - Demonstrate how to predict the position of a star at a different time using its proper motion
-
-$(keywords())
 """
 
 # ╔═╡ Cell order:
@@ -678,6 +656,4 @@ $(keywords())
 # ╠═92f0656d-a2a9-4b1a-9b58-d30f73c17c95
 # ╟─7f41fafe-793c-4a28-be64-1587cfa62e02
 # ╠═2858ead6-0a96-4b82-b721-8d5154660bc7
-# ╟─e43f434d-57c7-447b-b92d-55600797ddad
-# ╟─c7dc7a08-783e-41ae-8ecd-13c0bdcc6bb1
 # ╠═bfd71b9c-ca7e-4480-92d3-c16fc03358d2
