@@ -297,3 +297,73 @@ a.pluto_home_link {
     align-items: center;
     gap: 0.8ch;
 }
+
+/* KEYWORDS BOX */
+/* Rendered by _includes/layout.jlhtml from the notebook's frontmatter `tags`. */
+
+/* Mirror the geometry of Pluto's `pluto-editor main` so the box lines up with the notebook column. */
+.pp-keywords {
+    width: 100%;
+    max-width: calc(700px + 25px + 6px);
+    margin-top: 1.5rem;
+    margin-left: auto;
+    margin-right: max(
+        max(0px, (100% - (700px + 25px + 6px)) / 2),
+        min((100% - (700px + 25px + 6px)), 500px)
+    );
+    /* `main` padding + `pluto-output` padding */
+    padding-left: calc(25px + 10px);
+    padding-right: calc(6px + 10px);
+    font-family: "Alegreya Sans", "Trebuchet MS", sans-serif;
+    font-size: 14.5px;
+    color: var(--pluto-output-color);
+}
+
+/* Same look as a `!!! note` admonition inside a notebook (see Pluto's editor.css). */
+.pp-keywords-box {
+    /*background: var(--jl-info-color);*/
+    border: 2px solid var(--jl-info-accent-color);
+    border-radius: 8px;
+    padding: 0 0.5rem;
+}
+.pp-keywords-box p {
+    margin: 0.5em 0;
+}
+.pp-keywords-box .pp-keywords-title {
+    font-family: "Vollkorn", Palatino, serif;
+    font-feature-settings: "lnum", "pnum";
+    font-size: 1.3em;
+    font-weight: 600;
+    color: var(--admonition-title-color);
+    background: var(--jl-info-accent-color);
+    margin: -1px -0.55rem 0;
+    padding-left: 0.3em;
+}
+.pp-keywords-box code {
+    font-family: var(--julia-mono-font-stack);
+    font-size: 0.9em;
+    font-variant-ligatures: none;
+    background: color-mix(in srgb, var(--jl-info-accent-color) 35%, transparent);
+    border-radius: 4px;
+    padding: 0.1em 0.3em;
+    margin-right: 0.3em;
+}
+/* Each tag is a link to the search page (`/search?tag=...`). */
+.pp-keywords-box a {
+    color: inherit;
+    text-decoration: none;
+}
+.pp-keywords-box a:hover code,
+.pp-keywords-box a:focus-visible code {
+    background: color-mix(in srgb, var(--jl-info-accent-color) 65%, transparent);
+}
+
+/* Tighten the gap between the keywords box and the first cell. In an export, Pluto stacks
+   a 20px `main` margin and a 25px `preamble` (empty: the edit/run buttons live elsewhere)
+   above the notebook. Dropping both leaves the regular cell spacing + heading margin (~32px). */
+#pages-content pluto-editor.disable_ui > main {
+    margin-top: 0;
+}
+#pages-content pluto-editor.disable_ui > main > preamble:empty {
+    display: none;
+}

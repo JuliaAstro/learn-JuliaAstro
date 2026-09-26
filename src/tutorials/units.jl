@@ -22,7 +22,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "HypertextLiteral"),
             Pkg.PackageSpec(; name = "StatsBase"),
@@ -82,7 +81,6 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents, details
     using HypertextLiteral: @htl
 end
@@ -906,24 +904,6 @@ md"""
 which is their cue to provide the units explicitly:
 """ |> side_by_side
 
-# ╔═╡ 3dbbae92-27cf-4573-8752-c2c400017812
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ dd1fc1c9-c55e-453a-bda7-a2036542cdcb
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ c6ad0267-65d1-4372-a538-22acd9b5d02b
 md"""
 # Using units in astrophysical calculations
@@ -943,8 +923,6 @@ _Original authors: Ana Bonaca, Erik Tollerud, Jonathan Foster, Lia Corrales, Kri
     - Write functions that take objects with units instead of plain arrays
     - Make synthetic radio observations
     - Use objects with units such as data cubes to facilitate a full derivation of the total mass of a molecular cloud
-
-$(keywords())
 
 !!! warning "Companion content"
     Content here.
@@ -1091,6 +1069,4 @@ $(keywords())
 # ╟─59b4d441-9a74-468f-ad8c-882516a09049
 # ╠═bedc8ccd-e6f6-4dd1-a0b6-1889f4b5b658
 # ╟─e0d2d6c4-d363-4bb2-9d12-42c4a52aba3b
-# ╟─3dbbae92-27cf-4573-8752-c2c400017812
-# ╟─dd1fc1c9-c55e-453a-bda7-a2036542cdcb
 # ╠═90fd3ea9-e115-41a5-b020-b8ade6cc6398

@@ -20,7 +20,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "DynamicQuantities"),
             Pkg.PackageSpec(; name = "FITSFiles"),
@@ -64,7 +63,6 @@ end
 begin
     deps_ready
 
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -303,24 +301,6 @@ md"""
 # ╔═╡ 5d9e2890-00fb-4370-9337-f6e93d49e5ed
 TableOfContents(; depth = 4)
 
-# ╔═╡ b04e9eeb-e476-49ff-8bbf-5a7ae199df31
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ a42a6e27-f5a9-4958-9b26-905fbb3dad9d
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 2d19d3b7-096c-44e5-bb86-7551095e0df9
 md"""
 # Modeling 2: Create a User Defined Model
@@ -335,8 +315,6 @@ _Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Dougla
     - Define models in two different ways:
       - Compound models
       - Custom models
-
-$(keywords())
 
 !!! warning "Companion content"
     [learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/models-1_linear_fitting/)
@@ -377,6 +355,4 @@ $(keywords())
 # ╟─8879c1a4-accd-4afc-b636-a975c6cf929e
 # ╟─3c0d99d6-ae1a-414b-af86-ead5c8211543
 # ╠═5d9e2890-00fb-4370-9337-f6e93d49e5ed
-# ╟─b04e9eeb-e476-49ff-8bbf-5a7ae199df31
-# ╟─a42a6e27-f5a9-4958-9b26-905fbb3dad9d
 # ╠═9d88288c-6415-4851-a52f-0008fecacf0e
