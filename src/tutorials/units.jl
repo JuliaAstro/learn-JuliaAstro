@@ -270,12 +270,12 @@ data_DQ = let
 
     A = [
         exp(
-                -0.5 * (
-                    ((ra - ra_0) / ra_σ)^2
+            -0.5 * (
+                ((ra - ra_0) / ra_σ)^2
                     + ((d - d_0) / d_σ)^2
                     + ((v - v_0) / v_σ)^2
-                )
             )
+        )
             for ra in ras_DQ, d in decs_DQ, v in vs_DQ
     ] * DQ.us"K"
 end
@@ -294,12 +294,12 @@ data_U = let
 
     A = [
         exp(
-                -0.5 * (
-                    ((ra - ra_0) / ra_σ)^2
+            -0.5 * (
+                ((ra - ra_0) / ra_σ)^2
                     + ((d - d_0) / d_σ)^2
                     + ((v - v_0) / v_σ)^2
-                )
             )
+        )
             for ra in ras_U, d in decs_U, v in vs_U
     ] * U.u"K"
 end
