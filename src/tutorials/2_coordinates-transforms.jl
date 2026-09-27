@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
@@ -66,7 +66,7 @@ begin
                 url = "https://github.com/activexray/SkyCoords.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-0.25",
+                rev = "compat-makie-0.25",
                 url = "https://github.com/icweaver/DimensionalData.jl",
             ),
             Pkg.PackageSpec(;
@@ -106,6 +106,20 @@ using Dates
 begin
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ dd98b24e-610e-11ef-1180-ef02be7d7cac
+md"""
+# Astronomical Coordinates 2: Transforming Coordinate Systems and Representations
+
+This notebook is modified from <https://learn.astropy.org/tutorials/2_Coordinates-Transforms.html>
+
+_Original authors: Adrian Price-Whelan, Saima Siddiqui, Zihao Chen, Luthien Liu_
+
+!!! tip "Learning Goals"
+    - Introduce key concepts in SkyCoords.jl: coordinate component formats, representations, and frames
+    - Demonstrate how to work with coordinate representations, for example, to change from Cartesian to Cylindrical coordinates
+    - Introduce coordinate frame transformations and demonstrate transforming from ICRS coordinates to Galactic and Altitude-Azimuth coordinates
+"""
 
 # ╔═╡ d502528d-1b8b-46c0-9e46-5d3196cd3656
 md"""
@@ -595,25 +609,11 @@ md"""
 # ╔═╡ 4540e3ef-9db5-4fa7-bf6b-d5f8dd4244c4
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ dd98b24e-610e-11ef-1180-ef02be7d7cac
-md"""
-# Astronomical Coordinates 2: Transforming Coordinate Systems and Representations
-
-This notebook is modified from <https://learn.astropy.org/tutorials/2_Coordinates-Transforms.html>
-
-_Original authors: Adrian Price-Whelan, Saima Siddiqui, Zihao Chen, Luthien Liu_
-
-!!! tip "Learning Goals"
-    - Introduce key concepts in SkyCoords.jl: coordinate component formats, representations, and frames
-    - Demonstrate how to work with coordinate representations, for example, to change from Cartesian to Cylindrical coordinates
-    - Introduce coordinate frame transformations and demonstrate transforming from ICRS coordinates to Galactic and Altitude-Azimuth coordinates
-"""
-
 # ╔═╡ Cell order:
 # ╟─dd98b24e-610e-11ef-1180-ef02be7d7cac
 # ╟─d502528d-1b8b-46c0-9e46-5d3196cd3656
 # ╟─f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
-# ╟─6f72fec9-eaf8-4831-8f59-49c4cc153f02
+# ╠═6f72fec9-eaf8-4831-8f59-49c4cc153f02
 # ╟─13b7b907-1005-4bce-9b0c-1787a8867f84
 # ╟─cc989039-910a-4956-b725-cbe9592e0e22
 # ╠═aed06f42-4f0b-4b08-bb48-c120d129e54f
