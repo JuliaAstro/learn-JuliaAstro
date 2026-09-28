@@ -24,7 +24,6 @@ begin
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSFiles.jl"),
             Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/FITSWCS.jl"),
-            Pkg.PackageSpec(; url = "https://github.com/JuliaAstro/AstroAngles.jl"),
             Pkg.PackageSpec(;
                 rev = "makie",
                 url = "https://github.com/JuliaAstro/AstroImages.jl",
@@ -46,7 +45,7 @@ begin
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/icweaver/DimensionalData.jl",
-                rev = "makie-0.25",
+                rev = "compat-makie-0.25",
             ),
         ]
     )
@@ -69,6 +68,25 @@ begin
 
     using PlutoUI: TableOfContents, details
 end
+
+# ╔═╡ bb93ae12-1f64-474d-9762-a4c9813ab801
+md"""
+# Working with Celestial Coordinates in WCS 1: Specifying, reading, and plotting
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
+
+_Original authors: Kris Stern, Kelle Cruz, Lia Corrales, David Shupe, Adrian Price-Whelan_
+
+!!! tip "Learning goals"
+    1. Demonstrate two ways to build a `FITSWCS.WCSTransform` object
+    1. Show an image of the Helix nebula with RA and Dec labeled
+    1. Plot a scale bar on an image with WCS information
+
+!!! warning "Companion content"
+    1. "An Introduction to Modern Astrophysics" ([Carroll & Ostlie](https://ui.adsabs.harvard.edu/abs/2006ima..book.....C/abstract))
+    1. [FITS WCS page at GSFC](https://fits.gsfc.nasa.gov/fits_wcs.html)
+    1. [learn.JuliaAstro > FITS Images](https://learn.juliaastro.org/tutorials/fileio-fits_images/)
+"""
 
 # ╔═╡ fa245c6e-9a32-4600-b579-6a42c0f0fc3a
 md"""
@@ -241,24 +259,6 @@ The image data, `img`, is an `AstroImages.AstroImage`, containing WCS informatio
 # ╔═╡ c167fb7f-5ab6-4b32-a2c5-beeefa1ae2c8
 implotview(img; gridcolor = :coral)
 
-# ╔═╡ 5a3f62b9-0d39-46f5-b763-49244c13d4f0
-md"""
-!!! todo
-	Switch to Makie.jl
-
-	```julia
-    fig, ax, p = image(img; colormap = :cividis)
-
-    colsize!(fig.layout, 1, Aspect(1, size(img, 1) / size(img, 2)))
-
-    resize_to_layout!(fig)
-
-    fig
-	```
-
-    and add a recipe that replaces `implot`.
-"""
-
 # ╔═╡ 656bf1f9-eaee-46a4-9f44-422a384a19ee
 md"""
 ### Exercise
@@ -277,7 +277,7 @@ md"""
 ## Section 3: Plot a scale marker on an image with WCS
 
 !!! todo
-	Implement this once we've switched over to Makie.jl as backend.
+	Implement
 """
 
 # ╔═╡ a7df5632-ec33-41d7-92eb-e68fcb6d1f4c
@@ -294,25 +294,6 @@ md"""
 
 # ╔═╡ eee39591-e860-4c91-bed4-e05e5dfaf0de
 TableOfContents()
-
-# ╔═╡ bb93ae12-1f64-474d-9762-a4c9813ab801
-md"""
-# Working with Celestial Coordinates in WCS 1: Specifying, reading, and plotting
-
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
-
-_Original authors: Kris Stern, Kelle Cruz, Lia Corrales, David Shupe, Adrian Price-Whelan_
-
-!!! tip "Learning goals"
-    1. Demonstrate two ways to build a `FITSWCS.WCSTransform` object
-    1. Show an image of the Helix nebula with RA and Dec labeled
-    1. Plot a scale bar on an image with WCS information
-
-!!! warning "Companion content"
-    1. "An Introduction to Modern Astrophysics" ([Carroll & Ostlie](https://ui.adsabs.harvard.edu/abs/2006ima..book.....C/abstract))
-    1. [FITS WCS page at GSFC](https://fits.gsfc.nasa.gov/fits_wcs.html)
-    1. [learn.JuliaAstro > FITS Images](https://learn.juliaastro.org/tutorials/fileio-fits_images/)
-"""
 
 # ╔═╡ Cell order:
 # ╟─bb93ae12-1f64-474d-9762-a4c9813ab801
@@ -341,7 +322,6 @@ _Original authors: Kris Stern, Kelle Cruz, Lia Corrales, David Shupe, Adrian Pri
 # ╟─8df60e64-fa50-4bf7-8eb5-4563ad15b016
 # ╟─17dfadfb-1c0e-4233-90ae-1c1f592ac564
 # ╠═c167fb7f-5ab6-4b32-a2c5-beeefa1ae2c8
-# ╟─5a3f62b9-0d39-46f5-b763-49244c13d4f0
 # ╟─656bf1f9-eaee-46a4-9f44-422a384a19ee
 # ╟─3b3ceefb-8abf-4bf5-857e-f0ca0780d960
 # ╟─bfe22652-e591-43db-9a2d-0de983e18f5e

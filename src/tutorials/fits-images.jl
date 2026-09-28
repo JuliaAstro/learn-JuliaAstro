@@ -47,16 +47,13 @@ begin
                 url = "https://github.com/JuliaAstro/AstroImages.jl",
             ),
             Pkg.PackageSpec(;
-                url = "https://github.com/JuliaAstro/AstroAngles.jl",
-            ),
-            Pkg.PackageSpec(;
                 url = "https://github.com/JuliaAstro/FITSFiles.jl",
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/JuliaAstro/FITSWCS.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-0.25",
+                rev = "compat-makie-0.25",
                 url = "https://github.com/icweaver/DimensionalData.jl",
             ),
         ]
@@ -81,6 +78,24 @@ begin
 
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
+md"""
+# Working with FITS images
+
+This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
+
+_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
+
+!!! tip "Learning goals"
+    1. Open FITS files and load image data
+    1. Make a 2D histogram with image data
+    1. Stack several images into a single image
+    1. Write image data to a FITS fil
+
+!!! warning "Companion content"
+    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
+"""
 
 # ╔═╡ 91f00e98-e69c-4435-b9d0-10d30006efef
 md"""
@@ -344,24 +359,6 @@ md"""
 
 # ╔═╡ 89e8f2a6-9d3b-44b8-8805-91daa24124c3
 TableOfContents(; depth = 4)
-
-# ╔═╡ 3c48207e-ae5d-4597-8010-587d6ed8736b
-md"""
-# Working with FITS images
-
-This notebook is modified from <https://learn.astropy.org/tutorials/FITS-images.html>
-
-_Original authors: Lia Corrales, Kris Stern, Stephanie T. Douglas, Kelle Cruz, Lúthien Liu, Zihao Chen, Saima Siddiqui_
-
-!!! tip "Learning goals"
-    1. Open FITS files and load image data
-    1. Make a 2D histogram with image data
-    1. Stack several images into a single image
-    1. Write image data to a FITS fil
-
-!!! warning "Companion content"
-    [learn.JuliaAstro > Working with FITS tables](/tutorials/fits-tables/)
-"""
 
 # ╔═╡ Cell order:
 # ╟─3c48207e-ae5d-4597-8010-587d6ed8736b

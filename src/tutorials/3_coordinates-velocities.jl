@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 3: Working with Velocity Data"
@@ -50,7 +50,7 @@ begin
                 url = "https://github.com/JuliaAstro/AstroImages.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-0.25",
+                rev = "compat-makie-0.25",
                 url = "https://github.com/icweaver/DimensionalData.jl",
             ),
             Pkg.PackageSpec(;
@@ -82,6 +82,19 @@ end
 begin
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ 2afe550d-7e72-49ae-825d-4888a497a62f
+md"""
+# Astronomical Coordinates 3: Working with Velocity Data
+
+This notebook is modified from <https://learn.astropy.org/tutorials/3_Coordinates-Velocities.html>
+
+_Original authors: Adrian Price-Whelan, Saima Siddiqui, Luthien Liu, Zihao Chen_
+
+!!! tip "Learning Goals"
+    - Introduce how to represent and transform velocity data along with sky coordinates
+    - Demonstrate how to predict the position of a star at a different time using its proper motion
+"""
 
 # ╔═╡ 3b782148-7df3-42e9-a30d-add6ecac4e76
 md"""
@@ -576,19 +589,6 @@ md"""
 
 # ╔═╡ 2858ead6-0a96-4b82-b721-8d5154660bc7
 TableOfContents(; title = "On this page", depth = 4)
-
-# ╔═╡ 2afe550d-7e72-49ae-825d-4888a497a62f
-md"""
-# Astronomical Coordinates 3: Working with Velocity Data
-
-This notebook is modified from <https://learn.astropy.org/tutorials/3_Coordinates-Velocities.html>
-
-_Original authors: Adrian Price-Whelan, Saima Siddiqui, Luthien Liu, Zihao Chen_
-
-!!! tip "Learning Goals"
-    - Introduce how to represent and transform velocity data along with sky coordinates
-    - Demonstrate how to predict the position of a star at a different time using its proper motion
-"""
 
 # ╔═╡ Cell order:
 # ╟─2afe550d-7e72-49ae-825d-4888a497a62f
