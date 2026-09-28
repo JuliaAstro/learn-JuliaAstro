@@ -284,8 +284,10 @@ card-text > a.arrow {
 
 /* SIDEBAR LOGO */
 
-a.pluto_home_link img {
+a.pluto_home_link img,
+a.pluto_home_link svg {
     width: 2.5em;
+    height: auto;
 }
 a.pluto_home_link {
     font-size: 1.2em;
@@ -317,6 +319,16 @@ a.pluto_home_link {
     font-family: "Alegreya Sans", "Trebuchet MS", sans-serif;
     font-size: 14.5px;
     color: var(--pluto-output-color);
+}
+
+/* Pluto's floating "Edit or run this notebook" / "View code" buttons are fixed at the top right
+   (top: 9px, ~41px tall, ~420px wide). Once the notebook column's right margin is narrower than
+   that bar (windows under ~1400px with the sidebar showing) they would cover the box, so push it
+   down below them. Under 768px the nav toggle already pushes the content past the buttons. */
+@media screen and (min-width: 769px) and (max-width: 1440px) {
+    .pp-keywords {
+        margin-top: 4rem;
+    }
 }
 
 /* Same look as a `!!! note` admonition inside a notebook (see Pluto's editor.css). */
@@ -366,4 +378,17 @@ a.pluto_home_link {
 }
 #pages-content pluto-editor.disable_ui > main > preamble:empty {
     display: none;
+}
+
+/* PAGE NAVIGATION */
+
+/* Every sidebar link is a full page load. A cross-document view transition keeps the old
+   page on screen until the new one is ready, and naming the sidebar makes the browser treat
+   it as the same element on both pages, so the logo and search bar no longer blink.
+   Browsers without support just do a plain load, as before. */
+@view-transition {
+    navigation: auto;
+}
+#pages-sidebar {
+    view-transition-name: pages-sidebar;
 }

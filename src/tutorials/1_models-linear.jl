@@ -61,6 +61,27 @@ begin
     using PlutoUI: TableOfContents
 end
 
+# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
+md"""
+# Modeling 1: Make a quick linear model fit
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+    - Use VirtualObservatory.jl to download data from Vizier.
+    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+    - Learn common functions to fit.
+    - Generate a quick fit to data.
+    - Plot the model with the data.
+    - Compare different models and fitters.
+
+
+!!! warning "Companion content"
+    Content here.
+"""
+
 # ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
 md"""
 ## Summary
@@ -148,7 +169,8 @@ with_theme(Theme(aog_theme())) do
     # Linear model
     layer_model = layer_scatter *
         mapping(weights = :weights) *
-        linear(; weighttype = :aweights)
+        linear()
+    # linear(; weighttype = :aweights)
 
     # Combined layers
     layer_data = layer_scatter + layer_errorbars
@@ -168,10 +190,10 @@ end
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
 !!! warning
-    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release.
+    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release <https://github.com/MakieOrg/AlgebraOfGraphics.jl/pull/710/>.
 
 !!! tip
-    Themese can also be set globally with:
+    Themes can also be set globally with:
 
     ```julia
     using CairoMakie
@@ -415,27 +437,6 @@ md"""
 
 # ╔═╡ 7cb7ae25-79c2-4138-aa50-fdc27615245b
 TableOfContents(; depth = 4)
-
-# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
-md"""
-# Modeling 1: Make a quick linear model fit
-
-This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
-
-_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
-
-!!! tip "Learning goals"
-    - Use VirtualObservatory.jl to download data from Vizier.
-    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
-    - Learn common functions to fit.
-    - Generate a quick fit to data.
-    - Plot the model with the data.
-    - Compare different models and fitters.
-
-
-!!! warning "Companion content"
-    Content here.
-"""
 
 # ╔═╡ Cell order:
 # ╟─ec1a7344-e375-4847-b4f7-765a53c066d0
