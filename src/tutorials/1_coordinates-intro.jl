@@ -23,7 +23,7 @@ begin
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "AstroAngles"),
-            Pkg.PackageSpec(; path = "../../../VirtualObservatory.jl/", rev = "compat-skycoords-v2"),
+            Pkg.PackageSpec(; url = "https://github.com/icweaver/VirtualObservatory.jl", rev = "compat/skycoords-v2"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",

@@ -125,9 +125,9 @@ version = "0.7.9"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "6eaa7ad1a86c07e4917f9e67dca60e98d224a43d"
+git-tree-sha1 = "61761f58648aa7217445f24f841839b78c712232"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.12.2"
+version = "0.12.3"
 weakdeps = ["StyledStrings"]
 
     [deps.ColorTypes.extensions]
@@ -252,9 +252,9 @@ uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.8.4+0"
 
 [[deps.ExpressionExplorer]]
-git-tree-sha1 = "678f8b7cd246ed441d29ca42a99f5f138be2ecac"
+git-tree-sha1 = "fdcc9d4a253e0041d37c95487f9ae027c3ec002d"
 uuid = "21656369-7473-754a-2065-74616d696c43"
-version = "1.1.5"
+version = "1.1.6"
 
 [[deps.ExproniconLite]]
 git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
@@ -296,9 +296,9 @@ version = "3.7.1+0"
 
 [[deps.Git_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "7b16700f9e313c0d972d1222ede50a2076aa0770"
+git-tree-sha1 = "3842d761162baf8efce819cdfb5ea070fe44ac40"
 uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
-version = "2.55.0+0"
+version = "2.56.0+0"
 
 [[deps.Glob]]
 git-tree-sha1 = "246c628cec062230b7d183aab88841fa94fcabe9"
@@ -380,9 +380,9 @@ version = "1.8.0"
 
 [[deps.JSON]]
 deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
-git-tree-sha1 = "633b5a34494e711f694ccbc88a6e00102f10238c"
+git-tree-sha1 = "4657a834b01ce00f2b94546095c4350617b9af2c"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "1.9.0"
+version = "1.10.0"
 
     [deps.JSON.extensions]
     JSONArrowExt = ["ArrowTypes"]
