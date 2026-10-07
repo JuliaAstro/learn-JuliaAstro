@@ -20,7 +20,6 @@ begin
     Pkg.activate(; temp = true)
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "StatsBase"),
             Pkg.PackageSpec(; name = "LinearAlgebra"),
@@ -59,9 +58,29 @@ using GLM: fweights
 
 # ╔═╡ b880641e-5101-4857-a5bf-558482ca1b21
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
+md"""
+# Modeling 1: Make a quick linear model fit
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+    - Use VirtualObservatory.jl to download data from Vizier.
+    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
+    - Learn common functions to fit.
+    - Generate a quick fit to data.
+    - Plot the model with the data.
+    - Compare different models and fitters.
+
+
+!!! warning "Companion content"
+    Content here.
+"""
 
 # ╔═╡ 101f85ed-9442-4b95-a771-f7516e6d84cb
 md"""
@@ -150,7 +169,8 @@ with_theme(Theme(aog_theme())) do
     # Linear model
     layer_model = layer_scatter *
         mapping(weights = :weights) *
-        linear(; weighttype = :aweights)
+        linear()
+    # linear(; weighttype = :aweights)
 
     # Combined layers
     layer_data = layer_scatter + layer_errorbars
@@ -170,10 +190,10 @@ end
 # ╔═╡ 9773d632-f5cd-47d5-b97e-57a7b6ca3bf9
 md"""
 !!! warning
-    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release.
+    GLM.jl converts aweights to fweights under the hood. It will use aweights properly in the v2 release <https://github.com/MakieOrg/AlgebraOfGraphics.jl/pull/710/>.
 
 !!! tip
-    Themese can also be set globally with:
+    Themes can also be set globally with:
 
     ```julia
     using CairoMakie
@@ -418,47 +438,6 @@ md"""
 # ╔═╡ 7cb7ae25-79c2-4138-aa50-fdc27615245b
 TableOfContents(; depth = 4)
 
-# ╔═╡ fac4fe53-010d-44e5-956b-76bb2a530011
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 2b57e162-b642-4dfe-88e7-45a6bb3f8447
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
-# ╔═╡ ec1a7344-e375-4847-b4f7-765a53c066d0
-md"""
-# Modeling 1: Make a quick linear model fit
-
-This notebook is modified from <https://learn.astropy.org/tutorials/1_models-quick-fit.html>
-
-_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
-
-!!! tip "Learning goals"
-    - Use VirtualObservatory.jl to download data from Vizier.
-    - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
-    - Learn common functions to fit.
-    - Generate a quick fit to data.
-    - Plot the model with the data.
-    - Compare different models and fitters.
-
-$(keywords())
-
-
-!!! warning "Companion content"
-    Content here.
-"""
-
 # ╔═╡ Cell order:
 # ╟─ec1a7344-e375-4847-b4f7-765a53c066d0
 # ╟─101f85ed-9442-4b95-a771-f7516e6d84cb
@@ -512,6 +491,4 @@ $(keywords())
 # ╟─3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
 # ╟─b2805e96-5cce-4200-842b-931187007a31
 # ╠═7cb7ae25-79c2-4138-aa50-fdc27615245b
-# ╟─fac4fe53-010d-44e5-956b-76bb2a530011
-# ╟─2b57e162-b642-4dfe-88e7-45a6bb3f8447
 # ╠═b880641e-5101-4857-a5bf-558482ca1b21
