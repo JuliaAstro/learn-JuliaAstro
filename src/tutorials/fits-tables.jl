@@ -24,7 +24,6 @@ end
 
 # ╔═╡ 4bba77e4-81ba-453f-9666-924cf566e02c
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -217,24 +216,6 @@ md"""
 # ╔═╡ 14245719-d3a1-4d46-9fc4-d2ddba6a3d93
 TableOfContents(; depth = 4)
 
-# ╔═╡ 276ed544-a40f-4686-8acc-515592ed523a
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 9f14d02c-b104-478c-9a7a-9ae34893d8c6
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ 7f40f78e-c509-11f0-afed-03ce3a08418b
 md"""
 # Working with FITS tables
@@ -247,8 +228,6 @@ _Original authors: Lia Corrales, Kris Stern_
     - Download a FITS table file from a URL.
     - Open a FITS table file and view table contents.
     - Make a 2D histogram with the table data.
-
-$(keywords())
 
 !!! warning "Companion content"
     Content here.
@@ -263,7 +242,6 @@ Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
 AlgebraOfGraphics = "~0.13.0"
@@ -2207,8 +2185,6 @@ version = "4.1.0+0"
 # ╟─6e1e64c3-6d8e-41af-af2b-0faa2aa27f0a
 # ╟─1f60ce5a-e909-44f2-867a-02be8a1ba37c
 # ╠═14245719-d3a1-4d46-9fc4-d2ddba6a3d93
-# ╟─276ed544-a40f-4686-8acc-515592ed523a
-# ╟─9f14d02c-b104-478c-9a7a-9ae34893d8c6
 # ╠═4bba77e4-81ba-453f-9666-924cf566e02c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
