@@ -24,7 +24,7 @@ $(Pluto.frontmatter_html(page.output.frontmatter) |> HTML)
 <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
 
 <link rel="stylesheet" href="$(root_url)/assets/styles/layout.css" type="text/css" />
-<script src="$(root_url)/assets/scripts/sidebar.js" type="module" defer></script>
+<script src="$(root_url)/assets/scripts/sidebar.js" type="module" defer blocking="render"></script>
 
 <link rel="pp-search-data" href="$(root_url)/pp_search_data.json" />
 <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" integrity="sha256-DFDZACuFeAqEKv/7Vnu1Tt5ALa58bcWZegGGFNgET8g=" crossorigin="anonymous" defer></script>
@@ -38,7 +38,11 @@ $(pluto_head)
         <nav id="pages-sidebar" style="height: 100vh; overflow-y: auto; top: 0px;">
         <div>
         <ul>
-            <li class="pluto_home_link"><a class="pluto_home_link" href=$(root_url)><img src="$(root_url)/assets/favicon.svg"><span> learn.<br>JuliaAstro</span></a>
+            <li class="pluto_home_link"><a class="pluto_home_link" href=$(root_url)>$(let
+                # Inline the logo so it paints together with the page instead of loading (and blinking) afterwards.
+                svg = read(joinpath(@__DIR__, "..", "assets", "favicon.svg"), String)
+                HTML(svg[first(findfirst("<svg", svg)):end])
+            end)<span> learn.<br>JuliaAstro</span></a>
         </li>
                 <li>
             <div class="search-bar">
@@ -80,6 +84,19 @@ $(pluto_head)
         </div>
         </nav>
         <div id="pages-content">
+        $(let
+            tags = get(page.output.frontmatter, "tags", String[])
+            # Each tag links to a site search for its text.
+            links = [@htl("<a href=$(root_url * "/search?q=" * tag)><code>$(tag)</code></a>") for tag in tags]
+            isempty(tags) ? nothing : @htl("""
+            <div class="pp-keywords">
+                <div class="pp-keywords-box">
+                    <p class="pp-keywords-title"></p>
+                    <p>$(links)</p>
+                </div>
+            </div>
+            """)
+        end)
         $(content)
         </div>
     </div>

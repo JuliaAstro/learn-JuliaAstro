@@ -21,7 +21,6 @@ end
 
 # ╔═╡ 410167f1-5f1f-4806-8121-2f2d480d5730
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
 
@@ -81,24 +80,6 @@ md"""
 # ╔═╡ 1007d00d-16de-497d-b584-9154af0ca155
 TableOfContents(; depth = 4)
 
-# ╔═╡ c4a0a576-9cb1-4579-bfa7-6ad17b40c52a
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 5dbb58fd-a635-424c-9ddf-6ac833b971bb
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
 # ╔═╡ eb241a66-4965-4f11-a67b-4d344b71c4d1
 md"""
 # Working with ASDF files
@@ -107,8 +88,6 @@ md"""
     - Load a simple ASDF file
     - Edit its contents
     - Save modified data to a new file
-
-$(keywords())
 
 !!! warning "Companion content"
     - <https://learn.juliaastro.org/tutorials/fileio-fits_tables/>
@@ -121,7 +100,6 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 ASDF = "686f71d1-807d-59a4-a860-28280ea06d7b"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
 ASDF = "~2.0.0"
@@ -588,8 +566,6 @@ version = "17.7.0+0"
 # ╠═786d762f-074e-4f84-88ec-784ca2b9f12e
 # ╟─209b4d0d-7222-43b8-9a50-736f60ba5dad
 # ╠═1007d00d-16de-497d-b584-9154af0ca155
-# ╟─c4a0a576-9cb1-4579-bfa7-6ad17b40c52a
-# ╟─5dbb58fd-a635-424c-9ddf-6ac833b971bb
 # ╠═410167f1-5f1f-4806-8121-2f2d480d5730
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

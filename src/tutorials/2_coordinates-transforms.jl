@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
@@ -20,7 +20,6 @@ begin
     Pkg.add(
         [
             Pkg.PackageSpec(; name = "Downloads"),
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
@@ -67,7 +66,7 @@ begin
                 url = "https://github.com/activexray/SkyCoords.jl",
             ),
             Pkg.PackageSpec(;
-                rev = "makie-0.25",
+                rev = "compat-makie-0.25",
                 url = "https://github.com/icweaver/DimensionalData.jl",
             ),
             Pkg.PackageSpec(;
@@ -105,9 +104,22 @@ using Dates
 
 # ╔═╡ 56aaebbc-8166-4e52-a43e-93453137ad75
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ dd98b24e-610e-11ef-1180-ef02be7d7cac
+md"""
+# Astronomical Coordinates 2: Transforming Coordinate Systems and Representations
+
+This notebook is modified from <https://learn.astropy.org/tutorials/2_Coordinates-Transforms.html>
+
+_Original authors: Adrian Price-Whelan, Saima Siddiqui, Zihao Chen, Luthien Liu_
+
+!!! tip "Learning Goals"
+    - Introduce key concepts in SkyCoords.jl: coordinate component formats, representations, and frames
+    - Demonstrate how to work with coordinate representations, for example, to change from Cartesian to Cylindrical coordinates
+    - Introduce coordinate frame transformations and demonstrate transforming from ICRS coordinates to Galactic and Altitude-Azimuth coordinates
+"""
 
 # ╔═╡ d502528d-1b8b-46c0-9e46-5d3196cd3656
 md"""
@@ -597,45 +609,11 @@ md"""
 # ╔═╡ 4540e3ef-9db5-4fa7-bf6b-d5f8dd4244c4
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ f404cd49-186b-493e-bee8-fb08c88f3f88
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ e24cb37e-acfd-441c-9839-40649611c1c7
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
-# ╔═╡ dd98b24e-610e-11ef-1180-ef02be7d7cac
-md"""
-# Astronomical Coordinates 2: Transforming Coordinate Systems and Representations
-
-This notebook is modified from <https://learn.astropy.org/tutorials/2_Coordinates-Transforms.html>
-
-_Original authors: Adrian Price-Whelan, Saima Siddiqui, Zihao Chen, Luthien Liu_
-
-!!! tip "Learning Goals"
-    - Introduce key concepts in SkyCoords.jl: coordinate component formats, representations, and frames
-    - Demonstrate how to work with coordinate representations, for example, to change from Cartesian to Cylindrical coordinates
-    - Introduce coordinate frame transformations and demonstrate transforming from ICRS coordinates to Galactic and Altitude-Azimuth coordinates
-
-$(keywords())
-"""
-
 # ╔═╡ Cell order:
 # ╟─dd98b24e-610e-11ef-1180-ef02be7d7cac
 # ╟─d502528d-1b8b-46c0-9e46-5d3196cd3656
 # ╟─f81fc70e-d1f3-410f-a6ce-cb6cd5cd3ca2
-# ╟─6f72fec9-eaf8-4831-8f59-49c4cc153f02
+# ╠═6f72fec9-eaf8-4831-8f59-49c4cc153f02
 # ╟─13b7b907-1005-4bce-9b0c-1787a8867f84
 # ╟─cc989039-910a-4956-b725-cbe9592e0e22
 # ╠═aed06f42-4f0b-4b08-bb48-c120d129e54f
@@ -717,6 +695,4 @@ $(keywords())
 # ╟─d3f76adc-ba32-4862-a9c1-35d1a20e3474
 # ╟─03b572a4-e51b-41e7-bc38-247644e41ebd
 # ╠═4540e3ef-9db5-4fa7-bf6b-d5f8dd4244c4
-# ╟─f404cd49-186b-493e-bee8-fb08c88f3f88
-# ╟─e24cb37e-acfd-441c-9839-40649611c1c7
 # ╠═56aaebbc-8166-4e52-a43e-93453137ad75
