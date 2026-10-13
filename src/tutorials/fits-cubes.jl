@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
 #> tags = ["file I/O", "FITS", "images", "image processing", "plots", "colorbars", "data cubes", "radio astronomy", "WCS"]
