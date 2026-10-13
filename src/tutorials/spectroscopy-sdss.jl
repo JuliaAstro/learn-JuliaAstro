@@ -41,7 +41,7 @@ begin
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/icweaver/Measurements.jl",
-                rev = "makie-v0.25.0",
+                rev = "compat/makie-v0.25",
             ),
             Pkg.PackageSpec(;
                 rev = "units",
