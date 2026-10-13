@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.3
 
 #> [frontmatter]
 #> title = "Astronomical Coordinates 1: Getting Started with SkyCoords.jl"
@@ -19,12 +19,11 @@ begin
     Pkg.activate(; temp = true)
     Pkg.add(
         [
-            Pkg.PackageSpec(; name = "TOML"),
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "AstroAngles"),
-            Pkg.PackageSpec(; name = "VirtualObservatory"),
+            Pkg.PackageSpec(; url = "https://github.com/icweaver/VirtualObservatory.jl", rev = "compat/skycoords-v2"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
                 subdir = "Makie",
@@ -65,9 +64,23 @@ end
 
 # ╔═╡ eeb03783-3d93-454f-82b8-7e55e0d803d2
 begin
-    using TOML: TOML
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ f31d8083-9809-4fcb-9063-b10ae54c93ee
+md"""
+# Astronomical Coordinates 1: Getting Started with SkyCoords.jl
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_Coordinates-Intro.html>
+
+_Original authors: Adrian Price-Whelan_
+
+!!! tip "Learning Goals"
+    - Create sky coordinate objects in SkyCoords.jl using coordinate data and object names
+    - Use a sky coordinate object to query the *Gaia* archive directly from Julia
+    - Output coordinate data in different string representations with AstroAngles.jl
+    - Demonstrate working with 3D sky coordinates (including distance information for objects)
+"""
 
 # ╔═╡ f2fae56d-00fc-4aea-a441-82578bba40a9
 md"""
@@ -335,9 +348,6 @@ md"""
 The above selection keeps stars that have a ~10-sigma parallax measurement, but this is an arbitrary selection threshold that you may want to tune or remove in your own use cases. This selection removed over half of the stars in our original table, but for the remaining stars we can be confident that converting the parallax measurements to distances is mostly safe.
 
 astropy provides a specialized `Distance` class for handling common transformations of different distance representations. In Julia, this is just a short function away: the catalog of stars we queried from *Gaia* contains parallax information in milliarcsecond units, and a parallax ``\varpi`` in milliarcseconds corresponds to a distance ``d = 1000 / \varpi`` in parsecs:
-
-!!! todo
-    Add support for `mas` (milliarcsecond) angle units and a parallax-based distance convenience
 """
 
 # ╔═╡ d74b9c88-ba7b-42bd-a6c9-cfb8d3e2fc3b
@@ -428,41 +438,6 @@ md"""
 # ╔═╡ 624fbeba-1ec9-4809-ac62-e042ac1efe67
 TableOfContents(; title = "On this page", depth = 4)
 
-# ╔═╡ 3d759c8a-ec5c-432a-9543-88a762864fa1
-function frontmatter(path)
-    prefix = "#> "
-    is_fm = startswith(prefix)
-    block = Iterators.takewhile(is_fm, Iterators.dropwhile(!is_fm, eachline(path)))
-    toml = TOML.parse(join(chopprefix.(block, prefix), "\n"))
-    return toml["frontmatter"]
-end
-
-# ╔═╡ 6e367762-b07d-4c6f-92b8-090bf1aac8f3
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
-# ╔═╡ f31d8083-9809-4fcb-9063-b10ae54c93ee
-md"""
-# Astronomical Coordinates 1: Getting Started with SkyCoords.jl
-
-This notebook is modified from <https://learn.astropy.org/tutorials/1_Coordinates-Intro.html>
-
-_Original authors: Adrian Price-Whelan_
-
-!!! tip "Learning Goals"
-    - Create sky coordinate objects in SkyCoords.jl using coordinate data and object names
-    - Use a sky coordinate object to query the *Gaia* archive directly from Julia
-    - Output coordinate data in different string representations with AstroAngles.jl
-    - Demonstrate working with 3D sky coordinates (including distance information for objects)
-
-$(keywords())
-"""
-
 # ╔═╡ Cell order:
 # ╟─f31d8083-9809-4fcb-9063-b10ae54c93ee
 # ╟─f2fae56d-00fc-4aea-a441-82578bba40a9
@@ -512,7 +487,7 @@ $(keywords())
 # ╟─1229bdcb-e8b2-4d1f-ba38-79852c75413d
 # ╠═d1fd3e52-af06-4e4d-8581-b16d0e646626
 # ╠═b52488ce-b09f-4f86-8286-67d5773e1f6a
-# ╟─cbe574c4-8430-45d1-88b9-5b32f09cdba0
+# ╠═cbe574c4-8430-45d1-88b9-5b32f09cdba0
 # ╠═d74b9c88-ba7b-42bd-a6c9-cfb8d3e2fc3b
 # ╠═454c3e7a-8f67-48f2-ae1f-8ce5211ed916
 # ╟─9f93b81e-8f66-4937-8bdd-2c753a7f1940
@@ -529,6 +504,4 @@ $(keywords())
 # ╟─1c478bec-a8f5-4959-9822-b643956779bc
 # ╟─d1eb67e4-a49c-4272-abbc-eea03e18c1ff
 # ╠═624fbeba-1ec9-4809-ac62-e042ac1efe67
-# ╟─3d759c8a-ec5c-432a-9543-88a762864fa1
-# ╟─6e367762-b07d-4c6f-92b8-090bf1aac8f3
 # ╠═eeb03783-3d93-454f-82b8-7e55e0d803d2

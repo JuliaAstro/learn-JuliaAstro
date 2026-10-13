@@ -16,3 +16,9 @@ window.addEventListener("click", function (e) {
 
 console.info("zzzz")
 console.info(layout)
+
+// Every sidebar link is a full page load, which resets the sidebar's own scroll
+// position. Remember it when leaving a page and put it back on the next one.
+const scroll_key = "pages-sidebar-scroll"
+sidebar.scrollTop = Number(sessionStorage.getItem(scroll_key))
+window.addEventListener("pagehide", () => sessionStorage.setItem(scroll_key, sidebar.scrollTop))
