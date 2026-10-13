@@ -3,7 +3,7 @@
 
 #> [frontmatter]
 #> tags = ["file I/O", "FITS", "images", "image processing", "plots", "colorbars", "data cubes", "radio astronomy", "WCS"]
-#> title = "FITS Cubes"
+#> title = "FITS cubes"
 #> description = "View and manipulate FITS cubes"
 #> date = "2026-07-12"
 #> layout = "layout.jlhtml"
@@ -60,6 +60,9 @@ begin
             Pkg.PackageSpec(;
                 rev = "fits-wcs",
                 url = "https://github.com/JuliaAstro/Reproject.jl",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaAstro/FITSWCS.jl",
             ),
         ]
     )
