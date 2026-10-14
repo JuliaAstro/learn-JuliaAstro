@@ -64,6 +64,14 @@ begin
             Pkg.PackageSpec(;
                 url = "https://github.com/JuliaAstro/FITSWCS.jl",
             ),
+            Pkg.PackageSpec(;
+                rev = "makie-v0.25",
+                url = "https://github.com/JuliaAstro/DustExtinction.jl",
+            ),
+            Pkg.PackageSpec(;
+                rev = "compat-makie-0.25",
+                url = "https://github.com/icweaver/DimensionalData.jl",
+            ),
         ]
     )
 
