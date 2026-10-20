@@ -1,12 +1,12 @@
 ### A Pluto.jl notebook ###
-# v0.2.6
+# v1.0.4
 
 #> [frontmatter]
-#> title = "Astronomical Coordinates 4: Cross-matching Catalogs"
-#> layout = "layout.jlhtml"
-#> date = "2025-12-31"
-#> description = "Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry."
 #> tags = ["coordinates", "gaia"]
+#> title = "Astronomical Coordinates 4: Cross-matching Catalogs"
+#> description = "Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry."
+#> date = "2025-12-31"
+#> layout = "layout.jlhtml"
 
 using Markdown
 using InteractiveUtils
@@ -23,7 +23,11 @@ begin
             Pkg.PackageSpec(; name = "CSV"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "PlutoUI"),
-            Pkg.PackageSpec(; name = "VirtualObservatory"),
+            Pkg.PackageSpec(;
+                # name = "VirtualObservatory",
+                rev = "compat/skycoords-v2",
+                url = "https://github.com/icweaver/VirtualObservatory.jl",
+            ),
             Pkg.PackageSpec(; name = "NearestNeighbors"),
             Pkg.PackageSpec(;
                 url = "https://github.com/MakieOrg/Makie.jl",
@@ -72,6 +76,19 @@ end
 begin
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ a128cd53-182c-4e66-a3a4-dceb9fc0cf18
+md"""
+# Astronomical Coordinates 4: Cross-matching Catalogs
+
+This notebook is modified from <https://learn.astropy.org/tutorials/4_Coordinates-Crossmatch.html>
+
+_Original authors: Adrian Price-Whelan_
+
+!!! tip "Learning Goals"
+    - Demonstrate how to retrieve a catalog from VizieR over TAP with VirtualObservatory.jl
+    - Show how to perform positional cross-matches between catalogs of sky coordinates
+"""
 
 # ╔═╡ 209789ee-24f3-4c7e-9cf5-d60bcebf284f
 md"""
@@ -382,19 +399,6 @@ md"""
 
 # ╔═╡ 31d9e987-b49b-4131-93b0-4a212c149f5d
 TableOfContents(; title = "On this page", depth = 4)
-
-# ╔═╡ a128cd53-182c-4e66-a3a4-dceb9fc0cf18
-md"""
-# Astronomical Coordinates 4: Cross-matching Catalogs
-
-This notebook is modified from <https://learn.astropy.org/tutorials/4_Coordinates-Crossmatch.html>
-
-_Original authors: Adrian Price-Whelan_
-
-!!! tip "Learning Goals"
-    - Demonstrate how to retrieve a catalog from VizieR over TAP with VirtualObservatory.jl
-    - Show how to perform positional cross-matches between catalogs of sky coordinates
-"""
 
 # ╔═╡ Cell order:
 # ╟─a128cd53-182c-4e66-a3a4-dceb9fc0cf18

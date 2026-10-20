@@ -26,7 +26,7 @@ jobs:
       - name: 🙌 Install Julia
         uses: julia-actions/setup-julia@v3
         with:
-          version: "1.12"
+          version: "1.13"
 
       - name: ⏱ Cache notebook states
         uses: actions/cache@v6
