@@ -1,12 +1,12 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
+#> tags = ["spectroscopy", "plots"]
 #> title = "Spectroscopic Data Reduction Part 1: Tracing"
-#> layout = "layout.jlhtml"
-#> date = "2025-12-31"
 #> description = "Derive a spectroscopic trace model and extract a 1D spectrum."
-#> tags = ["spectroscopy"]
+#> date = "2025-12-31"
+#> layout = "layout.jlhtml"
 
 using Markdown
 using InteractiveUtils
@@ -60,9 +60,22 @@ end
 begin
     deps_ready
 
-    using Pluto: frontmatter
     using PlutoUI: TableOfContents, Dump
 end
+
+# ╔═╡ 59b4d5c4-6100-11ef-1aa0-892e00d83607
+md"""
+# Spectroscopic Data Reduction Part 1: Tracing
+
+This notebook is modified from <https://learn.astropy.org/tutorials/1_SpectroscopicTraceTutorial.html>
+
+_Original authors: Adam Ginsburg, Kelle Cruz, Lia Corrales, Jonathan Sick, Adrian Price-Whelan_
+
+!!! tip "Learning Goals"
+
+    - Open a two-dimensional spectrum from an image file (bitmap)
+    - Fit a spectroscopic trace
+"""
 
 # ╔═╡ 794e3ad1-c003-4016-87b8-4a21539373f3
 md"""
@@ -810,9 +823,9 @@ end
 # ╔═╡ 885b28ab-5113-458d-9683-17dd334a852a
 spectrum2 = [
     mean(
-            image_array2[(round(Int, yval) - npixels_to_cut):(round(Int, yval) + npixels_to_cut), ii] .- bg,
-            weights(mean_trace_profile),
-        )
+        image_array2[(round(Int, yval) - npixels_to_cut):(round(Int, yval) + npixels_to_cut), ii] .- bg,
+        weights(mean_trace_profile),
+    )
         for (yval, ii, bg) in zip(trace_center2, xvals, background2)
 ]
 
@@ -831,31 +844,6 @@ md"""
 
 # ╔═╡ 88e74f38-c943-4757-82bf-96e39d67da0c
 TableOfContents()
-
-# ╔═╡ ff0a7c90-cb17-4a19-ab07-09d50c9ab98d
-function keywords(kind = "note", title = "Keywords")
-    nb_path = split(@__FILE__, "#==#") |> first |> string
-    tags = (nb_path |> frontmatter)["tags"]
-    header = "!!! $kind \"$title\""
-    body = join(("`$tag`" for tag in tags), " ")
-    return Markdown.parse("$header\n    $body")
-end
-
-# ╔═╡ 59b4d5c4-6100-11ef-1aa0-892e00d83607
-md"""
-# Spectroscopic Data Reduction Part 1: Tracing
-
-This notebook is modified from <https://learn.astropy.org/tutorials/1_SpectroscopicTraceTutorial.html>
-
-_Original authors: Adam Ginsburg, Kelle Cruz, Lia Corrales, Jonathan Sick, Adrian Price-Whelan_
-
-!!! tip "Learning Goals"
-
-    - Open a two-dimensional spectrum from an image file (bitmap)
-    - Fit a spectroscopic trace
-
-$(keywords())
-"""
 
 # ╔═╡ Cell order:
 # ╟─59b4d5c4-6100-11ef-1aa0-892e00d83607
@@ -963,5 +951,4 @@ $(keywords())
 # ╟─33d9ca20-bbd8-4906-bf55-386d111c19c8
 # ╟─011d0d6b-5bc4-4399-80bf-63f5f401219b
 # ╠═88e74f38-c943-4757-82bf-96e39d67da0c
-# ╟─ff0a7c90-cb17-4a19-ab07-09d50c9ab98d
 # ╠═77cf408c-81de-483f-90ee-619842b67d73
