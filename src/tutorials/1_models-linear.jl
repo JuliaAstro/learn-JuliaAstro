@@ -1,13 +1,13 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
-#> image = "/assets/linear-model-fitting.png"
+#> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots", "optimization"]
 #> title = "Modeling 1: Linear model fitting"
-#> layout = "layout.jlhtml"
-#> date = "2025-12-09"
 #> description = "Make simple fits to your data."
-#> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots"]
+#> date = "2025-12-09"
+#> layout = "layout.jlhtml"
+#> image = "/assets/linear-model-fitting.png"
 
 using Markdown
 using InteractiveUtils
@@ -23,9 +23,11 @@ begin
             Pkg.PackageSpec(; name = "PlutoUI"),
             Pkg.PackageSpec(; name = "StatsBase"),
             Pkg.PackageSpec(; name = "LinearAlgebra"),
+            Pkg.PackageSpec(; name = "Random"),
             Pkg.PackageSpec(; name = "GLM"),
             Pkg.PackageSpec(; name = "Optimization"),
             Pkg.PackageSpec(; name = "OptimizationOptimJL"),
+            Pkg.PackageSpec(; name = "ForwardDiff"),
             Pkg.PackageSpec(; name = "DataFramesMeta"),
             Pkg.PackageSpec(; name = "VirtualObservatory"),
             Pkg.PackageSpec(; name = "CairoMakie"),
@@ -40,9 +42,11 @@ begin
     # Analysis
     using StatsBase: coef, predict
     using LinearAlgebra: Diagonal
+    using Random: Xoshiro
     using GLM: Normal, @formula, glm, aweights
-    using Optimization: OptimizationProblem, solve
-    using OptimizationOptimJL: NelderMead
+    using Optimization: OptimizationProblem, OptimizationFunction, AutoForwardDiff, solve
+    using OptimizationOptimJL: NelderMead, BFGS
+    using ForwardDiff: ForwardDiff # AD backend for `AutoForwardDiff`
 
     # Data handling and visualization
     using DataFramesMeta: @select, @transform, DataFrame, Not, disallowmissing, dropmissing
@@ -69,6 +73,8 @@ This notebook is modified from <https://learn.astropy.org/tutorials/1_models-qui
 
 _Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephanie T. Douglas_
 
+The polynomial model fitting section is adapted from the original JuliaAstro [curve fitting tutorial](https://github.com/JuliaAstro/JuliaAstro.github.io/blob/a8dfa6773ff27ff342653459933785d34e7ced55/docs/src/tutorials/curve-fit.md) by William Thompson.
+
 !!! tip "Learning goals"
     - Use VirtualObservatory.jl to download data from Vizier.
     - Use basic models in `Base` Julia, GLM.jl, and Optimization.jl.
@@ -86,7 +92,7 @@ _Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Kelle Cruz, Stephan
 md"""
 ## Summary
 
-In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data.
+In this tutorial, we will become familiar with some of the major modeling frameworks available in Julia and learn how to make a quick fit to our data. We will then extend these methods to fit a polynomial model.
 """
 
 # ╔═╡ a68daf19-dae6-4442-8234-d6636ef931c7
@@ -338,7 +344,7 @@ md"""
 For completeness, we also show how we might accomplish this with Optimization.jl:
 
 !!! note
-    This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimatation techniques above do not hold, and Bayesian approaches should be used instead. For example, see: <https://juliaastro.org/home/tutorials/curve-fit/#Bayesian-models>
+    This is best suited for nonlinear problems, where the usual linear approximations for estimating confidence intervals we used before [do not hold](https://discourse.julialang.org/t/best-fit-parameter-error-bar-using-optimization-jl/103186/6). At this point, our standard confidence interval estimation techniques above do not hold, and Bayesian approaches should be used instead. We explore this in [Modeling 3: Bayesian model fitting](https://learn.juliaastro.org/tutorials/3_models-bayesian/).
 """
 
 # ╔═╡ e0e8909d-893f-4f35-baf2-c27dafeb23fa
@@ -430,6 +436,145 @@ md"""
     Note the repeated labeling, styling, and external statistical analysis that AoG saves us from needing to do by hand.
 """
 
+# ╔═╡ ce3844a4-893e-495d-8ec5-ced352bcab99
+md"""
+## Fit a polynomial model
+
+So far, our data have been well described by a straight line. Let's now take a look at a case where they are not. We will generate some synthetic data that follow a weak parabola, with some Gaussian noise added on top.
+
+To get the same noise each time this notebook is run, we pass a seeded random number generator (`Random.Xoshiro`) to `randn`, which draws values from a normal distribution with a mean of 0 and a standard deviation of 1:
+"""
+
+# ╔═╡ 10d059f7-69df-4409-b12f-ff1bfa5673b6
+df_sim = let rng = Xoshiro(1234)
+    x = 0.0:5:100
+    y = @. (x / 20 - 0.2)^2 + 2
+    DataFrame(; x, y = y .+ randn(rng, length(x)))
+end
+
+# ╔═╡ 179bd004-6baf-466e-8181-4d8dbba16c9a
+md"""
+Using the same AoG.jl one-liner from before, we can see that a straight line does not quite cut it this time:
+"""
+
+# ╔═╡ 0dc837b9-8d74-4ae3-8d1e-65d3a51ac7af
+data(df_sim) * mapping(:x, :y) * (visual(Scatter) + linear()) |> draw
+
+# ╔═╡ d17adebe-dc2b-4b18-bfdb-7f2befb4f3ae
+md"""
+### `Base` Julia
+
+Even though a parabola is not a straight line, a polynomial like
+
+```math
+y = \beta_1 + \beta_2 x + \beta_3 x^2
+```
+
+is still a _linear model_ because it is linear in its parameters, ``\boldsymbol\beta``. This means that we can use the same machinery from before by just adding an ``x^2`` column to our design matrix:
+"""
+
+# ╔═╡ 10735196-8043-4a1f-ba95-a793f87a6f92
+X_quad = [ones(length(df_sim.x)) df_sim.x df_sim.x .^ 2]
+
+# ╔═╡ 5936bacb-49dd-4b33-b0d0-8c4eefeef0f7
+md"""
+We do not have any measurement uncertainties to weight by this time, so we can pass our design matrix directly to `\`, which returns the ordinary least squares solution:
+"""
+
+# ╔═╡ 0ed24825-dd61-461f-844b-179d21050820
+β̂_quad_base = X_quad \ df_sim.y
+
+# ╔═╡ 39f28a68-d965-4200-9045-79941ddc71cc
+md"""
+### Optimization.jl
+
+For an arbitrary model that we cannot write in terms of a design matrix, we can return to Optimization.jl. We first define our model, using `@.` to broadcast it over all of our `x` values, followed by an objective function that returns the sum of the squared residuals:
+"""
+
+# ╔═╡ 2ebf2f51-0b06-4e8c-81f2-cf91c098b39e
+@. quadfunc(x, β) = β[1] + β[2] * x + β[3] * x^2
+
+# ╔═╡ 1adca9fa-951a-4c9b-9482-07de4296a4cf
+function objective_quad(u, data)
+    x, y = eachcol(data)
+
+    # Compute residuals
+    residuals = y .- quadfunc(x, u)
+
+    # Sum of squared residuals
+    return sum(residuals .^ 2)
+end
+
+# ╔═╡ 6cd2af04-1a38-436b-84c1-75b2fa085eb7
+md"""
+This time, we will also give our optimizer a bit more information to work with. Wrapping our objective in an `OptimizationFunction` lets us specify an [automatic differentiation](https://docs.sciml.ai/Optimization/stable/API/ad/) (AD) backend, which computes the gradient of our objective for us:
+"""
+
+# ╔═╡ e16690fb-2d22-4b18-8999-e2f5e96f03ec
+prob_quad = OptimizationProblem(
+    OptimizationFunction(objective_quad, AutoForwardDiff()),
+    zeros(3), # Initial guess
+    df_sim,
+)
+
+# ╔═╡ 070269fa-baf7-4a55-9abf-bab7aca87b85
+md"""
+This lets us use gradient-based algorithms like `BFGS`, in addition to derivative-free methods like `NelderMead` (which behaves nearly identically to MATLAB's `fminsearch`):
+"""
+
+# ╔═╡ ed6210b3-2394-4d70-b159-635c88089e34
+sol_quad_nm = solve(prob_quad, NelderMead())
+
+# ╔═╡ 83985253-3a27-46f0-8853-920be949233f
+sol_quad_bfgs = solve(prob_quad, BFGS())
+
+# ╔═╡ 56fede97-114c-44f4-a1de-1281412f4da3
+md"""
+Both algorithms land close to our exact solution from before, but let's compare how much work each one needed to get there:
+"""
+
+# ╔═╡ bcc61e9d-f16f-4abc-a289-5594cf014709
+let sols = (NelderMead = sol_quad_nm, BFGS = sol_quad_bfgs)
+    DataFrame(
+        "algorithm" => collect(keys(sols)),
+        "iterations" => [sol.stats.iterations for sol in sols],
+        "objective calls" => [sol.stats.fevals for sol in sols],
+        "gradient calls" => [sol.stats.gevals for sol in sols],
+        "β̂ - β̂_quad_base" => [sol.u .- β̂_quad_base for sol in sols],
+    )
+end
+
+# ╔═╡ 0492c315-6ddb-4622-822e-beb5fb41399c
+md"""
+With the help of AD, `BFGS` converged to the exact solution in just a handful of iterations, while `NelderMead` needed many more to get close. This gap tends to grow with the number of parameters in our model, so it pays to choose our fitter wisely!
+
+!!! tip
+    See the [Optimization.jl documentation](https://docs.sciml.ai/Optimization/stable/) for the full list of available algorithms and AD backends. For least squares problems in particular, [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) provides a convenient `curve_fit` interface, which we use in [Modeling 2](https://learn.juliaastro.org/tutorials/2_model-user-defined/).
+"""
+
+# ╔═╡ 243df974-fa7d-430f-baad-77a6e31ed055
+md"""
+### Plot
+
+We can now plot our fitted model alongside the data:
+"""
+
+# ╔═╡ 218318a4-5a2b-4682-9855-646b35fbd83e
+let
+    fig, ax, p = scatter(
+        df_sim.x, df_sim.y;
+        color = :cornflowerblue,
+        label = "data",
+        axis = (; xlabel = "x", ylabel = "y"),
+    )
+
+    lines!(ax, df_sim.x, quadfunc(df_sim.x, sol_quad_bfgs.u); color = :orange, label = "model")
+
+    axislegend(ax; position = :lt)
+
+    fig
+end
+
 # ╔═╡ b2805e96-5cce-4200-842b-931187007a31
 md"""
 # Notebook setup 🔧
@@ -489,6 +634,27 @@ TableOfContents(; depth = 4)
 # ╟─0f57e294-1c1f-4f73-8e08-ab9c0bba9f0f
 # ╠═c3d88d47-93f5-4f39-98ea-eb76f8a4974d
 # ╟─3ba10da3-1e3c-4b75-9c0c-5d1a2dd4af75
+# ╟─ce3844a4-893e-495d-8ec5-ced352bcab99
+# ╠═10d059f7-69df-4409-b12f-ff1bfa5673b6
+# ╟─179bd004-6baf-466e-8181-4d8dbba16c9a
+# ╠═0dc837b9-8d74-4ae3-8d1e-65d3a51ac7af
+# ╟─d17adebe-dc2b-4b18-bfdb-7f2befb4f3ae
+# ╠═10735196-8043-4a1f-ba95-a793f87a6f92
+# ╟─5936bacb-49dd-4b33-b0d0-8c4eefeef0f7
+# ╠═0ed24825-dd61-461f-844b-179d21050820
+# ╟─39f28a68-d965-4200-9045-79941ddc71cc
+# ╠═2ebf2f51-0b06-4e8c-81f2-cf91c098b39e
+# ╠═1adca9fa-951a-4c9b-9482-07de4296a4cf
+# ╟─6cd2af04-1a38-436b-84c1-75b2fa085eb7
+# ╠═e16690fb-2d22-4b18-8999-e2f5e96f03ec
+# ╟─070269fa-baf7-4a55-9abf-bab7aca87b85
+# ╠═ed6210b3-2394-4d70-b159-635c88089e34
+# ╠═83985253-3a27-46f0-8853-920be949233f
+# ╟─56fede97-114c-44f4-a1de-1281412f4da3
+# ╠═bcc61e9d-f16f-4abc-a289-5594cf014709
+# ╟─0492c315-6ddb-4622-822e-beb5fb41399c
+# ╟─243df974-fa7d-430f-baad-77a6e31ed055
+# ╠═218318a4-5a2b-4682-9855-646b35fbd83e
 # ╟─b2805e96-5cce-4200-842b-931187007a31
 # ╠═7cb7ae25-79c2-4138-aa50-fdc27615245b
 # ╠═b880641e-5101-4857-a5bf-558482ca1b21
