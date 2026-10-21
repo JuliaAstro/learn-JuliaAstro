@@ -2,11 +2,12 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["TODO"]
+#> tags = ["spectroscopy", "radio astronomy", "coordinates", "FITS", "units", "plots"]
 #> title = "Extracting and Plotting Position-Velocity Diagrams"
-#> description = "TODO"
+#> description = "Extract and visualize position-velocity (PV) diagrams from spectral cube data"
 #> date = "2025-12-31"
 #> layout = "layout.jlhtml"
+#> image = "/assets/pv_diagram.png"
 
 using Markdown
 using InteractiveUtils
