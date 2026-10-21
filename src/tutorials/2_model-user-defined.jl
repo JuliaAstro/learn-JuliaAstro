@@ -1,12 +1,12 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
-#> title = "Modeling 2: Create a User Defined Model"
-#> layout = "layout.jlhtml"
-#> date = "2025-12-31"
-#> description = "Explore more complex data-fitting techniques."
 #> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots"]
+#> title = "Modeling 2: Create a User Defined Model"
+#> description = "Explore more complex data-fitting techniques."
+#> date = "2025-12-31"
+#> layout = "layout.jlhtml"
 
 using Markdown
 using InteractiveUtils
@@ -65,6 +65,25 @@ begin
 
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ 2d19d3b7-096c-44e5-bb86-7551095e0df9
+md"""
+# Modeling 2: Create a User Defined Model
+
+This notebook is modified from <https://learn.astropy.org/tutorials/2_user-defined-model.html>
+
+_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Douglas_
+
+!!! tip "Learning goals"
+    - Define a new model
+    - Identify cases were a user-defined model could be useful
+    - Define models in two different ways:
+      - Compound models
+      - Custom models
+
+!!! warning "Companion content"
+    [learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/1_models-linear/)
+"""
 
 # ╔═╡ 4027b761-1f9c-4fbc-9cf7-8d0d479e8a33
 md"""
@@ -300,25 +319,6 @@ md"""
 
 # ╔═╡ 5d9e2890-00fb-4370-9337-f6e93d49e5ed
 TableOfContents(; depth = 4)
-
-# ╔═╡ 2d19d3b7-096c-44e5-bb86-7551095e0df9
-md"""
-# Modeling 2: Create a User Defined Model
-
-This notebook is modified from <https://learn.astropy.org/tutorials/2_user-defined-model.html>
-
-_Original authors: Rocio Kiman, Lia Corrales, Zé Vinícius, Stephanie T. Douglas_
-
-!!! tip "Learning goals"
-    - Define a new model
-    - Identify cases were a user-defined model could be useful
-    - Define models in two different ways:
-      - Compound models
-      - Custom models
-
-!!! warning "Companion content"
-    [learn.JuliaAstro > Modeling 1: Linear model fitting](https://learn.juliaastro.org/tutorials/models-1_linear_fitting/)
-"""
 
 # ╔═╡ Cell order:
 # ╟─2d19d3b7-096c-44e5-bb86-7551095e0df9

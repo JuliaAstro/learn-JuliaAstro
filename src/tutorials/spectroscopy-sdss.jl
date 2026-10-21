@@ -1,13 +1,13 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
-#> image = "/assets/spec-SDSS.png"
-#> layout = "layout.jlhtml"
-#> title = "Spectroscopy with SDSS"
 #> tags = ["spectroscopy", "FITS", "units", "dust exctinction", "cosmology", "plots", "SDSS"]
-#> date = "2026-05-16"
+#> title = "Spectroscopy with SDSS"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
+#> date = "2026-05-16"
+#> layout = "layout.jlhtml"
+#> image = "/assets/spec-SDSS.png"
 
 using Markdown
 using InteractiveUtils
@@ -41,7 +41,7 @@ begin
             ),
             Pkg.PackageSpec(;
                 url = "https://github.com/icweaver/Measurements.jl",
-                rev = "makie-v0.25.0",
+                rev = "compat/makie-v0.25",
             ),
             Pkg.PackageSpec(;
                 rev = "units",
@@ -89,6 +89,22 @@ begin
 
     using PlutoUI: TableOfContents
 end
+
+# ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
+md"""
+# Spectroscopy with SDSS
+
+_Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_ 
+
+!!! tip "Learning goals"
+    Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
+
+!!! warning "Companion content"
+    - JuliaAstro > FITS tables
+    - JuliaAstro > Unit handling
+    - JuliaAstro > Dust extinction
+    - JuliaAstro > Cosmological redshift and age
+"""
 
 # ╔═╡ 29945a91-d0c5-470b-81e4-99329e874ee0
 md"""
@@ -400,22 +416,6 @@ md"""
 
 # ╔═╡ 89579410-1058-4b49-932c-c1715ce662a8
 TableOfContents(; depth = 4)
-
-# ╔═╡ 4ca2f579-4240-40b4-a07c-29896c3684b4
-md"""
-# Spectroscopy with SDSS
-
-_Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_ 
-
-!!! tip "Learning goals"
-    Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.
-
-!!! warning "Companion content"
-    - JuliaAstro > FITS tables
-    - JuliaAstro > Unit handling
-    - JuliaAstro > Dust extinction
-    - JuliaAstro > Cosmological redshift and age
-"""
 
 # ╔═╡ Cell order:
 # ╟─4ca2f579-4240-40b4-a07c-29896c3684b4
