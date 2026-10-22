@@ -43,11 +43,7 @@ jobs:
           key: ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
 
-      - name: 📅 Checkout source
-        uses: actions/checkout@v7
-
-      # Data files downloaded by the notebooks (gitignored). Restored after the checkout
-      # above, whose `git clean -ffdx` would otherwise delete them.
+      # Data files downloaded by the notebooks (gitignored)
       - name: ⏱ Restore tutorial data
         id: data-cache
         uses: actions/cache/restore@v6
@@ -59,6 +55,21 @@ jobs:
       - name: 🙌 Install dependencies
         shell: julia --project {0}
         run: import Pkg; Pkg.instantiate()
+
+      # Notebooks that install packages with `Pkg.activate` don't record package versions in their
+      # file, so their saved outputs can go stale. Delete those outputs so these notebooks always re-run.
+      # Notebooks that use Pluto's built-in package manager are pinned, so their saved outputs are reused.
+      - name: 🧹 Drop saved outputs of unpinned notebooks
+        shell: julia --project {0}
+        run: |
+          import PlutoPages, Pluto
+          const PSS = PlutoPages.PlutoSliderServer
+          for (root, _, files) in walkdir("src"), f in files
+              path = joinpath(root, f)
+              if endswith(f, ".jl") && Pluto.is_pluto_notebook(path) && !Pluto.PkgUtils.will_use_pluto_pkg(path)
+                  rm(PSS.cache_filename(abspath("_cache"), PSS.plutohash(read(path, String))); force = true)
+              end
+          end
 
       - name: 🪴 Generate site
         shell: julia --project {0}
