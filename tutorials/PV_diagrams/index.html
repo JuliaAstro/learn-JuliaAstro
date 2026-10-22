@@ -2,11 +2,17 @@
 <head>
 
 <title>Extracting and Plotting Position-Velocity Diagrams</title>
-<meta name="description" content='TODO'>
-<meta property="og:article:tag" content='TODO'>
+<meta name="description" content='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>
+<meta property="og:article:tag" content='spectroscopy'>
+<meta property="og:article:tag" content='radio astronomy'>
+<meta property="og:article:tag" content='coordinates'>
+<meta property="og:article:tag" content='FITS'>
+<meta property="og:article:tag" content='units'>
+<meta property="og:article:tag" content='plots'>
 <meta property='og:type' content='article'>
 <meta property='og:title' content='Extracting and Plotting Position-Velocity Diagrams'>
-<meta property='og:description' content='TODO'>
+<meta property='og:description' content='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>
+<meta property='og:image' content='/assets/pv_diagram.png'>
 
 
 <link rel="root" href="../.." />
@@ -108,13 +114,13 @@ window.pluto_recording_audio_url = undefined;
 <li>
 <h3>UNITS</h3>
 <ul>
-<li class=''><a href='../../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class=''><a href='../../tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='../../tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class='active'><a href='../../tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li><li class=''><a href='../../tutorials/spectral-cube-reproject/' title='Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution'>Cube Reprojection Tutorial</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 <li>
 <h3>COORDINATES</h3>
 <ul>
-<li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/1_coordinates-intro/' title='TODO'>Astronomical Coordinates 1: Getting Started with SkyCoords.jl</a></li><li class=''><a href='../../tutorials/2_coordinates-transforms/' title='Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates.'>Astronomical Coordinates 2: Transforming Coordinate Systems and Representations</a></li><li class=''><a href='../../tutorials/3_coordinates-velocities/' title='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.'>Astronomical Coordinates 3: Working with Velocity Data</a></li><li class=''><a href='../../tutorials/4_coordinates-crossmatch/' title='Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry.'>Astronomical Coordinates 4: Cross-matching Catalogs</a></li>
+<li class=''><a href='../../tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='../../tutorials/1_coordinates-intro/' title='TODO'>Astronomical Coordinates 1: Getting Started with SkyCoords.jl</a></li><li class=''><a href='../../tutorials/2_coordinates-transforms/' title='Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates.'>Astronomical Coordinates 2: Transforming Coordinate Systems and Representations</a></li><li class=''><a href='../../tutorials/3_coordinates-velocities/' title='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.'>Astronomical Coordinates 3: Working with Velocity Data</a></li><li class=''><a href='../../tutorials/4_coordinates-crossmatch/' title='Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry.'>Astronomical Coordinates 4: Cross-matching Catalogs</a></li><li class='active'><a href='../../tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li>
 </ul>
 </li>
 <li>
@@ -138,7 +144,7 @@ window.pluto_recording_audio_url = undefined;
 <li>
 <h3>SPECTROSCOPY</h3>
 <ul>
-<li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li class='active'><a href='../../tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li><li class=''><a href='../../tutorials/spectral-cube-reproject/' title='Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution'>Cube Reprojection Tutorial</a></li><li class=''><a href='../../tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
 </ul>
 </li>
 
@@ -149,11 +155,11 @@ window.pluto_recording_audio_url = undefined;
         <div class="pp-keywords">
     <div class="pp-keywords-box">
         <p class="pp-keywords-title"></p>
-        <p><a href='../../search?q=TODO'><code>TODO</code></a></p>
+        <p><a href='../../search?q=spectroscopy'><code>spectroscopy</code></a><a href='../../search?q=radio astronomy'><code>radio astronomy</code></a><a href='../../search?q=coordinates'><code>coordinates</code></a><a href='../../search?q=FITS'><code>FITS</code></a><a href='../../search?q=units'><code>units</code></a><a href='../../search?q=plots'><code>plots</code></a></p>
     </div>
 </div>
 
-        <pluto-editor statefile='../../generated_assets/PV_diagrams_32595555.plutostate' notebookfile='../../generated_assets/PV_diagrams_32595555.plutostate' disable-ui=''></pluto-editor>
+        <pluto-editor statefile='../../generated_assets/PV_diagrams_f432eb2e.plutostate' notebookfile='../../generated_assets/PV_diagrams_f432eb2e.plutostate' disable-ui=''></pluto-editor>
 
         </div>
     </div>
