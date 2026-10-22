@@ -65,7 +65,7 @@ begin
     using ImageFiltering: imfilter, centered, NA
     using LinearAlgebra: Diagonal, Symmetric, cholesky, diag, eigen
     using ProgressLogging
-    using Downloads: download
+    using Downloads: download, RequestError
     using Reproject: reproject
 
     deps_ready = true
@@ -302,21 +302,24 @@ TableOfContents()
 
 Download `url` to `path` with `Downloads.download`, and show a progress bar in Pluto.
 
-The file is downloaded to a temporary location first, so an interrupted download never leaves a partial file at `path`.
+The file is downloaded to `path * ".part"` first, so an interrupted download never leaves a partial file at `path`. Server errors and dropped connections are retried up to three times, with increasing waits in between. Client errors, like 404, are not retried.
 """
 function pluto_download(url, path)
     return @withprogress name = basename(path) begin
         # Pluto keeps every log message, so only log whole-percent steps
+        # (and the drop back to 0% when a download is retried)
         last_percent = -1
         function progress(total, now)
             percent = total > 0 ? 100 * now ÷ total : 0
-            if percent > last_percent
+            if percent != last_percent
                 last_percent = percent
                 @logprogress percent / 100
             end
         end
 
-        mv(download(url; progress), path)
+        is_transient(_, e) = e isa RequestError && !(400 ≤ e.response.status < 500)
+        patient_download = retry(download; delays = ExponentialBackOff(n = 3, first_delay = 30, max_delay = 300), check = is_transient)
+        mv(patient_download(url, path * ".part"; progress), path; force = true)
     end
 end
 

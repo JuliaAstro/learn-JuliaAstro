@@ -86,7 +86,7 @@ begin
     using CodecZlib: GzipDecompressor
     using CSV
     using DataFrames: DataFrame
-    using Downloads: download
+    using Downloads: download, RequestError
     using FITSFiles
     using URIs: escapeuri
     import Tar
@@ -515,7 +515,12 @@ herschel_tarball = let
     f = joinpath(@__DIR__, "data", "herschel_1342198565.tar")
     if !isfile(f)
         obs = only(filter(row -> row.observation_id == 1342198565, spire_obs))
-        download(obs.product_url, f)
+        # The archive is sometimes briefly unavailable, so try a few times before giving up.
+        # Only server errors and dropped connections are retried, not client errors like 404.
+        is_transient(_, e) = e isa RequestError && !(400 ≤ e.response.status < 500)
+        patient_download = retry(download; delays = ExponentialBackOff(n = 3, first_delay = 30, max_delay = 300), check = is_transient)
+        # Download next to `f` first, so an interrupted download never leaves a partial file at `f`
+        mv(patient_download(obs.product_url, f * ".part"), f; force = true)
     end
     f
 end
