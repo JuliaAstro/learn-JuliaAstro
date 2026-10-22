@@ -1,12 +1,11 @@
 <!DOCTYPE html><html lang="en">
 <head>
 
-<title>Intro</title>
-<meta name="description" content='Intro to using these notebooks.'>
-<meta property="og:article:tag" content='intro'>
+<title>learn.JuliaAstro</title>
+<meta name="description" content='Learn how to use Julia for research in astronomy. These tutorials are heavily inspired by learn.astropy.'>
 <meta property='og:type' content='article'>
-<meta property='og:title' content='Intro'>
-<meta property='og:description' content='Intro to using these notebooks.'>
+<meta property='og:title' content='learn.JuliaAstro'>
+<meta property='og:description' content='Learn how to use Julia for research in astronomy. These tutorials are heavily inspired by learn.astropy.'>
 
 
 <link rel="root" href="." />
@@ -100,60 +99,125 @@ window.pluto_recording_audio_url = undefined;
             </div>
         </li>
         <li>
-<h3>FILE I/O</h3>
+<h3>Getting started</h3>
 <ul>
-<li class=''><a href='./tutorials/fits-tables/' title='View and manipulate data from FITS tables.'>FITS tables</a></li><li class=''><a href='./tutorials/fits-cubes/' title='View and manipulate FITS cubes'>FITS cubes</a></li><li class=''><a href='./tutorials/fits-images/' title='View and manipulate data from FITS images.'>FITS images</a></li><li class=''><a href='./tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='./tutorials/asdf/' title='View and manipulate data from ASDF files.'>ASDF files</a></li>
+<li class=''><a href='./quickstart/'>Quickstart</a></li>
+</ul>
+</li>
+<li class="pp-clear-tags" hidden><ul><li><a href='./'>Clear all tags</a></li></ul></li>
+<li>
+<h3>Dimensions</h3>
+<ul>
+<li><a href='./?tag=coordinates' data-tag='coordinates'>coordinates</a></li><li><a href='./?tag=units' data-tag='units'>units</a></li><li><a href='./?tag=WCS' data-tag='WCS'>WCS</a></li>
 </ul>
 </li>
 <li>
-<h3>UNITS</h3>
+<h3>Data</h3>
 <ul>
-<li class=''><a href='./tutorials/units/' title='Work with units in astrophysical calculations.'>Unit handling</a></li><li class=''><a href='./tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='./tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='./tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li><li class=''><a href='./tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li><li class=''><a href='./tutorials/spectral-cube-reproject/' title='Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution'>Cube Reprojection Tutorial</a></li><li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li><a href='./?tag=ASDF' data-tag='ASDF'>ASDF</a></li><li><a href='./?tag=data cubes' data-tag='data cubes'>data cubes</a></li><li><a href='./?tag=file I/O' data-tag='file I/O'>file I/O</a></li><li><a href='./?tag=FITS' data-tag='FITS'>FITS</a></li><li><a href='./?tag=query' data-tag='query'>query</a></li><li><a href='./?tag=tables' data-tag='tables'>tables</a></li>
 </ul>
 </li>
 <li>
-<h3>COORDINATES</h3>
+<h3>Domains</h3>
 <ul>
-<li class=''><a href='./tutorials/wcs-coords/' title='Work with images containing WCS information.'>Working with Celestial Coordinates in WCS 1</a></li><li class=''><a href='./tutorials/1_coordinates-intro/' title='TODO'>Astronomical Coordinates 1: Getting Started with SkyCoords.jl</a></li><li class=''><a href='./tutorials/2_coordinates-transforms/' title='Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates.'>Astronomical Coordinates 2: Transforming Coordinate Systems and Representations</a></li><li class=''><a href='./tutorials/3_coordinates-velocities/' title='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.'>Astronomical Coordinates 3: Working with Velocity Data</a></li><li class=''><a href='./tutorials/4_coordinates-crossmatch/' title='Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry.'>Astronomical Coordinates 4: Cross-matching Catalogs</a></li><li class=''><a href='./tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li>
+<li><a href='./?tag=astrostatistics' data-tag='astrostatistics'>astrostatistics</a></li><li><a href='./?tag=cosmology' data-tag='cosmology'>cosmology</a></li><li><a href='./?tag=extinction' data-tag='extinction'>extinction</a></li><li><a href='./?tag=observational astronomy' data-tag='observational astronomy'>observational astronomy</a></li><li><a href='./?tag=physics' data-tag='physics'>physics</a></li><li><a href='./?tag=radio astronomy' data-tag='radio astronomy'>radio astronomy</a></li>
 </ul>
 </li>
 <li>
-<h3>MODELS</h3>
+<h3>Methods</h3>
 <ul>
-<li class=''><a href='./tutorials/1_models-linear/' title='Make simple fits to your data.'>Modeling 1: Linear model fitting</a></li><li class=''><a href='./tutorials/2_model-user-defined/' title='Explore more complex data-fitting techniques.'>Modeling 2: Create a User Defined Model</a></li><li class=''><a href='./tutorials/3_models-bayesian/' title='Estimate the full uncertainty in your fitted parameters.'>Modeling 3: Bayesian model fitting</a></li>
+<li><a href='./?tag=Bayesian' data-tag='Bayesian'>Bayesian</a></li><li><a href='./?tag=MCMC' data-tag='MCMC'>MCMC</a></li><li><a href='./?tag=models' data-tag='models'>models</a></li><li><a href='./?tag=optimization' data-tag='optimization'>optimization</a></li><li><a href='./?tag=photometry' data-tag='photometry'>photometry</a></li><li><a href='./?tag=spectroscopy' data-tag='spectroscopy'>spectroscopy</a></li>
 </ul>
 </li>
 <li>
-<h3>COSMOLOGY</h3>
+<h3>Data Viz</h3>
 <ul>
-<li class=''><a href='./tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.'>Cosmological redshift and age</a></li><li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
+<li><a href='./?tag=colorbars' data-tag='colorbars'>colorbars</a></li><li><a href='./?tag=contours' data-tag='contours'>contours</a></li><li><a href='./?tag=corner plots' data-tag='corner plots'>corner plots</a></li><li><a href='./?tag=errorbars' data-tag='errorbars'>errorbars</a></li><li><a href='./?tag=heatmaps' data-tag='heatmaps'>heatmaps</a></li><li><a href='./?tag=histograms' data-tag='histograms'>histograms</a></li><li><a href='./?tag=images' data-tag='images'>images</a></li><li><a href='./?tag=line plots' data-tag='line plots'>line plots</a></li><li><a href='./?tag=scatter plots' data-tag='scatter plots'>scatter plots</a></li><li><a href='./?tag=stairs' data-tag='stairs'>stairs</a></li><li><a href='./?tag=uncertainty bands' data-tag='uncertainty bands'>uncertainty bands</a></li>
 </ul>
 </li>
 <li>
-<h3>DUST</h3>
+<h3>Surveys &amp; Missions</h3>
 <ul>
-<li class=''><a href='./tutorials/dust-extinction/' title='Analyzing dust extinction.'>Dust extinction</a></li>
+<li><a href='./?tag=Gaia' data-tag='Gaia'>Gaia</a></li><li><a href='./?tag=SDSS' data-tag='SDSS'>SDSS</a></li>
 </ul>
 </li>
-<li>
-<h3>SPECTROSCOPY</h3>
-<ul>
-<li class=''><a href='./tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data'>Extracting and Plotting Position-Velocity Diagrams</a></li><li class=''><a href='./tutorials/spectral-cube-reproject/' title='Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution'>Cube Reprojection Tutorial</a></li><li class=''><a href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data'>Spectroscopy with SDSS</a></li>
-</ul>
-</li>
+
 
         </ul>
         </div>
         </nav>
         <div id="pages-content">
-        <div class="pp-keywords">
-    <div class="pp-keywords-box">
-        <p class="pp-keywords-title"></p>
-        <p><a href='./search?q=intro'><code>intro</code></a></p>
-    </div>
-</div>
+        
+        <!-- Same raw HTML block as md.jlmd, with a gallery of the tutorials below the page content. -->
+<div class="pages-markdown">
+<main>
+<h1 id="learnjuliaastro-tutorials"><a href="#learnjuliaastro-tutorials" class="anchor"></a><code>learn.JuliaAstro</code> Tutorials</h1>
+<p>⚠️ This site is still under construction. Expect to see more updates! ⚠️</p>
+<p>These tutorials are heavily inspired by <a href="https://learn.astropy.org/">learn.astropy</a>.</p>
+<p>New to Julia? Start with the <a href="quickstart/">Quickstart</a>, or pick a tutorial below. Select one or more tags in the sidebar to filter the list.</p>
 
-        <pluto-editor statefile='./generated_assets/index_aa1feba1.plutostate' notebookfile='./generated_assets/index_aa1feba1.plutostate' disable-ui=''></pluto-editor>
+<p class="pp-gallery-empty" hidden>No tutorial has all of the selected tags.</p>
+<div class="pp-gallery">
+<a class="pp-card" href='./tutorials/asdf/' title='View and manipulate data from ASDF files.' data-tags='file I/O,ASDF'>
+    <img src='./assets/asdf.png' alt='' loading='lazy'>
+    <h3>ASDF files</h3>
+</a><a class="pp-card" href='./tutorials/1_coordinates-intro/' title='TODO' data-tags='coordinates,Gaia,scatter plots,colorbars'>
+    <img src='./assets/1_coordinates-intro.png' alt='' loading='lazy'>
+    <h3>Astronomical Coordinates 1: Getting Started with SkyCoords.jl</h3>
+</a><a class="pp-card" href='./tutorials/2_coordinates-transforms/' title='Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates.' data-tags='coordinates,scatter plots,line plots,colorbars'>
+    <img src='./assets/2_coordinates-transforms.png' alt='' loading='lazy'>
+    <h3>Astronomical Coordinates 2: Transforming Coordinate Systems and Representations</h3>
+</a><a class="pp-card" href='./tutorials/3_coordinates-velocities/' title='Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image.' data-tags='coordinates,Gaia,scatter plots,images,colorbars'>
+    <img src='./assets/3_coordinates-velocities.png' alt='' loading='lazy'>
+    <h3>Astronomical Coordinates 3: Working with Velocity Data</h3>
+</a><a class="pp-card" href='./tutorials/4_coordinates-crossmatch/' title='Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry.' data-tags='coordinates,Gaia,scatter plots,histograms'>
+    <img src='./assets/4_coordinates-crossmatch.png' alt='' loading='lazy'>
+    <h3>Astronomical Coordinates 4: Cross-matching Catalogs</h3>
+</a><a class="pp-card" href='./tutorials/cosmo-redshift/' title='Work with units in astrophysical calculations.' data-tags='cosmology,physics,units,line plots'>
+    <img src='./assets/redshift-and-age.png' alt='' loading='lazy'>
+    <h3>Cosmological redshift and age</h3>
+</a><a class="pp-card" href='./tutorials/spectral-cube-reproject/' title='Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution' data-tags='spectroscopy,radio astronomy,query,units,images,stairs,colorbars'>
+    <img src='./assets/spectral_cube_reproject.png' alt='' loading='lazy'>
+    <h3>Cube Reprojection Tutorial</h3>
+</a><a class="pp-card" href='./tutorials/dust-extinction/' title='Analyzing dust extinction.' data-tags='extinction,units,photometry,physics,observational astronomy,scatter plots,line plots'>
+    <img src='./assets/dust-extinction.png' alt='' loading='lazy'>
+    <h3>Dust extinction</h3>
+</a><a class="pp-card" href='./tutorials/PV_diagrams/' title='Extract and visualize position-velocity (PV) diagrams from spectral cube data' data-tags='spectroscopy,radio astronomy,coordinates,FITS,units,images,heatmaps,colorbars'>
+    <img src='./assets/pv_diagram.png' alt='' loading='lazy'>
+    <h3>Extracting and Plotting Position-Velocity Diagrams</h3>
+</a><a class="pp-card" href='./tutorials/fits-cubes/' title='View and manipulate FITS cubes' data-tags='file I/O,FITS,images,contours,line plots,colorbars,data cubes,radio astronomy,WCS'>
+    <img src='./assets/fits-cubes.png' alt='' loading='lazy'>
+    <h3>FITS cubes</h3>
+</a><a class="pp-card" href='./tutorials/fits-images/' title='View and manipulate data from FITS images.' data-tags='file I/O,FITS,images,histograms,colorbars'>
+    <img src='./assets/fits-images.png' alt='' loading='lazy'>
+    <h3>FITS images</h3>
+</a><a class="pp-card" href='./tutorials/fits-tables/' title='View and manipulate data from FITS tables.' data-tags='file I/O,FITS,tables,histograms'>
+    <img src='./assets/fits-table.png' alt='' loading='lazy'>
+    <h3>FITS tables</h3>
+</a><a class="pp-card" href='./tutorials/1_models-linear/' title='Make simple fits to your data.' data-tags='models,astrostatistics,query,line plots,errorbars,scatter plots,optimization,uncertainty bands'>
+    <img src='./assets/linear-model-fitting.png' alt='' loading='lazy'>
+    <h3>Modeling 1: Linear model fitting</h3>
+</a><a class="pp-card" href='./tutorials/2_model-user-defined/' title='Explore more complex data-fitting techniques.' data-tags='models,astrostatistics,query,line plots'>
+    <img src='./assets/2_model-user-defined.png' alt='' loading='lazy'>
+    <h3>Modeling 2: Create a User Defined Model</h3>
+</a><a class="pp-card" href='./tutorials/3_models-bayesian/' title='Estimate the full uncertainty in your fitted parameters.' data-tags='models,astrostatistics,Bayesian,MCMC,query,scatter plots,errorbars,line plots,corner plots'>
+    <img src='./assets/3_models-bayesian.png' alt='' loading='lazy'>
+    <h3>Modeling 3: Bayesian model fitting</h3>
+</a><a class="pp-card" href='./tutorials/spectroscopy-sdss/' title='Explore common tasks used for analyzing SDSS spectroscopic data' data-tags='spectroscopy,FITS,units,extinction,cosmology,line plots,SDSS,uncertainty bands'>
+    <img src='./assets/spec-SDSS.png' alt='' loading='lazy'>
+    <h3>Spectroscopy with SDSS</h3>
+</a><a class="pp-card" href='./tutorials/units/' title='Work with units in astrophysical calculations.' data-tags='units,histograms,radio astronomy,data cubes'>
+    <img src='./assets/units.png' alt='' loading='lazy'>
+    <h3>Unit handling</h3>
+</a><a class="pp-card" href='./tutorials/wcs-coords/' title='Work with images containing WCS information.' data-tags='WCS,coordinates,units,file I/O,images,colorbars'>
+    <img src='./assets/wcs-coords.png' alt='' loading='lazy'>
+    <h3>Working with Celestial Coordinates in WCS 1</h3>
+</a>
+</div>
+<script src="./assets/scripts/gallery.js"></script>
+
+</main>
+</div>
 
         </div>
     </div>
