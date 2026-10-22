@@ -2,10 +2,10 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["spectroscopy", "radio astronomy", "coordinates", "FITS", "units", "plots"]
+#> tags = ["spectroscopy", "radio astronomy", "coordinates", "FITS", "units", "images", "heatmaps", "colorbars"]
 #> title = "Extracting and Plotting Position-Velocity Diagrams"
 #> description = "Extract and visualize position-velocity (PV) diagrams from spectral cube data"
-#> date = "2025-12-31"
+#> date = "2026-10-21"
 #> layout = "layout.jlhtml"
 #> image = "/assets/pv_diagram.png"
 

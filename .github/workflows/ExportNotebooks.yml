@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 120 # fail fast if a data archive stalls, instead of the 6 hour default
     if: github.event.pull_request.draft == false # don't run on draft PRs
     permissions:
       contents: write   # push to gh-pages (main site + PR previews)
@@ -45,6 +46,16 @@ jobs:
       - name: 📅 Checkout source
         uses: actions/checkout@v7
 
+      # Data files downloaded by the notebooks (gitignored). Restored after the checkout
+      # above, whose `git clean -ffdx` would otherwise delete them.
+      - name: ⏱ Restore tutorial data
+        id: data-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: src/tutorials/data
+          key: ${{ runner.os }}-tutorial-data-v1-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-tutorial-data-v1-
+
       - name: 🙌 Install dependencies
         shell: julia --project {0}
         run: import Pkg; Pkg.instantiate()
@@ -56,6 +67,15 @@ jobs:
           PlutoPages.generate("."; html_report_path="generation_report.html")
         env:
           JULIA_PKG_SERVER: ""
+
+      # Save only when the set of data files changed. Runs even if a notebook failed, so
+      # finished downloads are kept, but not for cancelled runs, which can leave a partial file.
+      - name: ⏱ Save tutorial data
+        if: ${{ !cancelled() && steps.data-cache.outputs.cache-matched-key != format('{0}-tutorial-data-v1-{1}', runner.os, hashFiles('src/tutorials/data/**')) }}
+        uses: actions/cache/save@v6
+        with:
+          path: src/tutorials/data
+          key: ${{ runner.os }}-tutorial-data-v1-${{ hashFiles('src/tutorials/data/**') }}
 
       - name: 📰 Upload site generation report
         uses: actions/upload-artifact@v7

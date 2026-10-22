@@ -8,7 +8,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-18"
 #> description = "View and manipulate data from FITS tables."
-#> tags = ["file I/O", "FITS", "tables", "plots", "histograms"]
+#> tags = ["file I/O", "FITS", "tables", "histograms"]
 
 using Markdown
 using InteractiveUtils

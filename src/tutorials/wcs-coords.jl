@@ -7,7 +7,8 @@
 #> layout = "layout.jlhtml"
 #> date = "2026-07-08"
 #> description = "Work with images containing WCS information."
-#> tags = ["wcs", "coordinates", "units", "file I/O", "plotting"]
+#> tags = ["WCS", "coordinates", "units", "file I/O", "images", "colorbars"]
+#> image = "/assets/wcs-coords.png"
 
 using Markdown
 using InteractiveUtils

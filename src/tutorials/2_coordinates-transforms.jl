@@ -4,9 +4,10 @@
 #> [frontmatter]
 #> title = "Astronomical Coordinates 2: Transforming Coordinate Systems and Representations"
 #> layout = "layout.jlhtml"
-#> date = "2025-12-31"
+#> date = "2026-07-29"
 #> description = "Transform astronomical coordinates between frames with SkyCoords.jl: component formats, representations, and transformations from ICRS to Galactic and altitude-azimuth coordinates."
-#> tags = ["coordinates"]
+#> tags = ["coordinates", "scatter plots", "line plots", "colorbars"]
+#> image = "/assets/2_coordinates-transforms.png"
 
 using Markdown
 using InteractiveUtils
