@@ -2,10 +2,10 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["spectroscopy", "radio astronomy", "catalogs", "units", "plots"]
+#> tags = ["spectroscopy", "radio astronomy", "query", "units", "images", "stairs", "colorbars"]
 #> title = "Cube Reprojection Tutorial"
 #> description = "Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution"
-#> date = "2025-12-31"
+#> date = "2026-10-22"
 #> layout = "layout.jlhtml"
 #> image = "/assets/spectral_cube_reproject.png"
 

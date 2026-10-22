@@ -4,9 +4,10 @@
 #> [frontmatter]
 #> title = "Astronomical Coordinates 1: Getting Started with SkyCoords.jl"
 #> layout = "layout.jlhtml"
-#> date = "2025-12-31"
+#> date = "2026-07-29"
 #> description = "TODO"
-#> tags = ["coordinates", "gaia"]
+#> tags = ["coordinates", "Gaia", "scatter plots", "colorbars"]
+#> image = "/assets/1_coordinates-intro.png"
 
 using Markdown
 using InteractiveUtils

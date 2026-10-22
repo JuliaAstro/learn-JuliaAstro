@@ -2,7 +2,7 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots", "optimization"]
+#> tags = ["models", "astrostatistics", "query", "line plots", "errorbars", "scatter plots", "optimization", "uncertainty bands"]
 #> title = "Modeling 1: Linear model fitting"
 #> description = "Make simple fits to your data."
 #> date = "2025-12-09"

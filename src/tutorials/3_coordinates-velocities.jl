@@ -4,9 +4,10 @@
 #> [frontmatter]
 #> title = "Astronomical Coordinates 3: Working with Velocity Data"
 #> layout = "layout.jlhtml"
-#> date = "2025-12-31"
+#> date = "2026-07-29"
 #> description = "Represent and transform velocity data alongside sky coordinates in Julia, and use proper motions to predict the past position of a fast-moving star on a DSS image."
-#> tags = ["coordinates", "gaia"]
+#> tags = ["coordinates", "Gaia", "scatter plots", "images", "colorbars"]
+#> image = "/assets/3_coordinates-velocities.png"
 
 using Markdown
 using InteractiveUtils

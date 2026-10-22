@@ -2,7 +2,7 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["spectroscopy", "FITS", "units", "dust exctinction", "cosmology", "plots", "SDSS"]
+#> tags = ["spectroscopy", "FITS", "units", "extinction", "cosmology", "line plots", "SDSS", "uncertainty bands"]
 #> title = "Spectroscopy with SDSS"
 #> description = "Explore common tasks used for analyzing SDSS spectroscopic data"
 #> date = "2026-05-16"

@@ -8,7 +8,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-21"
 #> description = "Work with units in astrophysical calculations."
-#> tags = ["cosmology", "physics", "units", "plots"]
+#> tags = ["cosmology", "physics", "units", "line plots"]
 
 using Markdown
 using InteractiveUtils

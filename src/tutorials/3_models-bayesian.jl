@@ -2,11 +2,12 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["models", "model fitting", "astrostatistics", "Bayesian", "MCMC", "catalog", "query", "Makie", "plots", "corner plots"]
+#> tags = ["models", "astrostatistics", "Bayesian", "MCMC", "query", "scatter plots", "errorbars", "line plots", "corner plots"]
 #> title = "Modeling 3: Bayesian model fitting"
 #> description = "Estimate the full uncertainty in your fitted parameters."
 #> date = "2026-10-12"
 #> layout = "layout.jlhtml"
+#> image = "/assets/3_models-bayesian.png"
 
 using Markdown
 using InteractiveUtils

@@ -23,9 +23,9 @@
             "tags": ["cosmology"]
         },
         {
-            "title": "Dust",
+            "title": "Extinction",
             "description": "Extinction and attenuation curves.",
-            "tags": ["dust"]
+            "tags": ["extinction"]
         },
         {
             "title": "Spectroscopy",

@@ -2,11 +2,12 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["coordinates", "gaia"]
+#> tags = ["coordinates", "Gaia", "scatter plots", "histograms"]
 #> title = "Astronomical Coordinates 4: Cross-matching Catalogs"
 #> description = "Retrieve the 2MASS catalog from VizieR over TAP, cross-match it against Gaia-selected members of NGC 188, and build color–magnitude diagrams from the matched photometry."
-#> date = "2025-12-31"
+#> date = "2026-07-29"
 #> layout = "layout.jlhtml"
+#> image = "/assets/4_coordinates-crossmatch.png"
 
 using Markdown
 using InteractiveUtils

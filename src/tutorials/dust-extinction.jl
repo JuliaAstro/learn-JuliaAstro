@@ -8,7 +8,7 @@
 #> layout = "layout.jlhtml"
 #> date = "2025-11-25"
 #> description = "Analyzing dust extinction."
-#> tags = ["dust", "dust extinction", "units", "photometry", "extinction", "physics", "observational astronomy"]
+#> tags = ["extinction", "units", "photometry", "physics", "observational astronomy", "scatter plots", "line plots"]
 
 using Markdown
 using InteractiveUtils

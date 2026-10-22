@@ -2,11 +2,12 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["models", "model fitting", "astrostatistics", "catalog", "query", "Makie", "plots", "errorbars", "scatter plots"]
+#> tags = ["models", "astrostatistics", "query", "line plots"]
 #> title = "Modeling 2: Create a User Defined Model"
 #> description = "Explore more complex data-fitting techniques."
-#> date = "2025-12-31"
+#> date = "2026-04-28"
 #> layout = "layout.jlhtml"
+#> image = "/assets/2_model-user-defined.png"
 
 using Markdown
 using InteractiveUtils

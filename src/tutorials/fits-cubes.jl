@@ -2,12 +2,13 @@
 # v1.0.4
 
 #> [frontmatter]
-#> tags = ["file I/O", "FITS", "images", "image processing", "plots", "colorbars", "data cubes", "radio astronomy", "WCS"]
+#> tags = ["file I/O", "FITS", "images", "contours", "line plots", "colorbars", "data cubes", "radio astronomy", "WCS"]
 #> title = "FITS cubes"
 #> description = "View and manipulate FITS cubes"
-#> date = "2026-07-12"
+#> date = "2026-10-13"
 #> layout = "layout.jlhtml"
 #> order = 2
+#> image = "/assets/fits-cubes.png"
 
 using Markdown
 using InteractiveUtils

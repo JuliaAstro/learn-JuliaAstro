@@ -168,11 +168,27 @@ html {
     align-items: stretch;
 }
 
-#pages-sidebar li li.active a {
+#pages-sidebar li li.active a,
+#pages-sidebar li li a.active {
     background-color: var(--sidebar-li-active-bg);
 }
 #pages-sidebar li li:hover a {
     background-color: var(--sidebar-li-hover-bg);
+}
+
+/* "Clear all tags" (links to the unfiltered homepage), above the first tag group and set apart from the tags.
+   Hidden unless tags are selected on the homepage (see assets/scripts/gallery.js). */
+#pages-sidebar li.pp-clear-tags {
+    /* Separate it from the Quickstart link above, so it doesn't read as part of "Getting started". */
+    margin-top: 1rem;
+}
+#pages-sidebar li.pp-clear-tags a {
+    font-style: italic;
+    opacity: 0.7;
+}
+/* `display: flex` on sidebar items would otherwise override the `hidden` attribute. */
+#pages-sidebar li.pp-clear-tags[hidden] {
+    display: none;
 }
 
 /* SIDEBAR LOGO */
@@ -360,7 +376,7 @@ a.pluto_home_link {
     padding: 0.1em 0.3em;
     margin-right: 0.3em;
 }
-/* Each tag is a link to the search page (`/search?tag=...`). */
+/* Each tag links to the homepage gallery, filtered to that tag (`/?tag=...`). */
 .pp-keywords-box a {
     color: inherit;
     text-decoration: none;
@@ -378,6 +394,47 @@ a.pluto_home_link {
 }
 #pages-content pluto-editor.disable_ui > main > preamble:empty {
     display: none;
+}
+
+/* GALLERY */
+/* Rendered on the homepage by _includes/gallery.jlmd and filtered by assets/scripts/gallery.js. */
+
+.pp-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+    gap: 1rem;
+    margin: 2rem 0 4rem;
+}
+.pp-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: var(--sidebar-bg);
+    color: inherit;
+    text-decoration: none;
+}
+/* `display: flex` above would otherwise override the `hidden` attribute set by the filter. */
+.pp-card[hidden] {
+    display: none;
+}
+.pp-card:hover,
+.pp-card:focus-visible {
+    background: var(--sidebar-li-hover-bg);
+    text-decoration: none;
+}
+.pp-card img,
+.pp-card-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+}
+.pp-card-placeholder {
+    background: var(--sidebar-li-active-bg);
+}
+.pp-card h3 {
+    font-size: 1rem;
+    margin: 0.6em 0.8em 0.8em;
 }
 
 /* PAGE NAVIGATION */
