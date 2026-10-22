@@ -1,139 +1,173 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.4
 
 #> [frontmatter]
+#> tags = ["spectroscopy", "radio astronomy", "catalogs", "units", "plots"]
 #> title = "Cube Reprojection Tutorial"
-#> layout = "layout.jlhtml"
+#> description = "Put two spectral cubes observed at different frequencies onto a common spectral and spatial grid with matching resolution"
 #> date = "2025-12-31"
-#> description = "TODO"
-#> tags = ["TODO"]
+#> layout = "layout.jlhtml"
+#> image = "/assets/spectral_cube_reproject.png"
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ecf46459-76ca-457d-8fd5-43cb66770388
-using Downloads: download
+# ╔═╡ 20362a1a-c083-4767-8d01-e231eefbd335
+begin
+    import Pkg
+    Pkg.activate(; temp = true)
+    Pkg.add(
+        [
+            Pkg.PackageSpec(; name = "DynamicQuantities"),
+            Pkg.PackageSpec(; name = "Interpolations"),
+            Pkg.PackageSpec(; name = "ImageFiltering"),
+            Pkg.PackageSpec(; name = "LinearAlgebra"),
+            Pkg.PackageSpec(; name = "PlutoUI"),
+            Pkg.PackageSpec(; name = "ProgressLogging"),
+            Pkg.PackageSpec(; name = "Downloads"),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "Makie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "ComputePipeline",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/MakieOrg/Makie.jl",
+                subdir = "CairoMakie",
+                rev = "ff/breaking-0.25",
+            ),
+            Pkg.PackageSpec(;
+                rev = "reproject",
+                url = "https://github.com/JuliaAstro/AstroImages.jl",
+            ),
+            Pkg.PackageSpec(;
+                rev = "fits-wcs",
+                url = "https://github.com/JuliaAstro/Reproject.jl/",
+            ),
+            Pkg.PackageSpec(;
+                rev = "hdu-size",
+                url = "https://github.com/JuliaAstro/FITSFiles.jl/",
+            ),
+            Pkg.PackageSpec(;
+                url = "https://github.com/JuliaAstro/FITSWCS.jl/",
+            ),
+        ]
+    )
 
-# ╔═╡ 48156d40-df5c-47de-8d23-acf1186d4331
-using FITSFiles
+    using AstroImages
+    using CairoMakie
+    using DynamicQuantities
+    using Interpolations: interpolate, extrapolate, Gridded, Linear, NoInterp
+    using ImageFiltering: imfilter, centered, NA
+    using LinearAlgebra: Diagonal, Symmetric, cholesky, diag, eigen
+    using ProgressLogging
+    using Downloads: download
+    using Reproject: reproject
+
+    deps_ready = true
+end
 
 # ╔═╡ e3cc0abc-8bb5-4b60-9fc0-bddb46ca9cdb
-using PlutoUI
+begin
+    deps_ready
+    using PlutoUI: TableOfContents
+end
 
 # ╔═╡ ea3a159a-6174-11ef-0cb1-b73af72665d4
 md"""
 # Cube Reprojection Tutorial
-"""
 
-# ╔═╡ 7075d9f9-090f-461c-8982-6c7f38453bb0
-md"""
-Original notebook at <https://learn.astropy.org/tutorials/SpectralCubeReprojectExample.html>
-"""
+This notebook is modified from <https://learn.astropy.org/tutorials/SpectralCubeReprojectExample.html>
 
-# ╔═╡ b8c5d49b-b8ca-4f8d-b154-b5a034a82c2e
-md"""
-Original authors: Adam Ginsburg, Eric Koch
-"""
+_Original authors: Adam Ginsburg, Eric Koch_
 
-# ╔═╡ 987be673-b74a-4fb9-98fd-9bafef61c0e4
-md"""
-## Learning Goals
-
-- reproject a cube spectrally
-- smooth it spectrally
-- reproject it spatially
-"""
-
-# ╔═╡ 3c37443f-c88d-48d9-95b1-b48fac544454
-md"""
-## Keywords
-
-spectral cube, radio astronomy, astroquery, units, dask
-"""
-
-# ╔═╡ 6b5f101b-f246-4a13-8ef5-ce08da03414e
-md"""
-## Summary
+!!! tip "Learning Goals"
+    - reproject a cube spectrally
+    - smooth it spectrally
+    - reproject it spatially
 """
 
 # ╔═╡ 7abaa07b-c97e-4ae1-9eaf-650fb529fe14
 md"""
-Spectroscopic cube observations taken at different wavelength can trace the motion of gas or stars using spectral lines, but often lines at different wavelengths give different information. For example, one might observe a galaxy in the 21cm line of HI and the 115 GHz line of CO, or a protoplanetary disk in a line of N2H+ and a line of CO, or a galactic disk in the Hα and Hβ lines (in absorption or emission). In order to compare these data sets pixel-by-pixel, they must be placed onto a common grid with common resolution.
+## Summary
+
+Spectroscopic cube observations taken at different wavelengths can trace the motion of gas or stars using spectral lines, but often lines at different wavelengths give different information. For example, one might observe a galaxy in the 21cm line of HI and the 115 GHz line of CO, or a protoplanetary disk in a line of N2H+ and a line of CO, or a galactic disk in the Hα and Hβ lines (in absorption or emission). In order to compare these data sets pixel-by-pixel, they must be placed onto a common grid with common resolution.
+
+This tutorial shows how to take two spectral cubes observed toward the same part of the sky, but at different frequencies, and put them onto the same grid. We load the cubes and handle their world coordinates with [AstroImages.jl](https://juliaastro.org/AstroImages/), resample their spectral axes with [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/), and resample their spatial axes with [Reproject.jl](https://github.com/JuliaAstro/Reproject.jl). A few helper functions at the bottom of this notebook stand in for the [spectral-cube](https://spectral-cube.readthedocs.io/) and [radio-beam](https://radio-beam.readthedocs.io/) methods that the original tutorial uses.
+
+In this example, we do spectral smoothing and interpolation (step 4) before spatial smoothing and reprojection (steps 5 and 6), but if you have a varying-resolution cube (with a different beam size for each channel), you have to do spatial smoothing first. For more information see the [spectral-cube documentation](https://spectral-cube.readthedocs.io/en/latest/smoothing.html).
 """
 
-# ╔═╡ fd420c28-966c-424b-acc2-5c11988cf253
+# ╔═╡ 721cc524-00cf-423c-b1eb-5406a60a0912
 md"""
-This tutorial shows how to take two spectral cubes observed toward the same part of the sky, but different frequencies, and put them onto the same grid using [spectral-cube](https://learn.astropy.org/tutorials/spectral-cube.readthedocs.io).
-"""
-
-# ╔═╡ 1042a4e0-2524-4ea9-ba04-b12315096107
-md"""
-It uses [astroquery](https://astroquery.readthedocs.io/) to obtain line frequencies from [splatalogue](https://astroquery.readthedocs.io/en/latest/splatalogue/splatalogue.html); this example uses radio-wavelength data for which Splatalogue's molecular line lists are appropriate. Finally, it shows how to do the reprojection using [dask](https://dask.org/) to enable parallelization.
-"""
-
-# ╔═╡ 36ee5590-9a34-46e6-a621-ac7b05055046
-
-
-# ╔═╡ be71871c-b5e1-44b5-9be0-985dcf6cadbf
-md"""
-In this example, we do spectral smoothing and interpolation (step 4) before spatial smoothing and interpolation (step 5), but if you have a varying-resolution cube (with a different beam size for each channel), you have to do spatial smoothing first. For more information see the spectral-cube documentation.
+### Packages
 """
 
 # ╔═╡ dd726d8d-5823-4553-8216-3c1e5065219e
 md"""
 ## Step 1: Download the data
+
+We download two example spectral cubes of a point in the Galactic center from a permalink on the ALMA archives. These are moderately large files, with sizes 18 MB and 337 MB, so we save them to the `data` folder next to this notebook. That way, they only need to be downloaded once. The `pluto_download` function defined at the bottom of this notebook shows a progress bar while they download.
 """
-
-# ╔═╡ 733a3cee-4907-4940-9c4e-6dd1f3055e2c
-md"""
-We download two example spectral cubes of a point in the Galactic center from a permalink on the ALMA archives. These are moderately large files, with sizes 18 MB and 337 MB.
-"""
-
-# ╔═╡ b4b92de1-812f-4f10-a818-d3ad3f3f0fb3
-filename1 = download("https://almascience.eso.org/dataPortal/member.uid___A001_X1465_X3a33.BrickMaser_sci.spw71.cube.I.manual.image.pbcor.fits")
-
-# ╔═╡ ff11ad50-129a-45e2-86a9-d74768816a18
-filename2 = download("https://almascience.eso.org/dataPortal/member.uid___A001_X87d_X141.a_sma1_sci.spw27.cube.I.pbcor.fits")
 
 # ╔═╡ 12bffd04-b8e1-4c02-bf1d-e577b3db92a1
 md"""
 ## Step 2: Load the cubes
+
+Besides their two spatial axes and their spectral axis, these ALMA cubes have a fourth axis of length one for the Stokes parameter (only Stokes I here), which we drop:
 """
 
-# ╔═╡ 1534acf5-1b39-4a02-819b-0ba304f70d84
-hdu1 = only(FITSFiles.fits(filename1))
+# ╔═╡ 2289fee5-e9f5-4e6e-9a3d-3dfc6f856bb3
+md"""
+The cubes are at different frequencies:
+"""
 
-# ╔═╡ 772d38fd-20a2-4043-83ab-344b64d74d64
-hdu1.cards
+# ╔═╡ fa6738ff-92c7-4121-939e-a82bde55051d
+md"""
+The first cube covers the H₂CS 4(1,3)–3(1,2) line at 139.483699 GHz.
 
-# ╔═╡ 4b1c3cfb-d001-4e78-b77b-3ed5d7c083e1
-cube1 = dropdims(hdu1.data, dims = 4)
+The second covers the SiO 5–4 line at 217.104984 GHz.
+"""
 
-# ╔═╡ 56ff05c6-365b-4cf0-b16f-c0b9288aaf75
-hdu2 = only(FITSFiles.fits(filename2))
-
-# ╔═╡ 5dc48eac-607b-48a9-96fd-5210a2ecae05
-cube2 = dropdims(hdu2.data, dims = 4)
-
-# ╔═╡ 4d5e3fff-3158-4ed5-9070-b190f09d6113
-FITSFiles.typeofhdu(hdu1)
-
-# ╔═╡ 6413f759-8891-4480-a7a9-23ca13bd421d
-hdu2.cards
+# ╔═╡ fe301445-fa04-41d6-99aa-8e85a2f9d9c2
+md"""
+!!! todo
+    We use the `find_lines` tool to query [splatalogue](https://splatalogue.online/) with TBD over the spectral range covered by the cube. It returns a table of matching lines. Note that some line names will be repeated because Splatalogue includes several different databases and most chemical species are present in all of these.
+"""
 
 # ╔═╡ 1536e606-0ae3-4d10-80c9-336d0adc3c3e
 md"""
 ## Step 3: Convert cubes from frequency to velocity
+
+To compare the kinematic structure of the target, we need to convert from the observed frequency (which must be in a common reference frame; in this case, it already is) to the doppler velocity.
+
+We use the radio convention, ``v = c\,(1 - \nu/\nu_0)``, with the rest frequency ``\nu_0`` of each line. The `with_velocity_axis` function defined at the bottom of this notebook writes this velocity axis into a copy of each cube's header, like spectral-cube's `with_spectral_unit`:
 """
 
-# ╔═╡ ef201298-5424-4661-aae3-a5c7ea30b4e1
+# ╔═╡ 25f62fe1-2985-4b52-8c9f-56953440ab1d
 md"""
-To compare the kinematic structure of the target, we need to convert from the observed frequency (which must be in a common reference frame; in this case, it already is) to the doppler velocity.
+`pixel_to_world` now returns the radio velocity of a channel, so we can collect the velocities of all channels with the `velocity_axis` helper function:
+"""
+
+# ╔═╡ d4706c21-fa59-4533-9461-4ef26dd0f000
+md"""
+From these velocity ranges, we can see the H₂CS cube (`cube1vel`) is narrower in velocity, so we'll use that as the target spectral reprojection. However, the SiO cube (`cube2vel`) is the smaller footprint on the sky.
 """
 
 # ╔═╡ 6fed040b-fb90-433f-be1b-af4d43f742b8
 md"""
 ### Create spatial maps of the peak intensity to quickly explore the cubes
+
+One way to quickly explore the structure in the data cubes is to produce a peak intensity map, or the maximum along the spectral axis (`Z`):
+"""
+
+# ╔═╡ 8473c04b-df19-4233-9cab-28ea3dfed108
+md"""
+We can do the same thing for the other cube:
 """
 
 # ╔═╡ 5738bf09-cd54-493f-a2b3-9ece1c64a3e3
@@ -152,27 +186,38 @@ md"""
 We need to match resolution to the cube with the largest channel width:
 """
 
-# ╔═╡ aa4af422-79b5-489f-be59-406aa899f798
-
-
 # ╔═╡ 87429d88-58dd-43c6-a9ec-c53bacef0805
 md"""
 Next, we will reduce `cube2vel` to have the same spectral range as `cube1vel`:
 """
 
-# ╔═╡ 8e6269ed-306b-4e15-b7ab-4a58e3406325
-
-
 # ╔═╡ 735320ad-dd59-47bb-9208-54e9f410346c
 md"""
-Note that it is important for the to-be-interpolated cube, in this case cube2, to have pixels bounding cube1’s spectral axis, but in this case it does not. If the pixel range doesn’t overlap perfectly, it may blank out one of the edge pixels. So, to fix this, we add a little buffer:
+Note that it is important for the to-be-interpolated cube, in this case `cube2vel`, to have pixels bounding the spectral axis of `cube1vel`, but in this case it does not, at either end. If the pixel range doesn't overlap perfectly, it may blank out one of the edge pixels. So, to fix this, we add a buffer of one channel at each end:
 """
 
-# ╔═╡ 6cd61a39-b384-4bd4-988a-3f17a8cbce5d
+# ╔═╡ 22f11580-de20-420a-ab19-13881633ecc5
+md"""
+Our H₂CS cube (`cube1vel`) has broader channels. We need to first smooth `cube2vel` to the broader channel width before resampling it onto the channels of `cube1vel`. To do this, we spectrally smooth with a Gaussian whose width is chosen such that smoothing `cube2vel` results in the same width as `cube1vel`:
+"""
 
+# ╔═╡ 628cafa2-9959-4025-8986-ba09df1a43e8
+md"""
+We smooth each spectrum channel by channel, so we convert this FWHM to the standard deviation of the Gaussian, in channels of `cube2vel`:
 
-# ╔═╡ 4d6f1df3-3300-45d3-8e6d-35928f2e0749
+!!! note
+    The original tutorial passes the standard deviation in km/s directly to `Gaussian1DKernel`, which expects it in channels, so it smooths `cube2vel` less (σ ≈ 0.80 channels).
+"""
 
+# ╔═╡ b237961f-f3e8-4332-a381-07c5f7dae8a8
+md"""
+We then smooth with the `spectral_smooth` function defined at the bottom of this notebook. This does 420 × 420 = 176400 smoothing operations on a 222-channel spectrum:
+"""
+
+# ╔═╡ 05e7ef56-3164-48eb-a09f-7ba0fef2e3df
+md"""
+Now that we've done spectral smoothing, we can resample the spectral axis of `cube2vel_smooth` to match `cube1vel` by linearly interpolating `cube2vel_smooth` onto the channels of `cube1vel`:
+"""
 
 # ╔═╡ cfa20b5d-b172-4422-9e0d-81fc8028f6d9
 md"""
@@ -186,15 +231,12 @@ Now that we’ve done spectral smoothing, we also need to follow a similar proce
 
 # ╔═╡ cb169320-4ca3-43a6-af86-a9432ad8dc02
 md"""
-The `beam` is the resolution element of our cubes:
+The `beam` is the resolution element of our cubes. The `beam` function defined at the bottom of this notebook reads it from the `BMAJ`, `BMIN`, and `BPA` header keywords:
 """
-
-# ╔═╡ 6facfe35-2d72-45a4-88a8-351070440ce3
-
 
 # ╔═╡ dba82ba0-60db-45f0-90c6-738ad6692913
 md"""
-`cube1` again hase the larger beam, so we’ll smooth `cube2` to its resolution
+`cube1` again has the larger beam, so we'll smooth `cube2` to its resolution.
 """
 
 # ╔═╡ 7ea93647-2a92-45cf-91e0-e8504457bf0f
@@ -206,19 +248,18 @@ md"""
 md"""
 If cube1 and cube2 had different sized beams, but neither was clearly larger, we would have to convolve _both_ to a [common beam](https://radio-beam.readthedocs.io/en/latest/commonbeam.html#finding-the-smallest-common-beam).
 
-In this case, it’s redundant and we could have just used `cube1`’s beam, but this is the more general approach:
+In this case, it's redundant and we could have just used `cube1`'s beam, but this is the more general approach. The `common_beam` function defined at the bottom of this notebook finds the smallest beam that both beams can be convolved to:
 """
 
-# ╔═╡ f07f71a0-c5bb-4fdf-bdb2-b2cfee9fd214
-
+# ╔═╡ 356c9582-bd46-44a6-bcaf-f2edf68057e0
+md"""
+This is just `beam1`, since `beam2` fits inside it. Two elongated beams at right angles to each other, on the other hand, need a round common beam:
+"""
 
 # ╔═╡ 439357d1-0cad-45c5-8285-0e9e38b7a501
 md"""
-We then convolve:
+We then convolve `cube2` to this beam with the `convolve_to` function defined at the bottom of this notebook. Since the cubes are in units of Jy/beam, it also scales the intensities by the ratio of the beam areas, like spectral-cube does:
 """
-
-# ╔═╡ f2f259a1-2d1f-4ca5-896d-9308619b5ef8
-
 
 # ╔═╡ 780d4bc8-3e27-4fb2-a8c1-bec8df15b6c8
 md"""
@@ -227,30 +268,25 @@ md"""
 
 # ╔═╡ 65cb16b6-9ace-4f9e-9c7c-4aac7877cffd
 md"""
-Now we can do the spatial resampling as the final step for producing two cubes matched to the same spatial and spectral pixel grid:
+Now we can do the spatial resampling as the final step for producing two cubes matched to the same spatial and spectral pixel grid.
+
+Reproject.jl reprojects two-dimensional images, so the `reproject_cube` function defined at the bottom of this notebook reprojects `cube2` one channel at a time onto the matching channel of `cube1vel`:
 """
-
-# ╔═╡ f2adf9fd-a826-4dc8-80b0-8bf897eb1ac7
-
 
 # ╔═╡ 63c1cc87-1a58-4347-9112-b3edd4ae99cc
 md"""
 These two cubes are now on an identical grid, and can be directly compared:
 """
 
-# ╔═╡ 32b3f31e-e4de-4ded-b989-582fb39cdbc3
-
-
 # ╔═╡ 0e2daa33-648e-4271-a779-a3143e872d08
 md"""
-These spectra can now be overplotted as they are in the same unit with the same beam.
+Their spectra can now be overplotted, as they are in the same unit with the same beam. Here we compare them at the center of the map:
 """
 
-# ╔═╡ 0e0c0d60-7f99-442d-956b-868d0dec825d
-
-
 # ╔═╡ a126afc1-14d0-4e6c-a109-dff801e992e7
-
+md"""
+At this position, both lines peak near 40 km/s, but the SiO line is much broader than the H₂CS line.
+"""
 
 # ╔═╡ 9ce43d1c-16f5-4ee0-ab7c-f15ee48dd630
 md"""
@@ -260,371 +296,398 @@ md"""
 # ╔═╡ 9aa6d05f-4a00-412e-ac5d-5bb973ca112d
 TableOfContents()
 
-# ╔═╡ 00000000-0000-0000-0000-000000000001
-PLUTO_PROJECT_TOML_CONTENTS = """
-[deps]
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-FITSFiles = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
-PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+# ╔═╡ 003b15c8-7e25-4a6c-8849-13b637410213
+"""
+    pluto_download(url, path)
 
-[compat]
-FITSFiles = "~0.3.2"
-PlutoUI = "~0.7.80"
+Download `url` to `path` with `Downloads.download`, and show a progress bar in Pluto.
+
+The file is downloaded to a temporary location first, so an interrupted download never leaves a partial file at `path`.
+"""
+function pluto_download(url, path)
+    return @withprogress name = basename(path) begin
+        # Pluto keeps every log message, so only log whole-percent steps
+        last_percent = -1
+        function progress(total, now)
+            percent = total > 0 ? 100 * now ÷ total : 0
+            if percent > last_percent
+                last_percent = percent
+                @logprogress percent / 100
+            end
+        end
+
+        mv(download(url; progress), path)
+    end
+end
+
+# ╔═╡ d8f76e52-3670-4287-85f4-c99e18f71dc4
+filename1 = let
+    fname = "member.uid___A001_X1465_X3a33.BrickMaser_sci.spw71.cube.I.manual.image.pbcor.fits"
+    local_path = joinpath(@__DIR__, "data", fname)
+    isfile(local_path) ? local_path : pluto_download("https://almascience.eso.org/dataPortal/$(fname)", local_path)
+end
+
+# ╔═╡ 1534acf5-1b39-4a02-819b-0ba304f70d84
+cube1 = dropdims(load(filename1); dims = 4)
+
+# ╔═╡ 772d38fd-20a2-4043-83ab-344b64d74d64
+header(cube1)
+
+# ╔═╡ 0d811af2-14aa-4f68-8892-50be1938372d
+filename2 = let
+    fname = "member.uid___A001_X87d_X141.a_sma1_sci.spw27.cube.I.pbcor.fits"
+    local_path = joinpath(@__DIR__, "data", fname)
+    isfile(local_path) ? local_path : pluto_download("https://almascience.eso.org/dataPortal/$(fname)", local_path)
+end
+
+# ╔═╡ 56ff05c6-365b-4cf0-b16f-c0b9288aaf75
+cube2 = dropdims(load(filename2); dims = 4)
+
+# ╔═╡ 5c84410d-8c15-4eed-b389-48fb497ff8fe
+header(cube2)
+
+# ╔═╡ e6b7b27e-fb00-4b31-b6df-3e1fb778a2d1
+(cube1[:CRVAL3], cube2[:CRVAL3]) .* u"Hz" .|> us"GHz"
+
+# ╔═╡ 4d4255bc-f211-4228-80f8-678c6371f821
+md"""
+!!! todo
+    Find a home for these helper functions upstream. They stand in for these methods that the original tutorial uses:
+    - `with_velocity_axis`: spectral-cube's `with_spectral_unit` with `velocity_convention = "radio"`
+    - `spectral_smooth` and `spectral_interpolate`: spectral-cube's `spectral_smooth` and `spectral_interpolate`
+    - `beam`, `common_beam`, and `deconvolve`: radio-beam's `Beam`, `Beam.commonbeam_with`, and `Beam.deconvolve`
+    - `convolve_to` and `reproject_cube`: spectral-cube's `convolve_to` and `reproject`
+
+    Unlike those methods, they assume a single beam per cube, and spatial axes that are aligned with RA and Dec.
 """
 
-# ╔═╡ 00000000-0000-0000-0000-000000000002
-PLUTO_MANIFEST_TOML_CONTENTS = """
-# This file is machine-generated - editing it directly is not advised
-
-julia_version = "1.12.6"
-manifest_format = "2.0"
-project_hash = "1fc4fcb9571c06a0392d551687f42fae75fe8927"
-
-[[deps.AbstractPlutoDingetjes]]
-deps = ["Pkg"]
-git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
-uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.2"
-
-[[deps.ArgTools]]
-uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
-version = "1.1.2"
-
-[[deps.Artifacts]]
-uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
-version = "1.11.0"
-
-[[deps.Base64]]
-uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
-version = "1.11.0"
-
-[[deps.CodecZlib]]
-deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
-uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.8"
-
-[[deps.ColorTypes]]
-deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "67e11ee83a43eb71ddc950302c53bf33f0690dfe"
-uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.12.1"
-weakdeps = ["StyledStrings"]
-
-    [deps.ColorTypes.extensions]
-    StyledStringsExt = "StyledStrings"
-
-[[deps.CompilerSupportLibraries_jll]]
-deps = ["Artifacts", "Libdl"]
-uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.0+1"
-
-[[deps.Dates]]
-deps = ["Printf"]
-uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
-version = "1.11.0"
-
-[[deps.Downloads]]
-deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
-uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-version = "1.7.0"
-
-[[deps.FITSFiles]]
-deps = ["CodecZlib", "Printf", "Unitful", "UnitfulAngles", "UnitfulAstro", "UnitfulAtomic"]
-git-tree-sha1 = "ac5ecd1f53a2f36087ea75020872cd55154401d7"
-uuid = "358a0a88-3548-4ad6-b652-8bdbf64af8e5"
-version = "0.3.2"
-
-[[deps.FileWatching]]
-uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
-version = "1.11.0"
-
-[[deps.FixedPointNumbers]]
-deps = ["Statistics"]
-git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
-uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.8.5"
-
-[[deps.Hyperscript]]
-deps = ["Test"]
-git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
-uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
-version = "0.0.5"
-
-[[deps.HypertextLiteral]]
-deps = ["Tricks"]
-git-tree-sha1 = "d1a86724f81bcd184a38fd284ce183ec067d71a0"
-uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "1.0.0"
-
-[[deps.IOCapture]]
-deps = ["Logging", "Random"]
-git-tree-sha1 = "0ee181ec08df7d7c911901ea38baf16f755114dc"
-uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
-version = "1.0.0"
-
-[[deps.InteractiveUtils]]
-deps = ["Markdown"]
-uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
-version = "1.11.0"
-
-[[deps.JuliaSyntaxHighlighting]]
-deps = ["StyledStrings"]
-uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
-version = "1.12.0"
-
-[[deps.LibCURL]]
-deps = ["LibCURL_jll", "MozillaCACerts_jll"]
-uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.4"
-
-[[deps.LibCURL_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll", "Zlib_jll", "nghttp2_jll"]
-uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "8.15.0+0"
-
-[[deps.LibGit2]]
-deps = ["LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
-uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
-version = "1.11.0"
-
-[[deps.LibGit2_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll"]
-uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
-version = "1.9.0+0"
-
-[[deps.LibSSH2_jll]]
-deps = ["Artifacts", "Libdl", "OpenSSL_jll"]
-uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.11.3+1"
-
-[[deps.Libdl]]
-uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
-version = "1.11.0"
-
-[[deps.LinearAlgebra]]
-deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
-uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-version = "1.12.0"
-
-[[deps.Logging]]
-uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
-version = "1.11.0"
-
-[[deps.MIMEs]]
-git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
-uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
-version = "1.1.0"
-
-[[deps.Markdown]]
-deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
-uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
-version = "1.11.0"
-
-[[deps.MozillaCACerts_jll]]
-uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2025.11.4"
-
-[[deps.NetworkOptions]]
-uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
-version = "1.3.0"
-
-[[deps.OpenBLAS_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
-uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.29+0"
-
-[[deps.OpenSSL_jll]]
-deps = ["Artifacts", "Libdl"]
-uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.4+0"
-
-[[deps.Pkg]]
-deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
-uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.12.1"
-
-    [deps.Pkg.extensions]
-    REPLExt = "REPL"
-
-    [deps.Pkg.weakdeps]
-    REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
-
-[[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
-uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.80"
-
-[[deps.Printf]]
-deps = ["Unicode"]
-uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-version = "1.11.0"
-
-[[deps.Random]]
-deps = ["SHA"]
-uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-version = "1.11.0"
-
-[[deps.Reexport]]
-git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
-uuid = "189a3867-3050-52da-a836-e630ba90ab69"
-version = "1.2.2"
-
-[[deps.SHA]]
-uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
-version = "0.7.0"
-
-[[deps.Serialization]]
-uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
-version = "1.11.0"
-
-[[deps.Statistics]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "ae3bb1eb3bba077cd276bc5cfc337cc65c3075c0"
-uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-version = "1.11.1"
-
-    [deps.Statistics.extensions]
-    SparseArraysExt = ["SparseArrays"]
-
-    [deps.Statistics.weakdeps]
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-
-[[deps.StyledStrings]]
-uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
-version = "1.11.0"
-
-[[deps.TOML]]
-deps = ["Dates"]
-uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-version = "1.0.3"
-
-[[deps.Tar]]
-deps = ["ArgTools", "SHA"]
-uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
-
-[[deps.Test]]
-deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
-uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-version = "1.11.0"
-
-[[deps.TranscodingStreams]]
-git-tree-sha1 = "0c45878dcfdcfa8480052b6ab162cdd138781742"
-uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.11.3"
-
-[[deps.Tricks]]
-git-tree-sha1 = "311349fd1c93a31f783f977a71e8b062a57d4101"
-uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.13"
-
-[[deps.URIs]]
-git-tree-sha1 = "bef26fb046d031353ef97a82e3fdb6afe7f21b1a"
-uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.6.1"
-
-[[deps.UUIDs]]
-deps = ["Random", "SHA"]
-uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
-version = "1.11.0"
-
-[[deps.Unicode]]
-uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
-version = "1.11.0"
-
-[[deps.Unitful]]
-deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "57e1b2c9de4bd6f40ecb9de4ac1797b81970d008"
-uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.28.0"
-
-    [deps.Unitful.extensions]
-    ConstructionBaseUnitfulExt = "ConstructionBase"
-    ForwardDiffExt = "ForwardDiff"
-    InverseFunctionsUnitfulExt = "InverseFunctions"
-    LatexifyExt = ["Latexify", "LaTeXStrings"]
-    NaNMathExt = "NaNMath"
-    PrintfExt = "Printf"
-
-    [deps.Unitful.weakdeps]
-    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
-    LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-    Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-    Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[[deps.UnitfulAngles]]
-deps = ["Dates", "Unitful"]
-git-tree-sha1 = "79875b1f2e4bf918f0702a5980816955066d9ae2"
-uuid = "6fb2a4bd-7999-5318-a3b2-8ad61056cd98"
-version = "0.7.2"
-
-[[deps.UnitfulAstro]]
-deps = ["Unitful", "UnitfulAngles"]
-git-tree-sha1 = "fbe44a0ade62ae5ed0240ad314dfdd5482b90b40"
-uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
-version = "1.2.2"
-
-[[deps.UnitfulAtomic]]
-deps = ["Unitful"]
-git-tree-sha1 = "903be579194534af1c4b4778d1ace676ca042238"
-uuid = "a7773ee8-282e-5fa2-be4e-bd808c38a91a"
-version = "1.0.0"
-
-[[deps.Zlib_jll]]
-deps = ["Libdl"]
-uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.3.1+2"
-
-[[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl"]
-uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.15.0+0"
-
-[[deps.nghttp2_jll]]
-deps = ["Artifacts", "Libdl"]
-uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.64.0+1"
-
-[[deps.p7zip_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
-uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.7.0+0"
+# ╔═╡ e65709a7-99ff-4698-8169-4cfe2862aafe
+begin
+    """
+        with_velocity_axis(cube, rest_frequency)
+
+    Copy of `cube` whose spectral axis is the radio velocity, v = c (1 - ν / ν₀), of the line at `rest_frequency`. `cube` must have a linear frequency axis in Hz.
+    """
+    function with_velocity_axis(cube, rest_frequency)
+        ν₀ = ustrip(rest_frequency |> us"Hz")
+        c = ustrip(Constants.c |> us"m/s")
+        out = copyheader(cube, parent(cube))
+        out["CTYPE3"] = "VRAD"
+        out["CRVAL3"] = c * (1 - cube["CRVAL3"] / ν₀)
+        out["CDELT3"] = -c * cube["CDELT3"] / ν₀
+        out["CUNIT3"] = "m/s"
+        out["RESTFRQ"] = ν₀
+        return out
+    end
+
+    """
+        velocity_axis(cube)
+
+    Radio velocity of each channel of `cube`, which must have a velocity axis (see `with_velocity_axis`).
+    """
+    velocity_axis(cube) = [pixel_to_world(cube, [1, 1, k])[3] for k in 1:size(cube, Z)] * u"m/s" .|> us"km/s"
+
+    """
+        nanconvolve(A, kernel)
+
+    Convolve `A` with the symmetric `kernel` (odd size along each axis), skipping NaNs and pixels beyond the edges of `A`. Pixels
+    that are NaN in `A` stay NaN.
+    """
+    function nanconvolve(A, kernel)
+        out = imfilter(eltype(A), A, centered(kernel), NA())
+        out[isnan.(A)] .= NaN
+        return out
+    end
+
+    """
+        spectral_smooth(cube, σ)
+
+    Smooth each spectrum of `cube` with a Gaussian of standard deviation `σ` channels, cut off at 4σ.
+    """
+    function spectral_smooth(cube, σ)
+        kernel = [exp(-k^2 / 2σ^2) for k in -ceil(Int, 4σ):ceil(Int, 4σ)]
+        return copyheader(cube, nanconvolve(parent(cube), reshape(kernel, 1, 1, :)))
+    end
+
+    """
+        spectral_interpolate(cube, target)
+
+    Linearly interpolate the spectra of `cube` onto the velocity channels of `target`.
+    """
+    function spectral_interpolate(cube, target)
+        A = parent(cube)
+        v_in, v_out = ustrip.(velocity_axis(cube)), ustrip.(velocity_axis(target))
+        itp = extrapolate(
+            interpolate((axes(A, 1), axes(A, 2), v_in), A, (NoInterp(), NoInterp(), Gridded(Linear()))),
+            NaN,
+        )
+        data = eltype(A).([itp(i, j, v) for i in axes(A, 1), j in axes(A, 2), v in v_out])
+        out = AstroImage(data, deepcopy(header(cube)))
+        for key in ("CTYPE3", "CRVAL3", "CDELT3", "CRPIX3", "CUNIT3")
+            out[key] = target[key]
+        end
+        return out
+    end
+end
+
+# ╔═╡ 12c1c71f-355f-41e9-a4e9-41353e48f649
+cube1vel = with_velocity_axis(cube1, 139.483699u"GHz");
+
+# ╔═╡ a50b4db4-2f21-4343-a747-fb0bbb5fb481
+let
+    peak = dropdims(maximum(cube1vel; dims = Z); dims = Z)
+    fig, _ = implotview(
+        peak;
+        cmap = :viridis,
+        colorbar_label = "Peak intensity (Jy/beam)",
+        axis = (; title = "H₂CS 4(1,3)–3(1,2)"),
+    )
+    fig
+end
+
+# ╔═╡ 9f1656ab-a779-4b9d-9367-067b352cc174
+cube2vel = with_velocity_axis(cube2, 217.104984u"GHz");
+
+# ╔═╡ bbbcb89b-88d9-461e-87c4-cfd51089f106
+let
+    peak = dropdims(maximum(cube2vel; dims = Z); dims = Z)
+    fig, _ = implotview(
+        peak;
+        cmap = :viridis,
+        colorbar_label = "Peak intensity (Jy/beam)",
+        axis = (; title = "SiO 5–4"),
+    )
+    fig
+end
+
+# ╔═╡ 1b64c447-4e6c-41cb-82d5-5f6441fc3371
+vel1 = velocity_axis(cube1vel)
+
+# ╔═╡ 34f7bd96-be78-44de-8493-e71012fe90aa
+vel2 = velocity_axis(cube2vel)
+
+# ╔═╡ 9dbf33c3-6b06-40d4-922e-7b95044c911a
+extrema(vel1), extrema(vel2)
+
+# ╔═╡ aa4af422-79b5-489f-be59-406aa899f798
+velocity_res_1, velocity_res_2 = vel1[2] - vel1[1], vel2[2] - vel2[1]
+
+# ╔═╡ 2dba98a0-f827-4089-a80d-3146349479d9
+fwhm_gaussian = sqrt(velocity_res_1^2 - velocity_res_2^2)
+
+# ╔═╡ 3861bfc0-e44b-4327-998d-f887c14d7da4
+σ_channels = let
+    fwhm_to_sigma = sqrt(8 * log(2))
+    ustrip(fwhm_gaussian / abs(velocity_res_2)) / fwhm_to_sigma
+end
+
+# ╔═╡ 8e6269ed-306b-4e15-b7ab-4a58e3406325
+let
+    channels = findall(v -> minimum(vel1) ≤ v ≤ maximum(vel1), vel2)
+    extrema(vel1), extrema(vel2[channels])
+end
+
+# ╔═╡ 6cd61a39-b384-4bd4-988a-3f17a8cbce5d
+cutout_channels = let
+    inside = findall(v -> minimum(vel1) - velocity_res_2 ≤ v ≤ maximum(vel1) + velocity_res_2, vel2)
+    first(inside):last(inside)
+end
+
+# ╔═╡ 4d6f1df3-3300-45d3-8e6d-35928f2e0749
+cube2vel_cutout = cube2vel[Z = cutout_channels];
+
+# ╔═╡ 885c0a19-82d4-4575-968b-9edf8d4b73cf
+extrema(velocity_axis(cube2vel_cutout))
+
+# ╔═╡ c4b42c3f-b0d7-4d83-8efa-6fce52df205e
+cube2vel_smooth = spectral_smooth(cube2vel_cutout, σ_channels);
+
+# ╔═╡ f544ef92-f259-4e18-b7e5-3645de3c6fa4
+cube2vel_spectralresample = spectral_interpolate(cube2vel_smooth, cube1vel);
+
+# ╔═╡ 38bbdb00-d2cd-4a04-880e-f5f88c12e181
+size(cube2vel_spectralresample)
+
+# ╔═╡ e2922e65-12cb-4cce-9728-44444f10ebb2
+begin
+    """
+        beam(img)
+
+    The restoring beam in the header of `img`: the FWHM of its major and minor axes, and its position angle east of north.
+    """
+    beam(img) = (;
+        major = img["BMAJ"] * u"deg" |> us"arcsec",
+        minor = img["BMIN"] * u"deg" |> us"arcsec",
+        pa = img["BPA"] * u"deg" |> us"deg",
+    )
+
+    # Covariance matrix (in arcsec², along east and north) of the Gaussian `beam`
+    function beam_covariance(beam)
+        σ_major, σ_minor = ustrip.((beam.major, beam.minor) .|> us"arcsec") ./ sqrt(8 * log(2))
+        θ = ustrip(beam.pa |> us"deg")
+        major_axis, minor_axis = [sind(θ), cosd(θ)], [cosd(θ), -sind(θ)]
+        return σ_major^2 * major_axis * major_axis' + σ_minor^2 * minor_axis * minor_axis'
+    end
+
+    # Inverse of `beam_covariance`
+    function beam_from_covariance(Σ)
+        (λ_minor, λ_major), V = eigen(Symmetric(Σ))
+        east, north = V[:, 2]
+        return (;
+            major = sqrt(λ_major) * sqrt(8 * log(2)) * us"arcsec",
+            minor = sqrt(max(λ_minor, 0)) * sqrt(8 * log(2)) * us"arcsec",
+            pa = (mod(atand(east, north) + 90, 180) - 90) * us"deg",
+        )
+    end
+
+    """
+        common_beam(beam1, beam2)
+
+    The smallest beam that both `beam1` and `beam2` can be convolved to.
+    """
+    function common_beam(beam1, beam2)
+        # In coordinates where `beam1` is a circle, `beam2` is an ellipse with semi-axes √λ
+        # (relative to the circle). The smallest ellipse containing both has semi-axes √max(λ, 1).
+        L = cholesky(Symmetric(beam_covariance(beam1))).L
+        λ, Q = eigen(Symmetric(L \ beam_covariance(beam2) / L'))
+        return beam_from_covariance(L * Q * Diagonal(max.(λ, 1)) * Q' * L')
+    end
+
+    """
+        deconvolve(beam1, beam2)
+
+    The Gaussian that `beam2` must be convolved with to give `beam1`.
+    """
+    function deconvolve(beam1, beam2)
+        Σ = beam_covariance(beam1) - beam_covariance(beam2)
+        minimum(eigen(Symmetric(Σ)).values) > -1.0e-10 ||
+            throw(ArgumentError("$beam2 cannot be convolved to $beam1"))
+        return beam_from_covariance(Σ)
+    end
+
+    """
+        convolve_to(cube, new_beam)
+
+    Smooth `cube` (in Jy/beam) spatially, from the beam in its header to the larger `new_beam`.
+    """
+    function convolve_to(cube, new_beam)
+        old_beam = beam(cube)
+        # From offsets (east, north) in arcsec to offsets in pixels
+        J = Diagonal(1 ./ (3600 .* [cube["CDELT1"], cube["CDELT2"]]))
+        Σ = J * beam_covariance(deconvolve(new_beam, old_beam)) * J
+        r = ceil.(Int, 4 .* sqrt.(diag(Σ)))
+        kernel = [exp(-[x, y]' * (Σ \ [x, y]) / 2) for x in -r[1]:r[1], y in -r[2]:r[2], _ in 1:1]
+        data = nanconvolve(parent(cube), kernel)
+        # A larger beam collects more flux
+        data .*= ustrip((new_beam.major * new_beam.minor) / (old_beam.major * old_beam.minor))
+        out = copyheader(cube, data)
+        out["BMAJ"], out["BMIN"], out["BPA"] = ustrip.((new_beam.major, new_beam.minor, new_beam.pa) .|> us"deg")
+        return out
+    end
+end
+
+# ╔═╡ 6facfe35-2d72-45a4-88a8-351070440ce3
+beam1, beam2 = beam(cube1vel), beam(cube2vel_spectralresample)
+
+# ╔═╡ f07f71a0-c5bb-4fdf-bdb2-b2cfee9fd214
+target_beam = common_beam(beam1, beam2)
+
+# ╔═╡ dea7a814-8631-4851-a771-59dcdf6be112
+common_beam(
+    (; major = 2.0us"arcsec", minor = 1.0us"arcsec", pa = 0.0us"deg"),
+    (; major = 2.0us"arcsec", minor = 1.0us"arcsec", pa = 90.0us"deg"),
+)
+
+# ╔═╡ f2f259a1-2d1f-4ca5-896d-9308619b5ef8
+cube2vel_spatialspectralsmooth = convolve_to(cube2vel_spectralresample, target_beam);
+
+# ╔═╡ 39a53be4-0e6b-4224-a4d3-50de05e686f4
+beam(cube2vel_spatialspectralsmooth)
+
+# ╔═╡ e5fb7fc9-4753-45a0-b884-5da29206339f
 """
+    reproject_cube(cube, target)
+
+Reproject each channel of `cube` onto the pixel grid of the same channel of `target`.
+"""
+function reproject_cube(cube, target)
+    data = similar(parent(target))
+    for k in 1:size(target, Z)
+        data[:, :, k] = first(reproject(cube[Z = k], target[Z = k]))
+    end
+    out = copyheader(target, data)
+    out["RESTFRQ"] = cube["RESTFRQ"] # Same velocities, but a different line
+    return out
+end
+
+# ╔═╡ f2adf9fd-a826-4dc8-80b0-8bf897eb1ac7
+cube2vel_reproj = reproject_cube(cube2vel_spatialspectralsmooth, cube1vel);
+
+# ╔═╡ c41c098c-1f2d-4e64-8473-917acea5cd58
+size(cube2vel_reproj), size(cube1vel)
+
+# ╔═╡ 32b3f31e-e4de-4ded-b989-582fb39cdbc3
+let
+    fig = Figure(size = (900, 400))
+    for (pos, cube, title) in (
+            (fig[1, 1], cube1vel, "H₂CS 4(1,3)–3(1,2)"),
+            (fig[1, 2], cube2vel_reproj, "SiO 5–4, reprojected"),
+        )
+        peak = dropdims(maximum(cube; dims = Z); dims = Z)
+        implotview(
+            pos, peak;
+            cmap = :viridis,
+            colorbar_label = "Peak intensity (Jy/beam)",
+            axis = (; title),
+        )
+    end
+    fig
+end
+
+# ╔═╡ 0e0c0d60-7f99-442d-956b-868d0dec825d
+let
+    fig = Figure()
+
+    ax = Axis(fig[1, 1]; xlabel = "Radio velocity", ylabel = "Intensity (Jy/beam)")
+
+    stairs!(ax, vel1, collect(cube1vel[X = 126, Y = 126]); label = "H₂CS 4(1,3)–3(1,2)")
+
+    stairs!(ax, vel1, collect(cube2vel_reproj[X = 126, Y = 126]); label = "SiO 5–4")
+
+    axislegend(ax)
+
+    fig
+end
 
 # ╔═╡ Cell order:
 # ╟─ea3a159a-6174-11ef-0cb1-b73af72665d4
-# ╟─7075d9f9-090f-461c-8982-6c7f38453bb0
-# ╟─b8c5d49b-b8ca-4f8d-b154-b5a034a82c2e
-# ╟─987be673-b74a-4fb9-98fd-9bafef61c0e4
-# ╟─3c37443f-c88d-48d9-95b1-b48fac544454
-# ╟─6b5f101b-f246-4a13-8ef5-ce08da03414e
 # ╟─7abaa07b-c97e-4ae1-9eaf-650fb529fe14
-# ╟─fd420c28-966c-424b-acc2-5c11988cf253
-# ╟─1042a4e0-2524-4ea9-ba04-b12315096107
-# ╠═36ee5590-9a34-46e6-a621-ac7b05055046
-# ╟─be71871c-b5e1-44b5-9be0-985dcf6cadbf
+# ╟─721cc524-00cf-423c-b1eb-5406a60a0912
+# ╠═20362a1a-c083-4767-8d01-e231eefbd335
 # ╟─dd726d8d-5823-4553-8216-3c1e5065219e
-# ╠═ecf46459-76ca-457d-8fd5-43cb66770388
-# ╟─733a3cee-4907-4940-9c4e-6dd1f3055e2c
-# ╠═b4b92de1-812f-4f10-a818-d3ad3f3f0fb3
-# ╠═ff11ad50-129a-45e2-86a9-d74768816a18
+# ╠═d8f76e52-3670-4287-85f4-c99e18f71dc4
+# ╠═0d811af2-14aa-4f68-8892-50be1938372d
 # ╟─12bffd04-b8e1-4c02-bf1d-e577b3db92a1
-# ╠═48156d40-df5c-47de-8d23-acf1186d4331
 # ╠═1534acf5-1b39-4a02-819b-0ba304f70d84
 # ╠═772d38fd-20a2-4043-83ab-344b64d74d64
-# ╠═4b1c3cfb-d001-4e78-b77b-3ed5d7c083e1
 # ╠═56ff05c6-365b-4cf0-b16f-c0b9288aaf75
-# ╠═5dc48eac-607b-48a9-96fd-5210a2ecae05
-# ╠═4d5e3fff-3158-4ed5-9070-b190f09d6113
-# ╠═6413f759-8891-4480-a7a9-23ca13bd421d
+# ╠═5c84410d-8c15-4eed-b389-48fb497ff8fe
+# ╟─2289fee5-e9f5-4e6e-9a3d-3dfc6f856bb3
+# ╠═e6b7b27e-fb00-4b31-b6df-3e1fb778a2d1
+# ╟─fa6738ff-92c7-4121-939e-a82bde55051d
+# ╟─fe301445-fa04-41d6-99aa-8e85a2f9d9c2
 # ╟─1536e606-0ae3-4d10-80c9-336d0adc3c3e
-# ╟─ef201298-5424-4661-aae3-a5c7ea30b4e1
+# ╠═12c1c71f-355f-41e9-a4e9-41353e48f649
+# ╠═9f1656ab-a779-4b9d-9367-067b352cc174
+# ╟─25f62fe1-2985-4b52-8c9f-56953440ab1d
+# ╠═1b64c447-4e6c-41cb-82d5-5f6441fc3371
+# ╠═34f7bd96-be78-44de-8493-e71012fe90aa
+# ╠═9dbf33c3-6b06-40d4-922e-7b95044c911a
+# ╟─d4706c21-fa59-4533-9461-4ef26dd0f000
 # ╟─6fed040b-fb90-433f-be1b-af4d43f742b8
+# ╠═a50b4db4-2f21-4343-a747-fb0bbb5fb481
+# ╟─8473c04b-df19-4233-9cab-28ea3dfed108
+# ╠═bbbcb89b-88d9-461e-87c4-cfd51089f106
 # ╟─5738bf09-cd54-493f-a2b3-9ece1c64a3e3
 # ╟─619c2904-39a2-40e1-8c15-5211eb0112cf
 # ╟─00cd85d9-9af0-4a46-8710-1f8314a68bc8
@@ -634,6 +697,16 @@ version = "17.7.0+0"
 # ╟─735320ad-dd59-47bb-9208-54e9f410346c
 # ╠═6cd61a39-b384-4bd4-988a-3f17a8cbce5d
 # ╠═4d6f1df3-3300-45d3-8e6d-35928f2e0749
+# ╠═885c0a19-82d4-4575-968b-9edf8d4b73cf
+# ╟─22f11580-de20-420a-ab19-13881633ecc5
+# ╠═2dba98a0-f827-4089-a80d-3146349479d9
+# ╟─628cafa2-9959-4025-8986-ba09df1a43e8
+# ╠═3861bfc0-e44b-4327-998d-f887c14d7da4
+# ╟─b237961f-f3e8-4332-a381-07c5f7dae8a8
+# ╠═c4b42c3f-b0d7-4d83-8efa-6fce52df205e
+# ╟─05e7ef56-3164-48eb-a09f-7ba0fef2e3df
+# ╠═f544ef92-f259-4e18-b7e5-3645de3c6fa4
+# ╠═38bbdb00-d2cd-4a04-880e-f5f88c12e181
 # ╟─cfa20b5d-b172-4422-9e0d-81fc8028f6d9
 # ╟─590877e7-d2f3-41ab-955f-abcbeed6b7f2
 # ╟─cb169320-4ca3-43a6-af86-a9432ad8dc02
@@ -642,18 +715,25 @@ version = "17.7.0+0"
 # ╟─7ea93647-2a92-45cf-91e0-e8504457bf0f
 # ╟─8e6564ce-5869-434c-9034-bf0dddece65f
 # ╠═f07f71a0-c5bb-4fdf-bdb2-b2cfee9fd214
+# ╟─356c9582-bd46-44a6-bcaf-f2edf68057e0
+# ╠═dea7a814-8631-4851-a771-59dcdf6be112
 # ╟─439357d1-0cad-45c5-8285-0e9e38b7a501
 # ╠═f2f259a1-2d1f-4ca5-896d-9308619b5ef8
+# ╠═39a53be4-0e6b-4224-a4d3-50de05e686f4
 # ╟─780d4bc8-3e27-4fb2-a8c1-bec8df15b6c8
 # ╟─65cb16b6-9ace-4f9e-9c7c-4aac7877cffd
 # ╠═f2adf9fd-a826-4dc8-80b0-8bf897eb1ac7
 # ╟─63c1cc87-1a58-4347-9112-b3edd4ae99cc
+# ╠═c41c098c-1f2d-4e64-8473-917acea5cd58
 # ╠═32b3f31e-e4de-4ded-b989-582fb39cdbc3
 # ╟─0e2daa33-648e-4271-a779-a3143e872d08
 # ╠═0e0c0d60-7f99-442d-956b-868d0dec825d
-# ╠═a126afc1-14d0-4e6c-a109-dff801e992e7
+# ╟─a126afc1-14d0-4e6c-a109-dff801e992e7
 # ╟─9ce43d1c-16f5-4ee0-ab7c-f15ee48dd630
-# ╠═e3cc0abc-8bb5-4b60-9fc0-bddb46ca9cdb
 # ╠═9aa6d05f-4a00-412e-ac5d-5bb973ca112d
-# ╟─00000000-0000-0000-0000-000000000001
-# ╟─00000000-0000-0000-0000-000000000002
+# ╠═e3cc0abc-8bb5-4b60-9fc0-bddb46ca9cdb
+# ╠═003b15c8-7e25-4a6c-8849-13b637410213
+# ╟─4d4255bc-f211-4228-80f8-678c6371f821
+# ╠═e65709a7-99ff-4698-8169-4cfe2862aafe
+# ╠═e2922e65-12cb-4cce-9728-44444f10ebb2
+# ╠═e5fb7fc9-4753-45a0-b884-5da29206339f
