@@ -7,6 +7,7 @@
 #> description = "Give simulated radio data sky coordinates, convolve it with a telescope PSF, and plot its polarization."
 #> date = "2025-12-31"
 #> layout = "layout.jlhtml"
+#> image = "/assets/models-synthetic_images.png"
 
 using Markdown
 using InteractiveUtils
