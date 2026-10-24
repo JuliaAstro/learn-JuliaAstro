@@ -2,10 +2,9 @@
 # v1.0.2
 
 #> [frontmatter]
-#> title = "Intro"
+#> title = "Quickstart"
 #> date = "2026-04-17"
-#> tags = ["intro"]
-#> description = "Intro to using these notebooks."
+#> description = "Install Julia and Pluto, and learn how to run these notebooks."
 #> layout = "layout.jlhtml"
 
 using Markdown
@@ -16,20 +15,14 @@ using AstroImages, Colors, PlutoUI
 
 # ╔═╡ 35bd8370-3ac3-11f1-9c70-a9ae70668f3d
 md"""
-# `learn.JuliaAstro` Tutorials
+# Quickstart
 
-⚠️ This site is still under construction. Expect to see more updates! ⚠️
-
-These tutorials are heavily inspired by [learn.astropy](https://learn.astropy.org/).
-
-Please select one of the tutorials in the sidebar to get started.
-
-For new Julia users, see the Quickstart section below.
+New to Julia or Pluto? This page covers installing both and getting around the tutorial notebooks on this site.
 """
 
 # ╔═╡ 34e67453-b9db-4c49-aa61-84f519f3c1f4
 md"""
-## Quickstart
+## Install Julia and Pluto
 
 To get started, please follow the instructions in the following two steps below:
 
