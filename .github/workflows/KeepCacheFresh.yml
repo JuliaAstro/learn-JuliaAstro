@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: ⏱ Cache notebook states
-              uses: actions/cache@v6
+              uses: actions/cache/restore@v6
               with:
                 path: _cache
                 key: ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
@@ -16,9 +16,17 @@ jobs:
                     ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
 
             - name: ⏱ Cache .julia
-              uses: actions/cache@v6
+              uses: actions/cache/restore@v6
               with:
                 path: ~/.julia
                 key: ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
                 restore-keys: |
                     ${{ runner.os }}-dotjulia-v1-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+
+            - name: ⏱ Restore tutorial data
+              uses: actions/cache/restore@v6
+              with:
+                path: src/tutorials/data
+                key: ${{ runner.os }}-tutorial-data-v1-${{ github.run_id }}
+                restore-keys: |
+                    ${{ runner.os }}-tutorial-data-v1-

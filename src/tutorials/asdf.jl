@@ -2,13 +2,13 @@
 # v1.0.3
 
 #> [frontmatter]
-#> image = "https://roman-docs.stsci.edu/_/0A8064E70182A738F6DB006B4CF16B4C/1763466662461/assets/img/roman-logo-white.png"
 #> order = 3
 #> title = "ASDF files"
 #> layout = "layout.jlhtml"
 #> date = "2025-12-14"
 #> description = "View and manipulate data from ASDF files."
 #> tags = ["file I/O", "ASDF"]
+#> image = "/assets/asdf.png"
 
 using Markdown
 using InteractiveUtils

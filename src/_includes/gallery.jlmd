@@ -1,0 +1,38 @@
+---
+layout: "layout.jlhtml"
+---
+
+<!-- Same raw HTML block as md.jlmd, with a gallery of the tutorials below the page content. -->
+```{=html}
+<div class="pages-markdown">
+<main>
+$(content)
+$(let
+    # The same tutorials whose tags are listed in the sidebar (the sidebar tag links filter this gallery).
+    sidebar_data = Base.include(@__MODULE__, joinpath(@__DIR__, "..", "sidebar data.jl"))
+
+    @htl("""
+    <p class="pp-gallery-empty" hidden>No tutorial has all of the selected tags.</p>
+    <div class="pp-gallery">
+    $([
+        let
+            frontmatter = p.output.frontmatter
+            name = get(frontmatter, "title", basename(p.input.relative_path))
+            desc = get(frontmatter, "description", nothing)
+            image = get(frontmatter, "image", nothing)
+            # Site-absolute images (`/assets/...`) need the root prefix to also work in PR previews.
+            image_src = isnothing(image) || !startswith(image, "/") ? image : root_url * image
+
+            @htl("""<a class="pp-card" href=$(root_url * "/" * p.url) title=$(desc) data-tags=$(join(get(frontmatter, "tags", String[]), ","))>
+                $(isnothing(image_src) ? @htl("<div class='pp-card-placeholder'></div>") : @htl("<img src=$(image_src) alt='' loading='lazy'>"))
+                <h3>$(name)</h3>
+            </a>""")
+        end for p in sidebar_data["tutorials"]
+    ])
+    </div>
+    <script src="$(root_url)/assets/scripts/gallery.js"></script>
+    """)
+end)
+</main>
+</div>
+```
