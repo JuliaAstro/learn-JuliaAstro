@@ -7,7 +7,7 @@
 #> description = "Integrate the Planck function with the trapezoid rule and a stellar initial mass function with Gaussian quadrature, keeping track of units along the way."
 #> date = "2025-12-31"
 #> layout = "layout.jlhtml"
-#> images = "/assets/blackbodies-and-integration.png"
+#> image = "/assets/blackbodies-and-integration.png"
 
 using Markdown
 using InteractiveUtils
