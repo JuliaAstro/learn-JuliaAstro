@@ -1,6 +1,33 @@
-<!DOCTYPE html><pre class="language-julia"><code>sections = [&quot;file I/O&quot;, &quot;units&quot;, &quot;coordinates&quot;, &quot;models&quot;, &quot;cosmology&quot;, &quot;dust&quot;, &quot;spectroscopy&quot;]
+<!DOCTYPE html><pre class="language-julia"><code># The sidebar lists the tags under these headings, in this order (each group sorted A–Z).
+# A tag used by a tutorial but missing here is listed under &quot;Other&quot;.
+tag_groups = [
+    &quot;Dimensions&quot; => [&quot;coordinates&quot;, &quot;units&quot;, &quot;WCS&quot;],
+    &quot;Data&quot; => [&quot;ASDF&quot;, &quot;data cubes&quot;, &quot;file I/O&quot;, &quot;FITS&quot;, &quot;query&quot;, &quot;tables&quot;],
+    &quot;Domains&quot; => [&quot;astrostatistics&quot;, &quot;cosmology&quot;, &quot;extinction&quot;, &quot;observational astronomy&quot;, &quot;physics&quot;, &quot;radio astronomy&quot;],
+    &quot;Methods&quot; => [&quot;Bayesian&quot;, &quot;MCMC&quot;, &quot;models&quot;, &quot;optimization&quot;, &quot;photometry&quot;, &quot;spectroscopy&quot;],
+    &quot;Data Viz&quot; => [
+        &quot;colorbars&quot;, &quot;contours&quot;, &quot;corner plots&quot;, &quot;errorbars&quot;, &quot;heatmaps&quot;, &quot;histograms&quot;,
+        &quot;images&quot;, &quot;line plots&quot;, &quot;scatter plots&quot;, &quot;stairs&quot;, &quot;uncertainty bands&quot;,
+    ],
+    &quot;Surveys &amp; Missions&quot; => [&quot;Gaia&quot;, &quot;SDSS&quot;],
+]
 
-Dict(
-    &quot;main&quot; => [uppercase(section) => collections[section].pages for section in sections],
-)
+# In a `let`, so these don&apos;t overwrite the page&apos;s own frontmatter variables (e.g. `tags`) in the template module.
+let
+    # Every notebook under `tutorials/` (layouts only see pages through `collections`, so it needs at least one tag),
+    # sorted A–Z by its frontmatter `title`.
+    tutorials = unique(p -> p.url, [p for c in values(collections) for p in c.pages if startswith(p.input.relative_path, &quot;tutorials/&quot;)])
+    sort!(tutorials; by = p -> lowercase(get(p.output.frontmatter, &quot;title&quot;, basename(p.input.relative_path))))
+
+    used = Set(tag for p in tutorials for tag in get(p.output.frontmatter, &quot;tags&quot;, String[]))
+    grouped = Set(tag for (_, tags) in tag_groups for tag in tags)
+    groups = [heading => sort!(filter(in(used), tags); by = lowercase) for (heading, tags) in tag_groups]
+    push!(groups, &quot;Other&quot; => sort!(collect(setdiff(used, grouped)); by = lowercase))
+
+    Dict(
+        &quot;tutorials&quot; => tutorials,
+        # Only tags some tutorial uses, so no sidebar link leads to an empty gallery.
+        &quot;tag_groups&quot; => filter(group -> !isempty(last(group)), groups),
+    )
+end
 </code></pre>
