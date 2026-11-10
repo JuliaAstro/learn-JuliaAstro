@@ -791,7 +791,7 @@ md"""
 We can plot the 2D quantity using Makie's `heatmap` function:
 
 !!! todo
-    Heatmap + colorbar + units support coming in <https://github.com/MakieOrg/Makie.jl/pull/5673> 
+    Heatmap + colorbar + units support coming in <https://github.com/MakieOrg/Makie.jl/pull/5673>
 """ |> side_by_side
 
 # ╔═╡ 3a3328d5-31de-4deb-bff7-d25c1fcbc4ef

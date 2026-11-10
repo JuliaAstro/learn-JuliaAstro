@@ -50,17 +50,17 @@ _Original authors: Zach Pace, Lia Corrales, Stephanie T. Douglas_
 
 !!! tip "Learning goals"
 
-	- perform numerical integration
-	- make trapezoidal approximations
-	- use Gaussian quadrature
-	- define blackbody curves
-	- understand how units interact with one another
-	- define a Julia struct type
-	- explore how callable objects work
-	- add ``\LaTeX`` labels to plot figures using the `L"..."` string macro
+    - perform numerical integration
+    - make trapezoidal approximations
+    - use Gaussian quadrature
+    - define blackbody curves
+    - understand how units interact with one another
+    - define a Julia struct type
+    - explore how callable objects work
+    - add ``\LaTeX`` labels to plot figures using the `L"..."` string macro
 
 !!! warning "Companion content"
-	- [learn.JuliaAstro > Unit handling](https://learn.juliaastro.org/tutorials/units/)
+    - [learn.JuliaAstro > Unit handling](https://learn.juliaastro.org/tutorials/units/)
 """
 
 # ╔═╡ 4a95f7da-6c3e-4290-9985-9f5209c9e5e0
@@ -85,7 +85,7 @@ Let's say we have a black-body at 5000 Kelvin. We can find out the total intensi
 We'll define a photon frequency grid, and evaluate the Planck function at those frequencies. Those will be used to numerically integrate using the trapezoidal rule. By multiplying a collection by a unit (e.g., `[1, 2, 3] * u"m"`), we get a collection of quantities:
 
 !!! note
-	There are a wide range of other "quantity" types in DynamicQuantities.jl. See [the manual](https://ai.damtp.cam.ac.uk/dynamicquantities/stable/types/) for more.
+    There are a wide range of other "quantity" types in DynamicQuantities.jl. See [the manual](https://ai.damtp.cam.ac.uk/dynamicquantities/stable/types/) for more.
 """
 
 # ╔═╡ 219d613e-1b22-428a-ba2b-2a21ebc9dee4
@@ -122,13 +122,13 @@ lines(
 # ╔═╡ 25efd32c-5beb-47d2-9d75-32ce1cf9960b
 md"""
 !!! todo
-	``\LaTeX`` axis labels no longer error with unit conversions ([original report](https://github.com/MakieOrg/Makie.jl/pull/5484#issuecomment-4445754898)), but the minus signs disappear from the units that Makie appends to them, e.g., `L"I_\nu"` is labelled `[s ¹ cm ² Hz ¹ sr ¹ erg]`. We use rich text for these labels until that is fixed.
+    ``\LaTeX`` axis labels no longer error with unit conversions ([original report](https://github.com/MakieOrg/Makie.jl/pull/5484#issuecomment-4445754898)), but the minus signs disappear from the units that Makie appends to them, e.g., `L"I_\nu"` is labelled `[s ¹ cm ² Hz ¹ sr ¹ erg]`. We use rich text for these labels until that is fixed.
 """
 
 # ╔═╡ 93f0e1a7-c749-4a6c-b40b-30e93a099390
 md"""
 !!! note "Formatting axis labels"
-	Here, we’ve used Makie's [`rich` text formatting](https://docs.makie.org/stable/reference/plots/text#Rich-text) to add a subscript to our ``y``-axis label, and Julia's built-in [unicode support](https://docs.julialang.org/en/v1/manual/unicode-input/) for the ``x``-axis label, which is useful for simpler typesetting. Makie appends the units to both labels for us. For more involved markup, we can also write ``\LaTeX`` in the [`L""` string macro](https://github.com/JuliaStrings/LaTeXStrings.jl#latexstrings) that is automatically exported by Makie, as we will do for the IMF plot later on.
+    Here, we’ve used Makie's [`rich` text formatting](https://docs.makie.org/stable/reference/plots/text#Rich-text) to add a subscript to our ``y``-axis label, and Julia's built-in [unicode support](https://docs.julialang.org/en/v1/manual/unicode-input/) for the ``x``-axis label, which is useful for simpler typesetting. Makie appends the units to both labels for us. For more involved markup, we can also write ``\LaTeX`` in the [`L""` string macro](https://github.com/JuliaStrings/LaTeXStrings.jl#latexstrings) that is automatically exported by Makie, as we will do for the IMF plot later on.
 """
 
 # ╔═╡ 15dfa732-d707-4556-95fa-fdc116e178a3
@@ -163,7 +163,7 @@ bb5000K_λ = blackbody_λ.(λs, 5000u"K")
 # ╔═╡ 07a699ba-9a78-4baa-97d6-77388c3578ae
 md"""
 !!! todo
-	DynamicQuantities.jl stores units as values instead of in the type, so unlike with Unitful.jl, we can't dispatch on whether the input is a frequency or a wavelength. That's why we defined separate `blackbody_ν` and `blackbody_λ` functions. [See here](https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/197#issuecomment-4445192280) for a discussion on making this trait-based so that a single `blackbody` function could handle both.
+    DynamicQuantities.jl stores units as values instead of in the type, so unlike with Unitful.jl, we can't dispatch on whether the input is a frequency or a wavelength. That's why we defined separate `blackbody_ν` and `blackbody_λ` functions. [See here](https://github.com/JuliaPhysics/DynamicQuantities.jl/issues/197#issuecomment-4445192280) for a discussion on making this trait-based so that a single `blackbody` function could handle both.
 """
 
 # ╔═╡ 88e247da-d821-446d-a371-175290f511bf
