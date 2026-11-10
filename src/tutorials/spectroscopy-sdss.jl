@@ -40,7 +40,7 @@ using PlutoUI: TableOfContents
 md"""
 # Spectroscopy with SDSS
 
-_Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_ 
+_Authors: Aditya Kumar Pandey, Chris Garling, Ian Weaver_
 
 !!! tip "Learning goals"
     Compose multiple packages from the JuliaAstro ecosytem to analyze stellar spectra.

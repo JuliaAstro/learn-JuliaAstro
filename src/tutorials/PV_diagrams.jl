@@ -338,7 +338,7 @@ md"""
 
     $(details("Rough plan for an AstroImages.jl PR", md\"\"\"
     1. `src/pv.jl` (new)
-        - API: `pvslice(cube, path; spacing = 1)` 
+        - API: `pvslice(cube, path; spacing = 1)`
         - returns an AstroImage with a PV header, not a bare matrix. The
         header would carry:
         - `CTYPE1 = 'OFFSET'` and `CDELT1 = spacing` `\times` pixel scale.
@@ -347,7 +347,7 @@ md"""
         - What this then gives us here:
             - implotview(pv) draws WCS-labelled offset/velocity axes.
             - save("pv.fits", pv) writes a valid FITS file through io.jl.
-        - Sky-coordinate paths fit here too: accept world-coordinate tuples and convert them with the existing `world_to_pixel(img, ...)`. That avoids a SkyCoords dependency; SkyCoords users pass rad2deg.(lonlat(c)).
+        - Sky-coordinate paths fit here too: accept world-coordinate tuples and convert them with the existing `world_to_pixel(img, ...)`. That avoids a SkyCoords dependency; SkyCoords users pass rad2deg.(lonlat(c))
     
     1. Interpolation: ext/AstroImagesInterpolationsExt.jl (new)
         - Follow the pattern the package already uses for Makie (implot) and, on the reproject branch, Reproject
@@ -371,7 +371,7 @@ md"""
     1. Later: width averaging
         - `ext/AstroImagesPhotometryExt.jl` (new), wrapping Photometry.jl's rotated `RectangularAperture` for `pvslice(...; width)`.
     "\"\"))
-    """
+"""
 
 # ╔═╡ 3996ac46-9104-4745-ac70-0916f50527b4
 begin

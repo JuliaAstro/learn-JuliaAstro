@@ -133,7 +133,7 @@ wcs_helix_dict = Dict(
 # ╔═╡ 134f9f2a-63c2-4ab2-ad45-2bdaae1eaac3
 md"""
 !!! note
-	Instead of storing the size with `NAXIS1 = ...`, `NAXIS2 = ...`, we store the dimensionality with `NAXIS => 2`
+    Instead of storing the size with `NAXIS1 = ...`, `NAXIS2 = ...`, we store the dimensionality with `NAXIS => 2`
 """
 
 # ╔═╡ ebe11f46-8f9b-498a-83ed-ad73c868f463
@@ -177,7 +177,7 @@ end;
 # ╔═╡ 1fd4e3ce-412a-4bd2-b649-f35f090bfa60
 md"""
 !!! note
-	This image (FITS file) was originally accessed from the Digitized Sky Survey but is provided in the astropy-data repository for convenience.
+    This image (FITS file) was originally accessed from the Digitized Sky Survey but is provided in the astropy-data repository for convenience.
 """
 
 # ╔═╡ f4b32c4e-f289-4ee0-bde3-44dbb0387e32
@@ -231,7 +231,7 @@ Copy the code block above and instead overlay a coordinate grid in Galactic coor
 # ╔═╡ 3b3ceefb-8abf-4bf5-857e-f0ca0780d960
 md"""
 !!! todo
-	Implement Reproject.jl: <https://juliaastro.org/AstroImages/stable/guide/reproject/>
+    Implement Reproject.jl: <https://juliaastro.org/AstroImages/stable/guide/reproject/>
 """
 
 # ╔═╡ bfe22652-e591-43db-9a2d-0de983e18f5e
@@ -239,7 +239,7 @@ md"""
 ## Section 3: Plot a scale marker on an image with WCS
 
 !!! todo
-	Implement
+    Implement
 """
 
 # ╔═╡ a7df5632-ec33-41d7-92eb-e68fcb6d1f4c
